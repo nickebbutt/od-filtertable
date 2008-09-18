@@ -2,6 +2,8 @@
  *  Copyright (C) Nick Ebbutt September 2009
  *
  *  This file is part of ObjectDefinitions Ltd. FilterTable.
+ *  nick@objectdefinitions.com
+ *  http://www.objectdefinitions.com/filtertable
  *
  *  FilterTable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +20,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.od.swingtable;
+package com.od.filtertable;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;

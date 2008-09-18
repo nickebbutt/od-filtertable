@@ -8,8 +8,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>od</groupId>
-    <artifactId>od-swingtable</artifactId>
-    <name>od-swingtable</name>
+    <artifactId>od-filtertable</artifactId>
+    <name>od-filtertable</name>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <dependencies> 

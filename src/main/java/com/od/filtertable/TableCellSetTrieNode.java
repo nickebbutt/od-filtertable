@@ -2,6 +2,8 @@
  *  Copyright (C) Nick Ebbutt September 2009
  *
  *  This file is part of ObjectDefinitions Ltd. FilterTable.
+ *  nick@objectdefinitions.com
+ *  http://www.objectdefinitions.com/filtertable
  *
  *  FilterTable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -18,12 +20,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.od.swingtable;
-
-import java.util.Set;
-import java.util.Collections;
-import java.util.HashSet;
-
+package com.od.filtertable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,27 +28,27 @@ import java.util.HashSet;
  * Date: 10-Sep-2008
  * Time: 10:51:11
  */
-public class HashSetTrieNode<V> extends AbstractTrieNode<V, Set<V>> {
+class TableCellSetTrieNode extends AbstractTrieNode<TableCell, TableCellSet> {
 
-    private Set<V> emptyCollection = Collections.emptySet();
+    private static final TableCellSet emptyCollection = new TableCellSet();
 
-    public HashSetTrieNode(boolean isCaseSensitive) {
+    public TableCellSetTrieNode(boolean isCaseSensitive) {
         super(isCaseSensitive);
     }
 
-    public HashSetTrieNode(boolean isCaseSensitive, int depth, char key) {
+    public TableCellSetTrieNode(boolean isCaseSensitive, int depth, char key) {
         super(isCaseSensitive, depth, key);
     }
 
-    protected Set<V> createValuesCollection() {
-        return new HashSet<V>();
+    protected TableCellSet createValuesCollection() {
+        return new TableCellSet();
     }
 
-    protected Set<V> getEmptyCollection() {
+    protected TableCellSet getEmptyCollection() {
         return emptyCollection;
     }
 
-    protected AbstractTrieNode<V, Set<V>> createChildNode(boolean caseSensitive, int depth, char c) {
-        return new HashSetTrieNode<V>(caseSensitive, depth, c);
+    protected AbstractTrieNode<TableCell, TableCellSet> createChildNode(boolean caseSensitive, int depth, char c) {
+        return new TableCellSetTrieNode(caseSensitive, depth, c);
     }
 }
