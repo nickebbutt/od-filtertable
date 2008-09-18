@@ -15,57 +15,7 @@
     <option name="historyRevisionsNumber" value="4" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" name="Default" comment="">
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\MutableRowIndex.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableRowIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModel.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FilterTestUI.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FilterTestUI.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\TestTableModelIndexer.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestTableModelIndexer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModelWithColumnClass.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModelWithColumnClass.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/test/java/com/od/swingtable" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/RowFilteringTableModel.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/RowFilteringTableModel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TimedIndexTrimmer.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TimedIndexTrimmer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestRowFilteringTableModel.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestRowFilteringTableModel.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TableModelIndexer.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelIndexer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelIndexer.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelIndexer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSetTrieNode.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSetTrieNode.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/com/od/swingtable" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestDefaultCharTrie.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestDefaultCharTrie.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\RowFilteringTableModel.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/RowFilteringTableModel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TableParser.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TableParser.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TableCellSet.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableCharSequence.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableCharSequence.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\AbstractTrieNode.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/AbstractTrieNode.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\HashSetTrieNode.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/HashSetTrieNode.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FileUtil.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FileUtil.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestTableModelIndexer.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestTableModelIndexer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/AbstractFilteredTableTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/AbstractFilteredTableTest.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TableModelEventParser.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelEventParser.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\TestDefaultCharTrie.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestDefaultCharTrie.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TableCellSetTrieNode.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSetTrieNode.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TableCell.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCell.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\TimedIndexTrimmer.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TimedIndexTrimmer.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\TableParser.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TableParser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/AbstractTrieNode.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/AbstractTrieNode.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\CharTrie.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/CharTrie.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\FileUtil.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FileUtil.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\TestRowFilteringTableModel.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/TestRowFilteringTableModel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/od/filtertable/HashSetTrieNode.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/HashSetTrieNode.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\AbstractFilteredTableTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/AbstractFilteredTableTest.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\FilterFormatter.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterFormatter.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\FilterColumnConfig.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterColumnConfig.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\FixtureTableModelWithColumnClass.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModelWithColumnClass.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\FilterTestUI.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FilterTestUI.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelEventParser.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableModelEventParser.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\swingtable\MutableCharSequence.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableCharSequence.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/CharTrie.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/CharTrie.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSet.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCellSet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableRowIndex.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/MutableRowIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCell.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/TableCell.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterColumnConfig.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterColumnConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterFormatter.java" afterPath="$PROJECT_DIR$/src/main/java/com/od/filtertable/FilterFormatter.java" />
-      <change type="MOVED" beforePath="C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\swingtable\FixtureTableModel.java" afterPath="$PROJECT_DIR$/src/test/java/com/od/filtertable/FixtureTableModel.java" />
-    </list>
+    <list default="true" name="Default" comment="" />
     <ignored path="od-filtertable.iws" />
     <ignored path=".idea/workspace.xml" />
   </component>
@@ -340,44 +290,6 @@
           <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\test\java\com\od\filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
       </PATH>
       <PATH>
         <PATH_ELEMENT>
@@ -424,44 +336,6 @@
         </PATH_ELEMENT>
         <PATH_ELEMENT>
           <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\dev\OD\trunk\od-projects\od-filtertable\src\main\java\com\od\filtertable" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
