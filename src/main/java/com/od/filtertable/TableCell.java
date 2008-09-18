@@ -31,6 +31,13 @@ package com.od.filtertable;
  * TableCell stores the current depth to which the cell has been indexed, the indexed
  * value is also stored so that we can remove the TableCell from the index when a row
  * delete takes place
+ *
+ * Important note :-
+ * Since these go into sets it would be tempting to add equals and hashcode..
+ * That would usually be a good idea, but in this case that temptation is from the dark side of the force
+ * RowIndex is mutable, and will change on inserts and deletes, & hashcode by col alone will make the hashcode
+ * implentation inefficient for tables with a lot of rows. A true jedi is happy with instance equality,
+ * which is a design decision here
  */
 class TableCell {
 
@@ -72,25 +79,8 @@ class TableCell {
         this.value = value;
     }
 
-    public int hashCode() {
-        int result = 17;
-        result = 31 * result + mutableRowIndex.index;
-        result = 31 * result + col;
-        return result;
-    }
-
     public boolean isNullValue() {
         return value == null;
-    }
-
-    public boolean equals(Object o) {
-        boolean result = false;
-        if ( o == this ) {
-            result = true;
-        } else if ( o instanceof TableCell) {
-            result = ((TableCell)o).mutableRowIndex.index == this.mutableRowIndex.index && ((TableCell)o).col == this.col;
-        }
-        return result;
     }
 
     /**
