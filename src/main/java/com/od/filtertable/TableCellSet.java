@@ -80,6 +80,12 @@ class TableCellSet extends HashSet<TableCell> {
         super.clear();
     }
 
+    /**
+     * @return the Set of mutable row indexes.
+     * If the set contents has not changed since last time this method was called, the same instance will be returned.
+     * However in this case, if there have been row inserts or deletes to the source model, the values of the mutable
+     * row indexes contained may have changed
+     */
     public Set<MutableRowIndex> getRowsInSet() {
         if ( rowsInSet == null ) {
             rowsInSet = findRowsInSet();

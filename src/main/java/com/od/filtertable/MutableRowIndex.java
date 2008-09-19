@@ -31,6 +31,9 @@ package com.od.filtertable;
  * The row indexes stored by cells in the index are MutableRowIndex rather than
  * primatives. This allows the index to be updated when row inserts and deletes
  * take place.
+ *
+ * equals and hashcode are not necessary since the assumption is that there is only one
+ * MutableRowInstance per row, and this instance is shared between all table cells
  */
 class MutableRowIndex {
 

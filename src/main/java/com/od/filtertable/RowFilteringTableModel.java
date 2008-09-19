@@ -54,6 +54,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     private String filterValue;
     private TableModelIndexer tableModelIndexer;
     private TableModelListener tableModelListener;
+    private Collection<MutableRowIndex> lastSetOfRowsPassingFilter;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -143,13 +144,34 @@ public class RowFilteringTableModel extends AbstractTableModel {
         if ( filterValue == null || filterValue.length() == 0) {
             createInitialRowStatusBitSets();
         } else {
-            Collection<MutableRowIndex> rowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
-            rowStatusBitSet = new BitSet(wrappedModel.getRowCount());
-            for ( MutableRowIndex rowIndex : rowsPassingFilter ) {
-                rowStatusBitSet.set(rowIndex.index);
-            }
+            lastSetOfRowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
+            createNewRowBitSet();
         }
         recalcRowMap();
+    }
+
+    //this is an optimisation
+    //in the specific case that a table model data update event which did not insert or delete rows in the source
+    //model and did not change which rows pass or fail the filter, the set of rows containing filter value will be the
+    //same instance as before, and contain mutable row indexes which are unchanged. In this specific but common case
+    //nothing will have changed, so we can skip rebuilding our row maps
+    private void recalculateRowStatusBitSetsOnDataChangeUpdate() {
+        oldRowStatusBitSet = rowStatusBitSet;
+        if ( filterValue != null && filterValue.length() > 0) {
+            Collection<MutableRowIndex> newRowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
+            if ( newRowsPassingFilter != lastSetOfRowsPassingFilter) {
+                lastSetOfRowsPassingFilter = newRowsPassingFilter;
+                createNewRowBitSet();
+                recalcRowMap();
+            }
+        }
+    }
+
+    private void createNewRowBitSet() {
+        rowStatusBitSet = new BitSet(wrappedModel.getRowCount());
+        for ( MutableRowIndex rowIndex : lastSetOfRowsPassingFilter) {
+            rowStatusBitSet.set(rowIndex.index);
+        }
     }
 
 
@@ -198,7 +220,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
                                 tableModelIndexer.reIndexCell(row,col);
                             }
                         }
-                        recalculateRowStatusBitSets();
+                        recalculateRowStatusBitSetsOnDataChangeUpdate();
                         generateEventsForUpdate(firstRow, lastRow, TableModelEvent.ALL_COLUMNS);
                         clearOldRowBitsetAndRowMap();
                     }
@@ -208,7 +230,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
                         for ( int row=firstRow; row <=lastRow; row++ ) {
                             tableModelIndexer.reIndexCell(row,column);
                         }
-                        recalculateRowStatusBitSets();
+                        recalculateRowStatusBitSetsOnDataChangeUpdate();
                         generateEventsForUpdate(firstRow, lastRow, column);
                         clearOldRowBitsetAndRowMap();
                     }

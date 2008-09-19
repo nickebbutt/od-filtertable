@@ -296,6 +296,90 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         assertEquals(0, cells.size());
     }
 
+    public void testSetOfRowIndexesInstanceNotChangedIfUpdateDoesNotAffectFilteredView() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableCells = indexer.getRowsContaining("string4");
+        tableModel.setValueAt("wibble", 8, 1);
+        indexer.reIndexCell(8, 1);
+        assertTrue(tableCells == indexer.getRowsContaining("string4"));
+    }
+
+    public void testSetOfRowIndexesInstanceChangedIfUpdateCausesNewRowToPassFilters() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableCells = indexer.getRowsContaining("string4");
+        tableModel.setValueAt("string4", 8, 1);
+        indexer.reIndexCell(8, 1);
+        assertTrue(tableCells != indexer.getRowsContaining("string4"));
+    }
+
+     public void testSetOfRowIndexesInstanceChangedIfUpdateCausesOldRowToFailFilters() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableCells = indexer.getRowsContaining("string4");
+        tableModel.setValueAt("string5", 9, 1);
+        indexer.reIndexCell(9, 1);
+        assertTrue(tableCells != indexer.getRowsContaining("string4"));
+    }
+
+    public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnInsertOfNewRowWhichFailsFilters() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInOldFilterView = getIntegerSet(tableRows);
+        tableModel.insertRow(1, new ArrayList<Object>(Arrays.asList(new String[] {"wibble", "wibble"})));
+        indexer.insertRows(1,1);
+        Collection<MutableRowIndex> newTableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInNewFilterView = getIntegerSet(newTableRows);
+        assertTrue(tableRows == newTableRows);
+        assertTrue(rowsIndexesInOldFilterView.contains(9));
+        assertTrue(rowsIndexesInOldFilterView.contains(11));
+        assertTrue(rowsIndexesInNewFilterView.contains(10));
+        assertTrue(rowsIndexesInNewFilterView.contains(12));
+    }
+
+    public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnDeleteOfNewRowWhichFailsFilters() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInOldFilterView = getIntegerSet(tableRows);
+        tableModel.removeRow(1); tableModel.removeRow(2);
+        indexer.removeRows(1,2);
+        Collection<MutableRowIndex> newTableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInNewFilterView = getIntegerSet(newTableRows);
+        assertTrue(tableRows == newTableRows);
+        assertTrue(rowsIndexesInOldFilterView.contains(9));
+        assertTrue(rowsIndexesInOldFilterView.contains(11));
+        assertTrue(rowsIndexesInNewFilterView.contains(7));
+        assertTrue(rowsIndexesInNewFilterView.contains(9));
+    }
+
+     public void testSetOfRowIndexesInstanceChangedAndMutableRowIndexValuesChangedOnDeleteOfRowWhichUsedToPassFilters() {
+        FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
+        TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
+        Collection<MutableRowIndex> tableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInOldFilterView = getIntegerSet(tableRows);
+        tableModel.removeRow(9); tableModel.removeRow(9);
+        indexer.removeRows(9,10);
+        Collection<MutableRowIndex> newTableRows = indexer.getRowsContaining("string4");
+        Set<Integer> rowsIndexesInNewFilterView = getIntegerSet(newTableRows);
+        assertTrue(tableRows != newTableRows);
+        assertTrue(rowsIndexesInOldFilterView.contains(9));
+        assertTrue(rowsIndexesInOldFilterView.contains(11));
+        assertEquals(1, rowsIndexesInNewFilterView.size());
+        assertTrue(rowsIndexesInNewFilterView.contains(9));
+    }
+
+    private Set<Integer> getIntegerSet(Collection<MutableRowIndex> tableRows) {
+        HashSet<Integer> rows = new HashSet<Integer>();
+        for (MutableRowIndex i : tableRows ) {
+            rows.add(i.index);
+        }
+        return rows;
+    }
+
+
     private void clearFormattersAndCheckRowCount(TableModelIndexer indexer) {
         Collection<TableCell> cells;
         indexer.clearFormatters();
