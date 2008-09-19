@@ -22,12 +22,11 @@
 
 package com.od.filtertable;
 
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.util.*;
+import javax.swing.table.TableModel;
 import java.text.Format;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -44,7 +43,7 @@ import java.text.Format;
  * for best filter performance, a higher up-front depth is best, but for large tables (tens of thousands of
  * cells) this may require a large amount of heap space. Most systems will opt for a trade-off between the two.
  */
-public class RowFilteringTableModel extends AbstractTableModel {
+public class RowFilteringTableModel extends CustomEventTableModel {
 
     private TableModel wrappedModel;
     private int[] rowMap;
@@ -317,13 +316,12 @@ public class RowFilteringTableModel extends AbstractTableModel {
      */
     private void generateEventsForUpdate(int firstRow, int lastRow, int column) {
 
-        boolean containsInsert = false, containsDelete = false, containsUpdate = false;
+        boolean containsInsert = false, containsDelete = false;
 
         //generate a stack of the actions required for each row in the updated range, with first event at top
         Stack<UpdateAction> updatesStack = new Stack<UpdateAction>();
         for ( int row = lastRow; row >= firstRow; row --) {
             if ( rowStatusBitSet.get(row) && oldRowStatusBitSet.get(row)) {
-                containsUpdate = true;
                 updatesStack.add(UpdateAction.UPDATE);
             } else if ( rowStatusBitSet.get(row) && ! oldRowStatusBitSet.get(row)) {
                 containsInsert = true;
@@ -342,8 +340,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
                 column,
                 updatesStack,
                 containsInsert,
-                containsDelete,
-                containsUpdate
+                containsDelete
         );
 
         for ( TableModelEvent event : modelEvents ) {
@@ -377,7 +374,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
      * INSERT OR DELETE affecting 1 or more rows
      * UPDATE affecting 1 or more rows
      */
-    private List<TableModelEvent> getRequiredEvents(int firstRow, int column, Stack<UpdateAction> updatesStack, boolean containsInsert, boolean containsDelete, boolean containsUpdate) {
+    private List<TableModelEvent> getRequiredEvents(int firstRow, int column, Stack<UpdateAction> updatesStack, boolean containsInsert, boolean containsDelete) {
         int startRowForEvent = getIndexInOldModel(firstRow);
         List<TableModelEvent> modelEvents = new ArrayList<TableModelEvent>();
         if ( containsDelete && containsInsert) {
@@ -409,7 +406,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     private int addDeleteEventAtStart(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent) {
         int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.DELETE);
         if ( rowsAffected > 0) {
-            modelEvents.add(0, new TableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
+            modelEvents.add(0, createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
         }
         return rowsAffected;
     }
@@ -418,7 +415,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     private int addInsertEventAtStart(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent) {
         int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.INSERT);
         if ( rowsAffected > 0) {
-            modelEvents.add(0, new TableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
+            modelEvents.add(0, createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
         }
         return rowsAffected;
     }
@@ -427,7 +424,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     private int addUpdateEvent(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent, int column) {
         int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.UPDATE);
         if ( rowsAffected > 0) {
-            modelEvents.add(new TableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), column, TableModelEvent.UPDATE));
+            modelEvents.add(createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), column, TableModelEvent.UPDATE));
         }
         return rowsAffected;
     }
@@ -439,10 +436,6 @@ public class RowFilteringTableModel extends AbstractTableModel {
             updatesStack.pop();
         }
         return rowsAffected;
-    }
-
-    private TableModelEvent createDataChangedEvent() {
-        return new TableModelEvent(RowFilteringTableModel.this);
     }
 
     private int getAffectedRows(BitSet bitSet, int firstRow, int lastRow) {

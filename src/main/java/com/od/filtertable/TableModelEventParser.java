@@ -44,11 +44,17 @@ public class TableModelEventParser implements TableModelListener {
     }
 
     public void tableChanged(TableModelEvent e) {
+        if ( e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW) {
+            eventParserListener.tableStructureChanged(e);
+        } else {
+            fireTypeDerivedEvent(e);
+        }
+    }
+
+    private void fireTypeDerivedEvent(TableModelEvent e) {
         switch ( e.getType() ) {
             case ( TableModelEvent.UPDATE) :
-                if ( e.getFirstRow() == TableModelEvent.HEADER_ROW) {
-                    eventParserListener.tableStructureChanged(e);
-                } else if ( e.getFirstRow() == 0 && e.getLastRow() == Integer.MAX_VALUE) {
+                 if ( e.getFirstRow() == 0 && e.getLastRow() == Integer.MAX_VALUE) {
                     eventParserListener.tableDataChanged(e);
                 } else if ( e.getColumn() == TableModelEvent.ALL_COLUMNS) {
                     eventParserListener.tableRowsUpdated(e.getFirstRow(), e.getLastRow(), e);
@@ -78,7 +84,6 @@ public class TableModelEventParser implements TableModelListener {
                 //this is an event of unknown type, treat as a structure changed
                 eventParserListener.tableStructureChanged(e);
         }
-
     }
 
     public static interface TableModelEventParserListener {
