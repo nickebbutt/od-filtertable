@@ -140,7 +140,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     }
 
     private void recalculateRowStatusBitSets() {
-        oldRowStatusBitSet = rowStatusBitSet;
+        setOldBitSetAndRowMap();
         if ( filterValue == null || filterValue.length() == 0) {
             createInitialRowStatusBitSets();
         } else {
@@ -156,7 +156,7 @@ public class RowFilteringTableModel extends AbstractTableModel {
     //same instance as before, and contain mutable row indexes which are unchanged. In this specific but common case
     //nothing will have changed, so we can skip rebuilding our row maps
     private void recalculateRowStatusBitSetsOnDataChangeUpdate() {
-        oldRowStatusBitSet = rowStatusBitSet;
+        setOldBitSetAndRowMap();
         if ( filterValue != null && filterValue.length() > 0) {
             Collection<MutableRowIndex> newRowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
             if ( newRowsPassingFilter != lastSetOfRowsPassingFilter) {
@@ -165,6 +165,11 @@ public class RowFilteringTableModel extends AbstractTableModel {
                 recalcRowMap();
             }
         }
+    }
+
+    private void setOldBitSetAndRowMap() {
+        oldRowStatusBitSet = rowStatusBitSet;
+        oldRowMap = rowMap;
     }
 
     private void createNewRowBitSet() {
@@ -178,7 +183,6 @@ public class RowFilteringTableModel extends AbstractTableModel {
     //recalculate the row map using the bits in the row status BitSet
     //every bit set true indicates that row index should be included
     private void recalcRowMap() {
-        oldRowMap = rowMap;
         rowMap = new int[rowStatusBitSet.cardinality()];
         int addedRowCount = 0;
         for ( int row = 0; row < wrappedModel.getRowCount(); row ++) {
