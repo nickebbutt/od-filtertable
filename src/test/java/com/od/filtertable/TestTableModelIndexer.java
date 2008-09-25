@@ -210,8 +210,12 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         assertEquals(IT_Strips_first_row_matching, firstMatchingRow);
         assertEquals(IT_Strips_last_row_matching, lastMatchingRow);
 
+        assertNotNull(indexer.tableCells[453][0]);
+        assertNotNull(indexer.tableCells[452][0]);
         testTableModel.removeRows(IT_Strips_first_row_matching, IT_Strips_first_row_matching + 1);
         indexer.removeRows(IT_Strips_first_row_matching, IT_Strips_first_row_matching + 1);
+        assertNull(indexer.tableCells[453][0]);
+        assertNull(indexer.tableCells[452][0]); //ensure references to cells are cleared when array reduces
         testRowIndexes(indexer);
 
         cells = indexer.getCellsContaining(IT_STRIPS);

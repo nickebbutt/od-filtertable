@@ -30,6 +30,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Arrays;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.text.DecimalFormat;
@@ -42,7 +43,7 @@ import java.text.DecimalFormat;
  */
 public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
 
-    private static final boolean LOG_EVENTS = false;
+    private static final boolean LOG_EVENTS = true;
     private RowFilteringTableModel filteredModel;
     private Mockery mockery = new Mockery();
     private TableModelListener mockListener;
@@ -412,9 +413,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         mockery.checking(new Expectations() {{
             one(mockListener).tableChanged(with(equal(new TableModelEventWithEquals(filteredModel, 4, 4, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT))));
         }});
-        testTableModel.insertRows(7,
-            (ArrayList<Object>)testTableModel.getRow(1).clone()
-        );
+        testTableModel.insertRows(7,(ArrayList<Object>)testTableModel.getRow(1).clone());
 
         assertTrue(tableModelsAreEqual(readTableModel("/testInsertFollowedByDelete.csv"), filteredModel));
         mockery.assertIsSatisfied();
@@ -424,7 +423,30 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         }});
         testTableModel.removeRow(1);
         assertTrue(tableModelsAreEqual(readTableModel("/testInsertFollowedByDelete2.csv"), filteredModel));
-        mockery.assertIsSatisfied(); 
+        mockery.assertIsSatisfied();
+
+        filteredModel.removeTableModelListener(mockListener);
+    }
+
+    public void testDeleteFollowedByInsert() {
+        filteredModel.setFilterValue(STRING1);
+        filteredModel.addTableModelListener(mockListener);
+
+        mockery.checking(new Expectations() {{
+            one(mockListener).tableChanged(with(equal(new TableModelEventWithEquals(filteredModel, 1, 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE))));
+        }});
+        testTableModel.removeRow(1);
+        assertTrue(tableModelsAreEqual(readTableModel("/testDeleteFollowedByInsert.csv"), filteredModel));
+        mockery.assertIsSatisfied();
+
+        mockery.checking(new Expectations() {{
+            one(mockListener).tableChanged(with(equal(new TableModelEventWithEquals(filteredModel, 3, 3, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT))));
+        }});
+        testTableModel.insertRows(7,
+            (ArrayList<Object>)testTableModel.getRow(1).clone()
+        );
+        assertTrue(tableModelsAreEqual(readTableModel("/testDeleteFollowedByInsert2.csv"), filteredModel));
+        mockery.assertIsSatisfied();
     }
 
     public void testDataChangedEvent() {

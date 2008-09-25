@@ -103,7 +103,7 @@ public class TableModelIndexer {
     public void removeRows(int startIndex, int endIndex) {
         int removedRowCount = (endIndex - startIndex) + 1;
         decreaseMutableRowIndexes(endIndex + 1, removedRowCount);
-        removeCellsAndRemoveFromIndex(startIndex, endIndex);
+        removeCellsAndRemoveFromIndex(startIndex, endIndex, removedRowCount);
         size-=removedRowCount;
     }
 
@@ -153,9 +153,16 @@ public class TableModelIndexer {
         populateWithTableCellsAndAddToIndex(startIndex, endIndex);
     }
 
-    private void removeCellsAndRemoveFromIndex(int startIndex, int endIndex) {
+    private void removeCellsAndRemoveFromIndex(int startIndex, int endIndex, int removedRowCount) {
         removeRowsFromIndex(startIndex, endIndex);
         System.arraycopy(tableCells, endIndex + 1, tableCells, startIndex, size - (endIndex + 1) );
+        freeTableCellsForGarbageCollector(removedRowCount);
+    }
+
+    private void freeTableCellsForGarbageCollector(int removedRowCount) {
+        for ( int row=size - 1; row >= size - removedRowCount; row -- ) {
+            tableCells[row] = new TableCell[tableModel.getColumnCount()];
+        }
     }
 
     //start and end row are inclusive
