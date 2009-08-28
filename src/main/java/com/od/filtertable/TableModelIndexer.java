@@ -80,14 +80,24 @@ public class TableModelIndexer {
         populateWithTableCellsAndAddToIndex(0, size - 1);
     }
 
+    /**
+     * @return A TableCellSet of matching cells for the char sequence supplied
+     */
     public Collection<TableCell> getCellsContaining(CharSequence s) {
         updateIndexForSequence(s);
         return index.getValues(s);
     }
 
-    public Collection<MutableRowIndex> getRowsContaining(CharSequence s) {
+    /**
+     * If no changes to the table data have affected the matching cells since the last time
+     * this method was called with sequence s, and no re-indexing has taken place, then the collection instance
+     * returned will be the instance as before and will have identical contents.
+     * If the matching cells have changed then a new instance will be returned.
+     * @return a Map of MutableRowIndex to set columns which contain the CharSequence.
+     */
+    public Map<MutableRowIndex, Set<Integer>> getMatchingColumnsByRowIndex(CharSequence s) {
         updateIndexForSequence(s);
-        return index.getValues(s).getRowsInSet();
+        return index.getValues(s).getRowColumnMap();
     }
 
     //rows have been inserted to the source model

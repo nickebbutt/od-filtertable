@@ -30,7 +30,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Arrays;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.text.DecimalFormat;
@@ -67,24 +66,24 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testCaseInsensitiveFiltering() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
         assertEquals(STRING1_MATCH_COUNT, filteredModel.getRowCount());
 
-        filteredModel.setFilterValue("StRiNg1");
+        filteredModel.setSearchTerm("StRiNg1");
         assertEquals(STRING1_MATCH_COUNT, filteredModel.getRowCount());
     }
 
     public void testCaseSensitiveFiltering() {
         filteredModel = new RowFilteringTableModel(testTableModel, true, 1);
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
         assertEquals(STRING1_MATCH_COUNT, filteredModel.getRowCount());
 
-        filteredModel.setFilterValue("StRiNg1");
+        filteredModel.setSearchTerm("StRiNg1");
         assertEquals(0, filteredModel.getRowCount());
     }
 
     public void testRemoveRangeWhereAllRowsWereIncluded() {
-        filteredModel.setFilterValue(STRING2);
+        filteredModel.setSearchTerm(STRING2);
 
         filteredModel.addTableModelListener(mockListener);
         mockery.checking(new Expectations() {{
@@ -100,7 +99,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testRemoveRangeWhereNoRowsWereIncluded() {
-        filteredModel.setFilterValue(STRING2);
+        filteredModel.setSearchTerm(STRING2);
 
         filteredModel.addTableModelListener(mockListener);
         //no expectations-should not be called
@@ -113,7 +112,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testRemoveMixedRange() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
         mockery.checking(new Expectations() {{
@@ -128,7 +127,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testInsertRangeWhereAllRowsPassFilters() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
 
         //All three of the rows in this range contain values which pass the filters, so inserting the range
         //should add three row in the filtered view
@@ -147,7 +146,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testInsertRangeWhereNoRowsPassFilters() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
 
         //No rows in this range pass the filters, so inserting the range
         //should add no rows in the filtered view
@@ -163,7 +162,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testInsertMixedRange() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
          mockery.checking(new Expectations() {{
@@ -181,7 +180,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testSimpleUpdateAffectingRowsInFilteredModel() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         //update affect the first 2 of the three rows passing the filter
         filteredModel.addTableModelListener(mockListener);
@@ -198,7 +197,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testSimpleUpdateAffectingNoRowsInFilteredModel() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -212,7 +211,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingInsertsInFilteredModel() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -229,7 +228,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingDeletesInFilteredModel() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -246,7 +245,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingInsertAndDeleteCausesDataChangedEvent() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -265,7 +264,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     //this is possible provided the range of rows to insert is contiguous,
     //but we should receive the insert event first followed by updates for the surrounding rows
     public void testUpdateCausingUpdateInsertUpdate() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -284,7 +283,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingUpdateInsert() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -301,7 +300,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateRequiringDiscontiguousInsertsCausesDataChangedEvent() {
-        filteredModel.setFilterValue(STRING3);
+        filteredModel.setSearchTerm(STRING3);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -319,7 +318,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingUpdateDeleteUpdate() {
-        filteredModel.setFilterValue(STRING2);
+        filteredModel.setSearchTerm(STRING2);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -338,7 +337,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateCausingDeleteUpdate() {
-        filteredModel.setFilterValue(STRING2);
+        filteredModel.setSearchTerm(STRING2);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -355,7 +354,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testUpdateRequiringDiscontiguousDeletesCausesDataChangeEvent() {
-        filteredModel.setFilterValue(STRING2);
+        filteredModel.setSearchTerm(STRING2);
 
         filteredModel.addTableModelListener(mockListener);
 
@@ -372,7 +371,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testStructureChangedEvent() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
 
         filteredModel.addTableModelListener(mockListener);
         mockery.checking(new Expectations() {{
@@ -405,7 +404,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testInsertFollowedByDelete() {
-         filteredModel.setFilterValue(STRING1);
+         filteredModel.setSearchTerm(STRING1);
 
         //All three of the rows in this range contain values which pass the filters, so inserting the range
         //should add three row in the filtered view
@@ -429,7 +428,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testDeleteFollowedByInsert() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
         filteredModel.addTableModelListener(mockListener);
 
         mockery.checking(new Expectations() {{
@@ -450,7 +449,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     }
 
     public void testDataChangedEvent() {
-        filteredModel.setFilterValue(STRING1);
+        filteredModel.setSearchTerm(STRING1);
 
         filteredModel.addTableModelListener(mockListener);
         mockery.checking(new Expectations() {{
@@ -468,7 +467,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     public void testDateFormatter() throws ParseException {
         FixtureTableModelWithColumnClass fixtureTable = new FixtureTableModelWithColumnClass();
         filteredModel = new RowFilteringTableModel(fixtureTable);
-        filteredModel.setFilterValue("January");
+        filteredModel.setSearchTerm("January");
         assertEquals(0, filteredModel.getRowCount());
 
         filteredModel.setFormatter(new SimpleDateFormat("yyyy-MMMM-dd"), Date.class);
@@ -481,14 +480,14 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
 
         filteredModel.setFormatter(new DecimalFormat("#.#"), Number.class);
         //now the index should contain only numbers formatted to one decimal point
-        filteredModel.setFilterValue("1.2");
+        filteredModel.setSearchTerm("1.2");
         assertEquals(1, filteredModel.getRowCount());
-        filteredModel.setFilterValue("1.23");
+        filteredModel.setSearchTerm("1.23");
         assertEquals(0, filteredModel.getRowCount());
 
-        filteredModel.setFilterValue("4.6"); //round up from .56 by formatter
+        filteredModel.setSearchTerm("4.6"); //round up from .56 by formatter
         assertEquals(1, filteredModel.getRowCount());
-        filteredModel.setFilterValue("4.56");
+        filteredModel.setSearchTerm("4.56");
         assertEquals(0, filteredModel.getRowCount());
 
         filteredModel.clearFormatters();
@@ -511,7 +510,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
     public void testFormattersByColIndexLostOnStructureChangeEventOrNewTableModelSet() throws ParseException {
         FixtureTableModelWithColumnClass fixtureTable = new FixtureTableModelWithColumnClass();
         filteredModel = new RowFilteringTableModel(fixtureTable);
-        filteredModel.setFilterValue("row");
+        filteredModel.setSearchTerm("row");
         assertEquals(2, filteredModel.getRowCount());
 
         filteredModel.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, 2);
@@ -533,7 +532,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         filteredModel = new RowFilteringTableModel(fixtureTable);
 
         filteredModel.setFormatter(new DecimalFormat("#.#"), Number.class);
-        filteredModel.setFilterValue("1.2");
+        filteredModel.setSearchTerm("1.2");
         assertEquals(1, filteredModel.getRowCount());
 
         FixtureTableModelWithColumnClass fixtureTable2 = new FixtureTableModelWithColumnClass();
@@ -549,7 +548,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         filteredModel = new RowFilteringTableModel(fixtureTable);
 
         filteredModel.setFormatter(new DecimalFormat("#.#"), "1");
-        filteredModel.setFilterValue("1.2");
+        filteredModel.setSearchTerm("1.2");
         assertEquals(1, filteredModel.getRowCount());
 
         FixtureTableModelWithColumnClass fixtureTable2 = new FixtureTableModelWithColumnClass();
@@ -566,9 +565,9 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
 
         filteredModel.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, "2", "3");
         //after those columns are excluded by the exlusion formatter, filters set on their contents will fail
-        filteredModel.setFilterValue("row");
+        filteredModel.setSearchTerm("row");
         assertEquals(0, filteredModel.getRowCount());
-        filteredModel.setFilterValue("3.4");
+        filteredModel.setSearchTerm("3.4");
         assertEquals(0, filteredModel.getRowCount());
     }
 
@@ -576,7 +575,7 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         FixtureTableModelWithColumnClass fixtureTable = new FixtureTableModelWithColumnClass();
         filteredModel = new RowFilteringTableModel(fixtureTable);
 
-        filteredModel.setFilterValue("row");
+        filteredModel.setSearchTerm("row");
         assertEquals(2, filteredModel.getRowCount());
         filteredModel.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, String.class);
         assertEquals(0, filteredModel.getRowCount());

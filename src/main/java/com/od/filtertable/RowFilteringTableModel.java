@@ -50,10 +50,11 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     private int[] oldRowMap;
     private BitSet rowStatusBitSet;
     private BitSet oldRowStatusBitSet;
-    private String filterValue;
+    private String searchTerm;
     private TableModelIndexer tableModelIndexer;
     private TableModelListener tableModelListener;
-    private Collection<MutableRowIndex> lastSetOfRowsPassingFilter;
+    private Map<MutableRowIndex, Set<Integer>> matchingColumnsByRowsPassingFilter;
+    private Set[] matchingColumnsByWrappedModelRowIndex;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -80,18 +81,23 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         fireTableStructureChanged();
     }
 
-    public void buildIndex(int initialDepth) {
+    public void buildIndexToDepth(int initialDepth) {
         tableModelIndexer.buildIndex(initialDepth);
     }
 
-    public void setFilterValue(String filterValue) {
-        this.filterValue = filterValue;
+    public void setSearchTerm(String filterValue) {
+        this.searchTerm = filterValue;
         recalculateAndFireDataChanged();
     }
 
-    public void clearFilter() {
-        this.filterValue = null;
+    public void clearSearch() {
+        this.searchTerm = null;
         recalculateAndFireDataChanged();
+    }
+
+    public boolean isCellMatchingSearch(int rowIndex, int colIndex) {
+        Set s = matchingColumnsByWrappedModelRowIndex[rowMap[rowIndex]];
+        return s != null && s.contains(colIndex);
     }
 
     /** Format specified by column index will be lost if a table structure change event occurs **/
@@ -140,27 +146,27 @@ public class RowFilteringTableModel extends CustomEventTableModel {
 
     private void recalculateRowStatusBitSets() {
         setOldBitSetAndRowMap();
-        if ( filterValue == null || filterValue.length() == 0) {
+        if ( searchTerm == null || searchTerm.length() == 0) {
             createInitialRowStatusBitSets();
         } else {
-            lastSetOfRowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
-            createNewRowBitSet();
+            matchingColumnsByRowsPassingFilter = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+            calculateNewRowAndColStatus();
         }
         recalcRowMap();
     }
 
-    //this is an optimisation
-    //in the specific case that a table model data update event which did not insert or delete rows in the source
-    //model and did not change which rows pass or fail the filter, the set of rows containing filter value will be the
-    //same instance as before, and contain mutable row indexes which are unchanged. In this specific but common case
-    //nothing will have changed, so we can skip rebuilding our row maps
     private void recalculateRowStatusBitSetsOnDataChangeUpdate() {
         setOldBitSetAndRowMap();
-        if ( filterValue != null && filterValue.length() > 0) {
-            Collection<MutableRowIndex> newRowsPassingFilter = tableModelIndexer.getRowsContaining(filterValue);
-            if ( newRowsPassingFilter != lastSetOfRowsPassingFilter) {
-                lastSetOfRowsPassingFilter = newRowsPassingFilter;
-                createNewRowBitSet();
+        if ( searchTerm != null && searchTerm.length() > 0) {
+            Map<MutableRowIndex, Set<Integer>> newRowsPassingFilter = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+
+            //in the specific case that the table model data update did not change which cells pass or fail the filter,
+            //the set of mutableRowIndex returned by getRowsInSet will be the same instance as before. Furthermore, since this was
+            //an update rather than insert/delete row event, the mutableRowIndex values will not have changed either
+            //In this common case nothing will have changed from our client table's point of view, so we can skip rebuilding our row maps
+            if ( newRowsPassingFilter != matchingColumnsByRowsPassingFilter) {
+                matchingColumnsByRowsPassingFilter = newRowsPassingFilter;
+                calculateNewRowAndColStatus();
                 recalcRowMap();
             }
         }
@@ -171,10 +177,22 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         oldRowMap = rowMap;
     }
 
+    private void calculateNewRowAndColStatus() {
+        createNewRowBitSet();
+        createNewColStatusByUnderlyingRow();
+    }
+
     private void createNewRowBitSet() {
         rowStatusBitSet = new BitSet(wrappedModel.getRowCount());
-        for ( MutableRowIndex rowIndex : lastSetOfRowsPassingFilter) {
+        for ( MutableRowIndex rowIndex : matchingColumnsByRowsPassingFilter.keySet()) {
             rowStatusBitSet.set(rowIndex.index);
+        }
+    }
+
+    private void createNewColStatusByUnderlyingRow() {
+        matchingColumnsByWrappedModelRowIndex = new Set[wrappedModel.getRowCount()];
+        for ( Map.Entry<MutableRowIndex,Set<Integer>> entry : matchingColumnsByRowsPassingFilter.entrySet()) {
+            matchingColumnsByWrappedModelRowIndex[entry.getKey().index] = entry.getValue();
         }
     }
 

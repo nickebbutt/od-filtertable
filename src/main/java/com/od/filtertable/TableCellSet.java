@@ -22,9 +22,7 @@
 
 package com.od.filtertable;
 
-import java.util.HashSet;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,71 +30,93 @@ import java.util.Set;
  * Date: 10-Sep-2008
  * Time: 11:10:35
  *
- * Each trie node is associated with a set of TableCell, with an instance in the set for each cell which contains the
- * char sequence the trie node represents. Frequently there are updates to the table model/trie index, but these may
- * not affect the trie node which matches the current filter value
+ * Each trie node is associated with a set of TableCell, with an instance in the set for each cell
+ * which contains the char sequence the trie node represents.
  *
- * Nevertheless, following each update, the filtered table model has to interrogate the trie to find the set of rows
- * which match the current filter. Rather than calulating the set every time, this class lazily creates the required
- * set of rows on demand and caches it.
+ * Following each update to the source table model, the TableCellSet for the trie nodes are updated
+ * according to the old/new contents of the cells being updated. The filtered table model then has
+ * to interrogate the trie to find the set of rows which match the current filter - the rowsInSet.
+ * Rather than calculating the set every time, this class lazily creates the required set of rows on
+ * demand and caches it, until an update to the source table actually invalidates the contents.
+ *
+ * One additional point is that the actual row indexes (mutableRowIndex values) may change if there are
+ * inserts/delete to rows in the underlying table, although the cell instances in the set remain unchanged
  */
 class TableCellSet extends HashSet<TableCell> {
 
-    Set<MutableRowIndex> rowsInSet;
+    private HashMap<MutableRowIndex, Set<Integer>> mutableRowsToCols;
 
     @Override
     public boolean add(TableCell o) {
-        rowsInSet = null;               
+        mutableRowsToCols = null;               
         return super.add(o);
     }
 
     @Override
     public boolean remove(Object o) {
-        rowsInSet = null;
+        mutableRowsToCols = null;
         return super.remove(o);
     }
 
     @Override
     public boolean removeAll(Collection c) {
-        rowsInSet = null;
+        mutableRowsToCols = null;
         return super.removeAll(c);
     }
 
     @Override
     public boolean addAll(Collection<? extends TableCell> c) {
-        rowsInSet = null;
+        mutableRowsToCols = null;
         return super.addAll(c);
     }
 
     @Override
     public boolean retainAll(Collection c) {
-        rowsInSet = null;
+        mutableRowsToCols = null;
         return super.retainAll(c);
     }
 
     @Override
     public void clear() {
-        rowsInSet = null;
+        mutableRowsToCols = null;
         super.clear();
     }
 
-    /**
-     * @return the Set of mutable row indexes.
-     * If the set contents has not changed since last time this method was called, the same instance will be returned.
-     * However in this case, if there have been row inserts or deletes to the source model, the values of the mutable
-     * row indexes contained may have changed
-     */
-    public Set<MutableRowIndex> getRowsInSet() {
-        if ( rowsInSet == null ) {
-            rowsInSet = findRowsInSet();
+    public boolean containsCell(int rowIndex, int colIndex) {
+        boolean result = false;
+        for ( TableCell c : this) {
+            if ( c.getCol() == colIndex && c.getRow() == rowIndex) {
+                result = true;
+                break;
+            }
         }
-        return rowsInSet;
+        return result;
     }
 
-    private Set<MutableRowIndex> findRowsInSet() {
-        Set<MutableRowIndex> rows = new HashSet<MutableRowIndex>();
+    /**
+     * @return the Map of MutableRowIndex to the set of cols which pass the filters for that row
+     *
+     * If the TableCellSet contents has not changed since last time this method was called (the same cells are matching),
+     * the same map instance will be returned. However the actual values of the mutableRowIndex keys may have been adjusted due
+     * to row inserts/deletes in the source model
+     */
+    public HashMap<MutableRowIndex, Set<Integer>> getRowColumnMap() {
+        if ( mutableRowsToCols == null ) {
+            mutableRowsToCols = findRowsInSet();
+        }
+        return mutableRowsToCols;
+    }
+
+    //remember, there is only one instance of MutableRowIndex per row which is shared by the cells in that row
+    private HashMap<MutableRowIndex, Set<Integer>> findRowsInSet() {
+        HashMap<MutableRowIndex, Set<Integer>> rows = new HashMap<MutableRowIndex, Set<Integer>>();
         for (TableCell c : this) {
-            rows.add(c.getMutableRowIndex());
+            Set<Integer> colSet = rows.get(c.getMutableRowIndex());
+            if ( colSet == null) {
+                colSet = new HashSet<Integer>();
+                rows.put(c.getMutableRowIndex(), colSet);
+            }
+            colSet.add(c.getCol());
         }
         return rows;
     }

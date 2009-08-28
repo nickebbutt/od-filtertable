@@ -62,12 +62,12 @@ public class FilterTestUI {
 
             public void insertUpdate(DocumentEvent e) {
                 long start=System.currentTimeMillis();
-                filteredModel.setFilterValue(textField.getText());
+                filteredModel.setSearchTerm(textField.getText());
                 System.out.println("filter: " + (System.currentTimeMillis() - start) + " millis");
             }
 
             public void removeUpdate(DocumentEvent e) {
-                filteredModel.setFilterValue(textField.getText());
+                filteredModel.setSearchTerm(textField.getText());
             }
 
             public void changedUpdate(DocumentEvent e) {

@@ -44,10 +44,7 @@ import java.awt.event.ActionEvent;
  */
 public class TimedIndexTrimmer {
 
-    private final List<WeakReference<RowFilteringTableModel>> filteredModels =
-            Collections.synchronizedList(
-                    new ArrayList<WeakReference<RowFilteringTableModel>>()
-            );
+    private final List<WeakReference<RowFilteringTableModel>> filteredModels = new ArrayList<WeakReference<RowFilteringTableModel>>();
 
     private final int trimPeriodMillis;
     private Timer timer;
@@ -62,7 +59,9 @@ public class TimedIndexTrimmer {
     }
 
     public void addModel(RowFilteringTableModel rowFilteringTableModel) {
-        filteredModels.add(new WeakReference<RowFilteringTableModel>(rowFilteringTableModel));
+        synchronized(filteredModels) {
+            filteredModels.add(new WeakReference<RowFilteringTableModel>(rowFilteringTableModel));
+        }
     }
 
     public void startIndexTrimming() {

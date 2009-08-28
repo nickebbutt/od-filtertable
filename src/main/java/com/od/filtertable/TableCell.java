@@ -36,8 +36,10 @@ package com.od.filtertable;
  * Since these go into sets it would be tempting to add equals and hashcode..
  * That would usually be a good idea, but in this case that temptation is from the dark side of the force
  * RowIndex is mutable, and will change on inserts and deletes, & hashcode by col alone will make the hashcode
- * implentation inefficient for tables with a lot of rows. A true jedi is happy with instance equality,
- * which is a design decision here
+ * implentation inefficient for tables with a lot of rows. If you try this, you will probably find that the
+ * performance of the tests decreases by a factor of ten, since many of the cells will end up in the same hash
+ * buckets, degrading the performance of TableCellSet.
+ * For this reason, instance equality is used for TableCell.
  */
 class TableCell {
 
