@@ -78,4 +78,11 @@ public abstract class CustomEventTableModel extends AbstractTableModel {
         return createTableModelEvent(this, TableModelEvent.HEADER_ROW, TableModelEvent.HEADER_ROW, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE );
     }
 
+    /**
+     * @return are these two objects equal, or both null
+     */
+    public static boolean equals(Object o1, Object o2) {
+        return (o1 == null) ? (o2 == null) : o1.equals(o2);
+    }
+
 }

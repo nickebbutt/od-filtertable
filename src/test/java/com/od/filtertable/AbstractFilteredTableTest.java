@@ -25,9 +25,7 @@ package com.od.filtertable;
 import junit.framework.TestCase;
 
 import javax.swing.table.TableModel;
-import java.util.Collection;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +37,7 @@ public abstract class AbstractFilteredTableTest extends TestCase {
 
     protected FixtureTableModel testTableModel;
     private String tableModelPath;
+    protected RowFilteringTableModel filteredModel;
 
     public AbstractFilteredTableTest(String tableModelPath) {
         this.tableModelPath = tableModelPath;
@@ -64,20 +63,20 @@ public abstract class AbstractFilteredTableTest extends TestCase {
     private void doTearDown() {
     }
 
-    protected int getFirstRow(Collection<TableCell> cells) {
-        TableCell[] sortedCells = getRowSortedTableCells(cells);
+    protected int getFirstRow(Collection<MutableTableCell> cells) {
+        MutableTableCell[] sortedCells = getRowSortedTableCells(cells);
         return sortedCells[0].getRow();
     }
 
-    protected int getLastRow(Collection<TableCell> cells) {
-        TableCell[] sortedCells = getRowSortedTableCells(cells);
+    protected int getLastRow(Collection<MutableTableCell> cells) {
+        MutableTableCell[] sortedCells = getRowSortedTableCells(cells);
         return sortedCells[sortedCells.length-1].getRow();
     }
 
-    private TableCell[] getRowSortedTableCells(Collection<TableCell> cells) {
-        TableCell[] sortedCells = cells.toArray(new TableCell[cells.size()]);
-        Arrays.sort(sortedCells, new Comparator<TableCell>() {
-            public int compare(TableCell o1, TableCell o2) {
+    private MutableTableCell[] getRowSortedTableCells(Collection<MutableTableCell> cells) {
+        MutableTableCell[] sortedCells = cells.toArray(new MutableTableCell[cells.size()]);
+        Arrays.sort(sortedCells, new Comparator<MutableTableCell>() {
+            public int compare(MutableTableCell o1, MutableTableCell o2) {
                 return ((Integer)o1.getRow()).compareTo(o2.getRow());
             }
         });
@@ -98,5 +97,23 @@ public abstract class AbstractFilteredTableTest extends TestCase {
             }
         }
         return result;
+    }
+
+    protected void assertMatchesSearch(TableCell... cells) {
+        Set<TableCell> expectedCells = new HashSet<TableCell>(Arrays.asList(cells));
+
+        for ( int row = 0; row < filteredModel.getRowCount(); row ++) {
+            for ( int col = 0 ; col < filteredModel.getColumnCount(); col++) {
+                if ( filteredModel.isCellMatchingSearch(row, col)) {
+                    if ( ! expectedCells.remove(new TableCell(row, col)) ) {
+                        fail("According to model cell at row " + row + " col " + col + " contains search term, which we are not expecting");
+                    }
+                }
+            }
+        }
+
+        if (expectedCells.size() > 0 ) {
+            fail("According to model cells " + expectedCells + " do not contain search term, and we are expecting them to match");
+        }
     }
 }

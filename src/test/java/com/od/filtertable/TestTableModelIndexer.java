@@ -25,7 +25,7 @@ package com.od.filtertable;
 import java.util.*;
 
 import com.od.filtertable.TableModelIndexer;
-import com.od.filtertable.TableCell;
+import com.od.filtertable.MutableTableCell;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,7 +51,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         testRowIndexes(indexer);
 
         start = System.currentTimeMillis();
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
         System.out.println("Find took " + (System.currentTimeMillis() - start) + " millis");
 
@@ -65,19 +65,19 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
     public void testReindexCells() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 0);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
 
         //now change the value in 10 of those 128 cells so that it no longer matches, and reindex the cells
-        TableCell[] cellArray = cells.toArray(new TableCell[IT_Strips_match_count]);
+        MutableTableCell[] cellArray = cells.toArray(new MutableTableCell[IT_Strips_match_count]);
         String newValue = "wibble";
         for ( int loop=0; loop < 10; loop ++ ) {
             testTableModel.setValueAt(newValue, cellArray[loop].getRow(), cellArray[loop].getCol());
             indexer.reIndexCell(cellArray[loop].getRow(), cellArray[loop].getCol());
 
-            //note that after reindexing, the value stored in the TableCell instance has been updated to reflect the
-            //new value in the TableModel. The old value previously cached in TableCell was used during the reIndex
-            //operation, to remove the old TableCell references from the index, before reindexing with the new value
+            //note that after reindexing, the value stored in the MutableTableCell instance has been updated to reflect the
+            //new value in the TableModel. The old value previously cached in MutableTableCell was used during the reIndex
+            //operation, to remove the old MutableTableCell references from the index, before reindexing with the new value
             assertEquals(newValue, cellArray[loop].getValue());
         }
 
@@ -87,7 +87,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
     public void testInsertRow() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
         int lastMatchingRow = getLastRow(cells);
         assertEquals(IT_Strips_last_row_matching, lastMatchingRow);
@@ -109,7 +109,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
     public void testInsertRows() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 2);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
         int lastMatchingRow = getLastRow(cells);
         assertEquals(IT_Strips_last_row_matching, lastMatchingRow);
@@ -182,7 +182,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
     public void testRemoveRow() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
         int firstMatchingRow = getFirstRow(cells);
         int lastMatchingRow = getLastRow(cells);
@@ -203,7 +203,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
      public void testRemoveRows() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
         int firstMatchingRow = getFirstRow(cells);
         int lastMatchingRow = getLastRow(cells);
@@ -230,7 +230,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 0);
 
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, "2");
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(0, cells.size());
         clearFormattersAndCheckRowCount(indexer);
     }
@@ -239,7 +239,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
 
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, 2);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(0, cells.size());
         clearFormattersAndCheckRowCount(indexer);
     }
@@ -248,14 +248,14 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
 
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, String.class);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(0, cells.size());
         clearFormattersAndCheckRowCount(indexer);
     }
 
     public void testIndexTrimmingDoesNotAffectSearch() {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 2);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());
 
         indexer.trimIndexToInitialDepth();
@@ -270,7 +270,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         TableModelIndexer indexer = new TableModelIndexer(testTableModel, 1);
 
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, 2);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(0, cells.size());
 
         indexer.tableStructureChanged();
@@ -291,7 +291,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, "2");
         indexer.setFormatter(FilterFormatter.EXCLUDE_FROM_FILTER_INDEX, String.class);
-        Collection<TableCell> cells = indexer.getCellsContaining(IT_STRIPS);
+        Collection<MutableTableCell> cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(0, cells.size());
 
         indexer.tableStructureChanged();
@@ -303,7 +303,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceNotChangedIfUpdateDoesNotAffectFilteredView() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, Set<Integer>> tableCollsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> tableCollsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         tableModel.setValueAt("wibble", 8, 1);
         indexer.reIndexCell(8, 1);
         assertTrue(tableCollsByRow == indexer.getMatchingColumnsByRowIndex("string4"));
@@ -312,7 +312,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceChangedIfUpdateCausesNewRowToPassFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, Set<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
 
         tableModel.setValueAt("string4", 8, 1);
         indexer.reIndexCell(8, 1);
@@ -322,7 +322,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
      public void testSetOfRowIndexesInstanceChangedIfUpdateCausesOldRowToFailFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, Set<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         tableModel.setValueAt("string5", 9, 1);
         indexer.reIndexCell(9, 1);
         assertFalse(colsByRow == indexer.getMatchingColumnsByRowIndex("string4"));
@@ -331,11 +331,11 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnInsertOfNewRowWhichFailsFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, Set<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.insertRow(1, new ArrayList<Object>(Arrays.asList(new String[] {"wibble", "wibble"})));
         indexer.insertRows(1,1);
-         Map<MutableRowIndex, Set<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow == newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));
@@ -347,11 +347,11 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnDeleteOfNewRowWhichFailsFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, Set<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.removeRow(1); tableModel.removeRow(2);
         indexer.removeRows(1,2);
-         Map<MutableRowIndex, Set<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow == newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));
@@ -363,11 +363,11 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
      public void testSetOfRowIndexesInstanceChangedAndMutableRowIndexValuesChangedOnDeleteOfRowWhichUsedToPassFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, Set<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.removeRow(9); tableModel.removeRow(9);
         indexer.removeRows(9,10);
-        Map<MutableRowIndex, Set<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow != newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));
@@ -376,7 +376,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         assertTrue(rowsIndexesInNewFilterView.contains(9));
     }
 
-    private Set<Integer> getRowSet(Map<MutableRowIndex, Set<Integer>> tableRows) {
+    private Set<Integer> getRowSet(Map<MutableRowIndex, TreeSet<Integer>> tableRows) {
         HashSet<Integer> rows = new HashSet<Integer>();
         for (MutableRowIndex i : tableRows.keySet() ) {
             rows.add(i.index);
@@ -386,7 +386,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
 
 
     private void clearFormattersAndCheckRowCount(TableModelIndexer indexer) {
-        Collection<TableCell> cells;
+        Collection<MutableTableCell> cells;
         indexer.clearFormatters();
         cells = indexer.getCellsContaining(IT_STRIPS);
         assertEquals(IT_Strips_match_count, cells.size());

@@ -40,9 +40,9 @@ public class TableModelIndexer {
     private FilterColumnConfig filterColumnConfig;
     private int initialIndexDepth;
     private boolean caseSensitive;
-    private CharTrie<TableCell, TableCellSet> index = new TableCellSetTrieNode(false);
+    private CharTrie<MutableTableCell, TableCellSet> index = new TableCellSetTrieNode(false);
     private MutableCharSequence mutableCharRange = new MutableCharSequence();
-    protected TableCell[][] tableCells;
+    protected MutableTableCell[][] tableCells;
     protected int size;
 
     public TableModelIndexer(TableModel tableModel, int initialIndexDepth) {
@@ -75,7 +75,7 @@ public class TableModelIndexer {
     //re-build the index to the current initial depth
     public void buildIndex() {
         index = new TableCellSetTrieNode(caseSensitive);
-        tableCells = new TableCell[((tableModel.getRowCount() * 3) / 2) + 1][tableModel.getColumnCount()];
+        tableCells = new MutableTableCell[((tableModel.getRowCount() * 3) / 2) + 1][tableModel.getColumnCount()];
         size = tableModel.getRowCount();
         populateWithTableCellsAndAddToIndex(0, size - 1);
     }
@@ -83,7 +83,7 @@ public class TableModelIndexer {
     /**
      * @return A TableCellSet of matching cells for the char sequence supplied
      */
-    public Collection<TableCell> getCellsContaining(CharSequence s) {
+    public Collection<MutableTableCell> getCellsContaining(CharSequence s) {
         updateIndexForSequence(s);
         return index.getValues(s);
     }
@@ -95,7 +95,7 @@ public class TableModelIndexer {
      * If the matching cells have changed then a new instance will be returned.
      * @return a Map of MutableRowIndex to set columns which contain the CharSequence.
      */
-    public Map<MutableRowIndex, Set<Integer>> getMatchingColumnsByRowIndex(CharSequence s) {
+    public Map<MutableRowIndex, TreeSet<Integer>> getMatchingColumnsByRowIndex(CharSequence s) {
         updateIndexForSequence(s);
         return index.getValues(s).getRowColumnMap();
     }
@@ -171,7 +171,7 @@ public class TableModelIndexer {
 
     private void freeTableCellsForGarbageCollector(int removedRowCount) {
         for ( int row=size - 1; row >= size - removedRowCount; row -- ) {
-            tableCells[row] = new TableCell[tableModel.getColumnCount()];
+            tableCells[row] = new MutableTableCell[tableModel.getColumnCount()];
         }
     }
 
@@ -180,7 +180,7 @@ public class TableModelIndexer {
         for ( int row = startRow; row <= endRow; row ++) {
             MutableRowIndex rowIndex = new MutableRowIndex(row);
             for ( int col = 0; col < tableModel.getColumnCount(); col ++) {
-                tableCells[row][col] = new TableCell(rowIndex, col);
+                tableCells[row][col] = new MutableTableCell(rowIndex, col);
                 refreshTableCellValue(row, col);
                 addToIndex(tableCells[row][col], initialIndexDepth);
             }
@@ -197,7 +197,7 @@ public class TableModelIndexer {
 
     private void createNewTableCellRows(int startIndex, int endIndex) {
         for ( int row=startIndex; row <= endIndex; row ++) {
-            tableCells[row] = new TableCell[tableModel.getColumnCount()];
+            tableCells[row] = new MutableTableCell[tableModel.getColumnCount()];
         }
     }
 
@@ -213,7 +213,7 @@ public class TableModelIndexer {
         }
     }
 
-    private void addToIndex(TableCell cell, int maxDepth) {
+    private void addToIndex(MutableTableCell cell, int maxDepth) {
         cell.setIndexedDepth(maxDepth);
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
@@ -225,7 +225,7 @@ public class TableModelIndexer {
         }
     }
 
-    private void removeFromIndex(TableCell cell) {
+    private void removeFromIndex(MutableTableCell cell) {
         int depthToRemove = cell.getIndexedDepth();
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
@@ -237,7 +237,7 @@ public class TableModelIndexer {
         }
     }
 
-    private void readFormattedCellValueIntoCharRange(TableCell cell) {
+    private void readFormattedCellValueIntoCharRange(MutableTableCell cell) {
         FilterFormatter formatter = filterColumnConfig.getFormatter(cell.getCol());
         CharSequence chars = formatter.format(cell.getValue());
         mutableCharRange.setSegment(chars);
@@ -251,7 +251,7 @@ public class TableModelIndexer {
     private void ensureCapacity(int newSize) {
         if ( newSize > tableCells.length ) {
             int newCapacity = Math.max((tableCells.length * 3)/2 + 1, newSize);
-            TableCell[][] newTableCells = new TableCell[newCapacity][tableModel.getRowCount()];
+            MutableTableCell[][] newTableCells = new MutableTableCell[newCapacity][tableModel.getRowCount()];
             System.arraycopy(tableCells, 0, newTableCells, 0, size);
             this.tableCells = newTableCells;
         }
@@ -265,9 +265,9 @@ public class TableModelIndexer {
             int newIndexDepth = s.length();
 
             //iterate array since concurrent modification exeception is possible
-            Collection<TableCell> cellCollection = index.getValues(subString);
-            TableCell[] cells = cellCollection.toArray(new TableCell[cellCollection.size()]);
-            for ( TableCell cell : cells ) {
+            Collection<MutableTableCell> cellCollection = index.getValues(subString);
+            MutableTableCell[] cells = cellCollection.toArray(new MutableTableCell[cellCollection.size()]);
+            for ( MutableTableCell cell : cells ) {
                 if ( cell.getIndexedDepth() < newIndexDepth ) {
                     addToIndex(cell, newIndexDepth);
                 }

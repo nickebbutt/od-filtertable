@@ -53,8 +53,8 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     private String searchTerm;
     private TableModelIndexer tableModelIndexer;
     private TableModelListener tableModelListener;
-    private Map<MutableRowIndex, Set<Integer>> matchingRowsAndCols;
-    private Set[] matchingColumnsByWrappedModelRowIndex;
+    private Map<MutableRowIndex, TreeSet<Integer>> matchingRowsAndCols;
+    private TreeSet[] matchingColumnsByWrappedModelRowIndex;
     private boolean filter = true;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
@@ -68,8 +68,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     public RowFilteringTableModel(TableModel wrappedModel, boolean isCaseSensitive, int initialIndexDepth) {
         this.wrappedModel = wrappedModel;
         this.tableModelIndexer = new TableModelIndexer(wrappedModel, isCaseSensitive, initialIndexDepth);
-        createInitialRowStatusBitSets();
-        recalcRowMap();
+        initializeNonFilteredRowMap();
         addWrappedModelListener();
     }
 
@@ -86,9 +85,11 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         tableModelIndexer.buildIndex(initialDepth);
     }
 
-    public void setSearchTerm(String filterValue) {
-        this.searchTerm = filterValue;
-        recalculateAndFireDataChanged();
+    public void setSearchTerm(String searchTerm) {
+        if ( ! equals(searchTerm, this.searchTerm)) {
+            this.searchTerm = searchTerm;
+            recalculateAndFireDataChanged();
+        }
     }
 
     /**
@@ -97,8 +98,51 @@ public class RowFilteringTableModel extends CustomEventTableModel {
      * the isCellMatchingSearch to be used to implement find functionality
      */
     public void setFilterRows(boolean filter) {
-        this.filter = filter;
-        recalculateAndFireDataChanged();
+        if ( filter != this.filter) {
+            this.filter = filter;
+            recalculateAndFireDataChanged();
+        }
+    }
+
+    /**
+     * @return the next matching TableCell instance starting at the cell provided, or null if no cells
+     * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
+     */
+    public TableCell findNextMatchingCell(TableCell lastMatch) {
+        lastMatch = lastMatch != null ? lastMatch : new TableCell(0,0);
+        return getNextMatchingCell(0, lastMatch.getRow(), lastMatch.getCol() + 1);
+    }
+
+    /**
+     * @return the first matching TableCell instance starting from cell 0,0 - or null if no cells match the current search
+     */
+    public TableCell findFirstMatchingCell() {
+        return getNextMatchingCell(0, 0, 0);
+    }
+
+    private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol) {
+        TableCell result = null;
+        if (isSearchTermSet() && rowsSearched <= getRowCount()) {
+            result = getNextMatchInRow(currentRow, currentCol);
+            if (result == null) {
+                result = getNextMatchingCell(rowsSearched + 1, (currentRow + 1) % getRowCount(), 0);
+            }
+        }
+        return result;
+    }
+
+    private TableCell getNextMatchInRow(int currentRow, int currentCol) {
+        TableCell result = null;
+        TreeSet<Integer> colsForThisRow = matchingColumnsByWrappedModelRowIndex[rowMap[currentRow]];
+        if (colsForThisRow != null) {
+            List<Integer> colList = new ArrayList<Integer>(colsForThisRow);
+            int searchResult = Collections.binarySearch(colList, currentCol);
+            searchResult = searchResult < 0 ? (-searchResult) - 1 : searchResult;
+            if (searchResult != colList.size()) {
+                result = new TableCell(currentRow, colList.get(searchResult));
+            }
+        }
+        return result;
     }
 
     public void clearSearch() {
@@ -162,8 +206,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
             setOldBitSetAndRowMap();
             doSearchAndRecalculate(true);
         } else {
-            createInitialRowStatusBitSets();
-            recalcRowMap();
+            initializeNonFilteredRowMap();
         }
     }
 
@@ -179,7 +222,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     //true, since view row indexes will generally change, even if the matching cells are unaffected
     private void doSearchAndRecalculate(boolean forceRecalculate) {
 
-        Map<MutableRowIndex, Set<Integer>> newMatchingRowsAndCols = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+        Map<MutableRowIndex, TreeSet<Integer>> newMatchingRowsAndCols = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
 
         boolean matchesHaveChanged = newMatchingRowsAndCols != matchingRowsAndCols;
         if ( forceRecalculate || matchesHaveChanged) {
@@ -188,8 +231,15 @@ public class RowFilteringTableModel extends CustomEventTableModel {
             if ( filter ) {
                 createNewRowBitSet();
                 recalcRowMap();
+            } else {
+                initializeNonFilteredRowMap();
             }
         }
+    }
+
+    private void initializeNonFilteredRowMap() {
+        createInitialRowStatusBitSets();
+        recalcRowMap();
     }
 
     private boolean isSearchTermSet() {
@@ -209,8 +259,8 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     }
 
     private void createNewMatchingColumnsByRow() {
-        matchingColumnsByWrappedModelRowIndex = new Set[wrappedModel.getRowCount()];
-        for ( Map.Entry<MutableRowIndex,Set<Integer>> entry : matchingRowsAndCols.entrySet()) {
+        matchingColumnsByWrappedModelRowIndex = new TreeSet[wrappedModel.getRowCount()];
+        for ( Map.Entry<MutableRowIndex,TreeSet<Integer>> entry : matchingRowsAndCols.entrySet()) {
             matchingColumnsByWrappedModelRowIndex[entry.getKey().index] = entry.getValue();
         }
     }

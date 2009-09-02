@@ -28,7 +28,7 @@ package com.od.filtertable;
  * Date: 10-Sep-2008
  * Time: 10:51:11
  */
-class TableCellSetTrieNode extends AbstractTrieNode<TableCell, TableCellSet> {
+class TableCellSetTrieNode extends AbstractTrieNode<MutableTableCell, TableCellSet> {
 
     private static final TableCellSet emptyCollection = new TableCellSet();
 
@@ -48,7 +48,7 @@ class TableCellSetTrieNode extends AbstractTrieNode<TableCell, TableCellSet> {
         return emptyCollection;
     }
 
-    protected AbstractTrieNode<TableCell, TableCellSet> createChildNode(boolean caseSensitive, int depth, char c) {
+    protected AbstractTrieNode<MutableTableCell, TableCellSet> createChildNode(boolean caseSensitive, int depth, char c) {
         return new TableCellSetTrieNode(caseSensitive, depth, c);
     }
 }

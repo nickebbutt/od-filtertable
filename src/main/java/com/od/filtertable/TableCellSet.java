@@ -42,12 +42,12 @@ import java.util.*;
  * One additional point is that the actual row indexes (mutableRowIndex values) may change if there are
  * inserts/delete to rows in the underlying table, although the cell instances in the set remain unchanged
  */
-class TableCellSet extends HashSet<TableCell> {
+class TableCellSet extends HashSet<MutableTableCell> {
 
-    private HashMap<MutableRowIndex, Set<Integer>> mutableRowsToCols;
+    private HashMap<MutableRowIndex, TreeSet<Integer>> mutableRowsToCols;
 
     @Override
-    public boolean add(TableCell o) {
+    public boolean add(MutableTableCell o) {
         mutableRowsToCols = null;               
         return super.add(o);
     }
@@ -65,7 +65,7 @@ class TableCellSet extends HashSet<TableCell> {
     }
 
     @Override
-    public boolean addAll(Collection<? extends TableCell> c) {
+    public boolean addAll(Collection<? extends MutableTableCell> c) {
         mutableRowsToCols = null;
         return super.addAll(c);
     }
@@ -84,7 +84,7 @@ class TableCellSet extends HashSet<TableCell> {
 
     public boolean containsCell(int rowIndex, int colIndex) {
         boolean result = false;
-        for ( TableCell c : this) {
+        for ( MutableTableCell c : this) {
             if ( c.getCol() == colIndex && c.getRow() == rowIndex) {
                 result = true;
                 break;
@@ -100,7 +100,7 @@ class TableCellSet extends HashSet<TableCell> {
      * the same map instance will be returned. However the actual values of the mutableRowIndex keys may have been adjusted due
      * to row inserts/deletes in the source model
      */
-    public HashMap<MutableRowIndex, Set<Integer>> getRowColumnMap() {
+    public HashMap<MutableRowIndex, TreeSet<Integer>> getRowColumnMap() {
         if ( mutableRowsToCols == null ) {
             mutableRowsToCols = findRowsInSet();
         }
@@ -108,12 +108,12 @@ class TableCellSet extends HashSet<TableCell> {
     }
 
     //remember, there is only one instance of MutableRowIndex per row which is shared by the cells in that row
-    private HashMap<MutableRowIndex, Set<Integer>> findRowsInSet() {
-        HashMap<MutableRowIndex, Set<Integer>> rows = new HashMap<MutableRowIndex, Set<Integer>>();
-        for (TableCell c : this) {
-            Set<Integer> colSet = rows.get(c.getMutableRowIndex());
+    private HashMap<MutableRowIndex, TreeSet<Integer>> findRowsInSet() {
+        HashMap<MutableRowIndex, TreeSet<Integer>> rows = new HashMap<MutableRowIndex, TreeSet<Integer>>();
+        for (MutableTableCell c : this) {
+            TreeSet<Integer> colSet = rows.get(c.getMutableRowIndex());
             if ( colSet == null) {
-                colSet = new HashSet<Integer>();
+                colSet = new TreeSet<Integer>();
                 rows.put(c.getMutableRowIndex(), colSet);
             }
             colSet.add(c.getCol());
