@@ -13,16 +13,41 @@ import java.util.Arrays;
  * Date: 28-Aug-2009
  * Time: 17:33:07
  */
-public class TestMatchesSearch extends TestCase {
+public class TestFilterModeAndIsMatching extends TestCase {
 
     private RowFilteringTableModel filteredModel;
 
-    public void testMatchingIndexes() {
+    public void testMatchingIndexesWithFiltering() {
         FixtureTableModel f = new TableParser().readBoard("/testMatchesSearch1.csv");
         filteredModel = new RowFilteringTableModel(f);
 
         filteredModel.setSearchTerm("one");
         assertMatches(new Cell(0, 1), new Cell(1,1));
+
+        filteredModel.setSearchTerm("three");
+        assertMatches(new Cell(0, 2), new Cell(1, 2));
+    }
+
+    public void testMatchingIndexesWithoutFiltering() {
+        FixtureTableModel f = new TableParser().readBoard("/testMatchesSearch1.csv");
+        filteredModel = new RowFilteringTableModel(f);
+        filteredModel.setFilterRows(false);
+
+        filteredModel.setSearchTerm("one");
+        assertMatches(new Cell(0, 1), new Cell(2,1));
+
+        filteredModel.setSearchTerm("three");
+        assertMatches(new Cell(1, 2), new Cell(2, 2));
+    }
+
+    public void testSearchTermRetainedWhenFilterRowsModeChanged() {
+        FixtureTableModel f = new TableParser().readBoard("/testMatchesSearch1.csv");
+        filteredModel = new RowFilteringTableModel(f);
+        filteredModel.setFilterRows(false);
+        filteredModel.setSearchTerm("three");
+        assertMatches(new Cell(1, 2), new Cell(2, 2));
+        filteredModel.setFilterRows(true);
+        assertMatches(new Cell(0, 2), new Cell(1, 2));
     }
 
     private void assertMatches(Cell... cells) {
@@ -51,8 +76,6 @@ public class TestMatchesSearch extends TestCase {
             this.row = row;
             this.col = col;
         }
-
-
 
         @Override
         public boolean equals(Object o) {

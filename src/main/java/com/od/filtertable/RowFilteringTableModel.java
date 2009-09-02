@@ -53,8 +53,9 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     private String searchTerm;
     private TableModelIndexer tableModelIndexer;
     private TableModelListener tableModelListener;
-    private Map<MutableRowIndex, Set<Integer>> matchingColumnsByRowsPassingFilter;
+    private Map<MutableRowIndex, Set<Integer>> matchingRowsAndCols;
     private Set[] matchingColumnsByWrappedModelRowIndex;
+    private boolean filter = true;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -87,6 +88,16 @@ public class RowFilteringTableModel extends CustomEventTableModel {
 
     public void setSearchTerm(String filterValue) {
         this.searchTerm = filterValue;
+        recalculateAndFireDataChanged();
+    }
+
+    /**
+     * Set whether this model should filter out rows which do not contain a cell matching the search term
+     * Even if filtering is false, the indexing will still take place provided a search term is set, in order to enable
+     * the isCellMatchingSearch to be used to implement find functionality
+     */
+    public void setFilterRows(boolean filter) {
+        this.filter = filter;
         recalculateAndFireDataChanged();
     }
 
@@ -145,31 +156,44 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     }
 
     private void recalculateRowStatusBitSets() {
-        setOldBitSetAndRowMap();
-        if ( searchTerm == null || searchTerm.length() == 0) {
-            createInitialRowStatusBitSets();
+        //we still want to do the search even if filter is false, since find functionality may
+        //still use isCellMatchingSearch
+        if ( isSearchTermSet() ) {
+            setOldBitSetAndRowMap();
+            doSearchAndRecalculate(true);
         } else {
-            matchingColumnsByRowsPassingFilter = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
-            calculateNewRowAndColStatus();
+            createInitialRowStatusBitSets();
+            recalcRowMap();
         }
-        recalcRowMap();
     }
 
-    private void recalculateRowStatusBitSetsOnDataChangeUpdate() {
-        setOldBitSetAndRowMap();
-        if ( searchTerm != null && searchTerm.length() > 0) {
-            Map<MutableRowIndex, Set<Integer>> newRowsPassingFilter = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+    private void recalculateRowStatusBitSetsOnDataUpdate() {
+        if ( isSearchTermSet() ) {
+            setOldBitSetAndRowMap();
+            doSearchAndRecalculate(false);
+        }
+    }
 
-            //in the specific case that the table model data update did not change which cells pass or fail the filter,
-            //the set of mutableRowIndex returned by getRowsInSet will be the same instance as before. Furthermore, since this was
-            //an update rather than insert/delete row event, the mutableRowIndex values will not have changed either
-            //In this common case nothing will have changed from our client table's point of view, so we can skip rebuilding our row maps
-            if ( newRowsPassingFilter != matchingColumnsByRowsPassingFilter) {
-                matchingColumnsByRowsPassingFilter = newRowsPassingFilter;
-                calculateNewRowAndColStatus();
+    //for a data update, forceRecalc should be false - we only need to recalc if the data change affects the set of
+    //cells which match the search term. For a structural change or an insert/delete event, forceRecalc should be
+    //true, since view row indexes will generally change, even if the matching cells are unaffected
+    private void doSearchAndRecalculate(boolean forceRecalculate) {
+
+        Map<MutableRowIndex, Set<Integer>> newMatchingRowsAndCols = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+
+        boolean matchesHaveChanged = newMatchingRowsAndCols != matchingRowsAndCols;
+        if ( forceRecalculate || matchesHaveChanged) {
+            matchingRowsAndCols = newMatchingRowsAndCols;
+            createNewMatchingColumnsByRow();
+            if ( filter ) {
+                createNewRowBitSet();
                 recalcRowMap();
             }
         }
+    }
+
+    private boolean isSearchTermSet() {
+        return searchTerm != null && searchTerm.length() > 0;
     }
 
     private void setOldBitSetAndRowMap() {
@@ -177,21 +201,16 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         oldRowMap = rowMap;
     }
 
-    private void calculateNewRowAndColStatus() {
-        createNewRowBitSet();
-        createNewColStatusByUnderlyingRow();
-    }
-
     private void createNewRowBitSet() {
         rowStatusBitSet = new BitSet(wrappedModel.getRowCount());
-        for ( MutableRowIndex rowIndex : matchingColumnsByRowsPassingFilter.keySet()) {
+        for ( MutableRowIndex rowIndex : matchingRowsAndCols.keySet()) {
             rowStatusBitSet.set(rowIndex.index);
         }
     }
 
-    private void createNewColStatusByUnderlyingRow() {
+    private void createNewMatchingColumnsByRow() {
         matchingColumnsByWrappedModelRowIndex = new Set[wrappedModel.getRowCount()];
-        for ( Map.Entry<MutableRowIndex,Set<Integer>> entry : matchingColumnsByRowsPassingFilter.entrySet()) {
+        for ( Map.Entry<MutableRowIndex,Set<Integer>> entry : matchingRowsAndCols.entrySet()) {
             matchingColumnsByWrappedModelRowIndex[entry.getKey().index] = entry.getValue();
         }
     }
@@ -241,7 +260,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
                                 tableModelIndexer.reIndexCell(row,col);
                             }
                         }
-                        recalculateRowStatusBitSetsOnDataChangeUpdate();
+                        recalculateRowStatusBitSetsOnDataUpdate();
                         generateEventsForUpdate(firstRow, lastRow, TableModelEvent.ALL_COLUMNS);
                         clearOldRowBitsetAndRowMap();
                     }
@@ -251,7 +270,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
                         for ( int row=firstRow; row <=lastRow; row++ ) {
                             tableModelIndexer.reIndexCell(row,column);
                         }
-                        recalculateRowStatusBitSetsOnDataChangeUpdate();
+                        recalculateRowStatusBitSetsOnDataUpdate();
                         generateEventsForUpdate(firstRow, lastRow, column);
                         clearOldRowBitsetAndRowMap();
                     }
