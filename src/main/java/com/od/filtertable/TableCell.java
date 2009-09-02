@@ -8,6 +8,8 @@ package com.od.filtertable;
  */
 public class TableCell {
 
+    public static final TableCell NO_MATCH_TABLE_CELL = new TableCell(-1, -1);
+
     private final int row;
     private final int col;
 
@@ -22,6 +24,10 @@ public class TableCell {
 
     public int getCol() {
         return col;
+    }
+
+    public boolean isCellAt(int row, int col) {
+        return this.row == row && this.col == col;
     }
 
     @Override

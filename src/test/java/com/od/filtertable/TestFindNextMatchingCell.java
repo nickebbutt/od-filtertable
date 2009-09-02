@@ -9,9 +9,9 @@ import java.util.HashSet;
  * Date: 02-Sep-2009
  * Time: 16:01:19
  */
-public class TestGetNextMatchingCell extends AbstractFilteredTableTest {
+public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
 
-    public TestGetNextMatchingCell() {
+    public TestFindNextMatchingCell() {
         super("/testMatchesSearch1.csv");
     }
 
@@ -57,6 +57,20 @@ public class TestGetNextMatchingCell extends AbstractFilteredTableTest {
 
         matchingCell = filteredModel.findNextMatchingCell(null);
         assertNull(matchingCell);
+    }
+
+    public void testFindWithFilterRowsEnabled() {
+        filteredModel.setSearchTerm("three");
+        assertMatchesSearch(new TableCell(0, 2), new TableCell(1, 2));
+
+        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        assertEquals(matchingCell, new TableCell(0, 2));
+
+        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        assertEquals(matchingCell, new TableCell(1, 2));
+
+        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        assertEquals(matchingCell, new TableCell(0, 2));
     }
 
     public void testFindPerformance() {

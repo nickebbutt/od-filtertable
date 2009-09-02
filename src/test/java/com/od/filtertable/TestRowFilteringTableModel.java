@@ -42,7 +42,7 @@ import java.text.DecimalFormat;
  */
 public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
 
-    private static final boolean LOG_EVENTS = true;
+    private static final boolean LOG_EVENTS = false;
     private RowFilteringTableModel filteredModel;
     private Mockery mockery = new Mockery();
     private TableModelListener mockListener;

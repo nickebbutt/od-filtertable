@@ -56,6 +56,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     private Map<MutableRowIndex, TreeSet<Integer>> matchingRowsAndCols;
     private TreeSet[] matchingColumnsByWrappedModelRowIndex;
     private boolean filter = true;
+    private TableCell lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -104,35 +105,49 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         }
     }
 
-    /**
-     * @return the next matching TableCell instance starting at the cell provided, or null if no cells
-     * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
-     */
-    public TableCell findNextMatchingCell(TableCell lastMatch) {
-        lastMatch = lastMatch != null ? lastMatch : new TableCell(0,0);
-        return getNextMatchingCell(0, lastMatch.getRow(), lastMatch.getCol() + 1);
+    public boolean isLastFindResult(int row, int col) {
+        return lastFindResult.isCellAt(row, col);
     }
 
     /**
-     * @return the first matching TableCell instance starting from cell 0,0 - or null if no cells match the current search
+     * @return the next matching TableCell instance starting at the stored last find result, or TableCell.NO_MATCH_TABLE_CELL if no cells
+     * match the current search.
+     */
+    public TableCell findNextMatchingCell() {
+        //the Math.max just takes care of it if lastFindResult = NO_MATCH_TABLE_CELL
+        return getNextMatchingCell(0, Math.max(lastFindResult.getRow(), 0), lastFindResult.getCol() + 1);
+    }
+
+    /**
+     * @return the next matching TableCell instance starting at the cell provided, or TableCell.NO_MATCH_TABLE_CELL if no cells
+     * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
+     */
+    public TableCell findNextMatchingCell(TableCell cell) {
+        cell = cell != null ? cell : new TableCell(0,0);
+        return getNextMatchingCell(0, cell.getRow(), cell.getCol() + 1);
+    }
+
+    /**
+     * @return the first matching TableCell instance starting from cell 0,0 - or TableCell.NO_MATCH_TABLE_CELL if no cells match the current search
      */
     public TableCell findFirstMatchingCell() {
         return getNextMatchingCell(0, 0, 0);
     }
 
     private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol) {
-        TableCell result = null;
+        TableCell result = TableCell.NO_MATCH_TABLE_CELL;
         if (isSearchTermSet() && rowsSearched <= getRowCount()) {
             result = getNextMatchInRow(currentRow, currentCol);
-            if (result == null) {
+            if (result == TableCell.NO_MATCH_TABLE_CELL) {
                 result = getNextMatchingCell(rowsSearched + 1, (currentRow + 1) % getRowCount(), 0);
             }
         }
+        lastFindResult = result;
         return result;
     }
 
     private TableCell getNextMatchInRow(int currentRow, int currentCol) {
-        TableCell result = null;
+        TableCell result = TableCell.NO_MATCH_TABLE_CELL;
         TreeSet<Integer> colsForThisRow = matchingColumnsByWrappedModelRowIndex[rowMap[currentRow]];
         if (colsForThisRow != null) {
             List<Integer> colList = new ArrayList<Integer>(colsForThisRow);
