@@ -119,36 +119,50 @@ public class RowFilteringTableModel extends CustomEventTableModel {
      */
     public TableCell findNextMatchingCell(TableCell cell) {
         cell = cell != null && cell != TableCell.NO_MATCH_TABLE_CELL ? cell : new TableCell(0,0);
-        return getNextMatchingCell(0, cell.getRow(), cell.getCol() + 1);
+        return getNextMatchingCell(0, cell.getRow(), cell.getCol() + 1, true);
+    }
+
+    public TableCell findPreviousMatchingCell(TableCell cell) {
+        cell = cell != null && cell != TableCell.NO_MATCH_TABLE_CELL ? cell : new TableCell(0,0);
+        return getNextMatchingCell(0, cell.getRow(), cell.getCol() - 1, false);
     }
 
     /**
      * @return the first matching TableCell instance starting from cell 0,0 - or TableCell.NO_MATCH_TABLE_CELL if no cells match the current search
      */
     public TableCell findFirstMatchingCell() {
-        return getNextMatchingCell(0, 0, 0);
+        return getNextMatchingCell(0, 0, 0, true);
     }
 
-    private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol) {
+    private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol, boolean isForwards) {
         TableCell result = TableCell.NO_MATCH_TABLE_CELL;
         if (isSearchTermSet() && rowsSearched <= getRowCount()) {
-            result = getNextMatchInRow(currentRow, currentCol);
+            result = getNextMatchInRow(currentRow, currentCol, isForwards);
             if (result == TableCell.NO_MATCH_TABLE_CELL) {
-                result = getNextMatchingCell(rowsSearched + 1, (currentRow + 1) % getRowCount(), 0);
+                int nextRow = isForwards ?
+                        (currentRow + 1) % getRowCount() :
+                        currentRow == 0 ? getRowCount() - 1 : currentRow - 1;
+                int nextCol = isForwards ? 0 : getColumnCount() - 1;
+                result = getNextMatchingCell(rowsSearched + 1, nextRow, nextCol, isForwards);
             }
         }
         lastFindResult = result;
         return result;
     }
 
-    private TableCell getNextMatchInRow(int currentRow, int currentCol) {
+    //returns the cell at currentRow / currentCol if it matches, or the next matching cell in the row
+    //either forwards or backwards, including
+    private TableCell getNextMatchInRow(int currentRow, int currentCol, boolean isForwards) {
         TableCell result = TableCell.NO_MATCH_TABLE_CELL;
         TreeSet<Integer> colsForThisRow = matchingColumnsByWrappedModelRowIndex[rowMap[currentRow]];
         if (colsForThisRow != null) {
             List<Integer> colList = new ArrayList<Integer>(colsForThisRow);
             int searchResult = Collections.binarySearch(colList, currentCol);
-            searchResult = searchResult < 0 ? (-searchResult) - 1 : searchResult;
-            if (searchResult != colList.size()) {
+            if ( searchResult < 0 ) { //if the exact cell we are looking for is not found
+                searchResult = isForwards ?  (-searchResult) - 1 : (-searchResult - 2);
+            }
+
+            if (searchResult >= 0 && searchResult < colList.size()) {
                 result = new TableCell(currentRow, colList.get(searchResult));
             }
         }
@@ -229,7 +243,8 @@ public class RowFilteringTableModel extends CustomEventTableModel {
 
     //for a data update, forceRecalc should be false - we only need to recalc if the data change affects the set of
     //cells which match the search term. For a structural change or an insert/delete event, forceRecalc should be
-    //true, since view row indexes will generally change, even if the matching cells are unaffected
+    //true, since wrapped model row indexes will generally change, even if the matching cells are unaffected
+    //so we need to rebuild our maps
     private void doSearchAndRecalculate(boolean forceRecalculate) {
 
         Map<MutableRowIndex, TreeSet<Integer>> newMatchingRowsAndCols = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
@@ -239,7 +254,6 @@ public class RowFilteringTableModel extends CustomEventTableModel {
             matchingRowsAndCols = newMatchingRowsAndCols;
             createNewMatchingColumnsByRow();
             if ( filter ) {
-                lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
                 createNewRowBitSet();
                 recalcRowMap();
             } else {
@@ -249,7 +263,6 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     }
 
     private void initializeNonFilteredRowMap() {
-        lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
         createInitialRowStatusBitSets();
         recalcRowMap();
     }
