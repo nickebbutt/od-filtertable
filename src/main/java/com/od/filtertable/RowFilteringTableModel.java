@@ -109,13 +109,8 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         return lastFindResult.isCellAt(row, col);
     }
 
-    /**
-     * @return the next matching TableCell instance starting at the stored last find result, or TableCell.NO_MATCH_TABLE_CELL if no cells
-     * match the current search.
-     */
-    public TableCell findNextMatchingCell() {
-        //the Math.max just takes care of it if lastFindResult = NO_MATCH_TABLE_CELL
-        return getNextMatchingCell(0, Math.max(lastFindResult.getRow(), 0), lastFindResult.getCol() + 1);
+    public TableCell getLastFindResult() {
+        return lastFindResult;
     }
 
     /**
@@ -123,7 +118,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
      * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
      */
     public TableCell findNextMatchingCell(TableCell cell) {
-        cell = cell != null ? cell : new TableCell(0,0);
+        cell = cell != null && cell != TableCell.NO_MATCH_TABLE_CELL ? cell : new TableCell(0,0);
         return getNextMatchingCell(0, cell.getRow(), cell.getCol() + 1);
     }
 
@@ -244,6 +239,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
             matchingRowsAndCols = newMatchingRowsAndCols;
             createNewMatchingColumnsByRow();
             if ( filter ) {
+                lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
                 createNewRowBitSet();
                 recalcRowMap();
             } else {
@@ -253,6 +249,7 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     }
 
     private void initializeNonFilteredRowMap() {
+        lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
         createInitialRowStatusBitSets();
         recalcRowMap();
     }

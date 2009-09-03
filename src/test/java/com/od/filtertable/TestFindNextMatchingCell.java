@@ -53,10 +53,10 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         assertMatchesSearch();
 
         TableCell matchingCell = filteredModel.findFirstMatchingCell();
-        assertNull(matchingCell);
+        assertEquals(TableCell.NO_MATCH_TABLE_CELL, matchingCell);
 
         matchingCell = filteredModel.findNextMatchingCell(null);
-        assertNull(matchingCell);
+        assertEquals(TableCell.NO_MATCH_TABLE_CELL, matchingCell);
     }
 
     public void testFindWithFilterRowsEnabled() {
