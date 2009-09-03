@@ -135,8 +135,12 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     }
 
     private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol, boolean isForwards) {
+        //in case we are finding the next cell from a cell location which is no longer valid in the table
+        //currentRow may be >= rowCount, but we just carry on the find from the nearest valid row
+        currentRow = Math.min(getRowCount() - 1, currentRow);
+
         TableCell result = TableCell.NO_MATCH_TABLE_CELL;
-        if (isSearchTermSet() && rowsSearched <= getRowCount()) {
+        if (currentRow >= 0 && isSearchTermSet() && rowsSearched <= getRowCount()) {
             result = getNextMatchInRow(currentRow, currentCol, isForwards);
             if (result == TableCell.NO_MATCH_TABLE_CELL) {
                 int nextRow = isForwards ?

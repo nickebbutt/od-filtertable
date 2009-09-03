@@ -1,5 +1,6 @@
 package com.od.filtertable;
 
+import javax.swing.table.DefaultTableModel;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -167,6 +168,16 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         assertTrue(System.currentTimeMillis() - startTime < 200);
     }
 
+    public void testEmptyTable() {
+        DefaultTableModel d = new DefaultTableModel(new Object[] { "col1", "col2"}, 0);
+        RowFilteringTableModel f = new RowFilteringTableModel(d);
+        f.setSearchTerm("test");
+        TableCell lastCell = f.findFirstMatchingCell();
+        assertEquals(TableCell.NO_MATCH_TABLE_CELL, lastCell);
+
+        lastCell = f.findPreviousMatchingCell(lastCell);
+        assertEquals(TableCell.NO_MATCH_TABLE_CELL, lastCell);
+    }
 
     public void testModulus() {
         System.out.println(-12 % 10);
