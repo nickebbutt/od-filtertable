@@ -113,6 +113,10 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         return lastFindResult;
     }
 
+    public void clearLastFind() {
+        this.lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
+    }
+
     /**
      * @return the next matching TableCell instance starting at the cell provided, or TableCell.NO_MATCH_TABLE_CELL if no cells
      * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
