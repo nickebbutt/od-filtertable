@@ -12,12 +12,15 @@ import java.util.Set;
  */
 public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
 
+    private MatchFinder matchFinder;
+
     public TestFindNextMatchingCell() {
         super("/testMatchesSearch1.csv");
     }
 
     public void doSetUp() {
         filteredModel = new RowFilteringTableModel(testTableModel);
+        matchFinder = new MatchFinder(new DirectColumnSource(filteredModel), filteredModel);
     }
 
     public void testFindNextCellWithWrapAround() {
@@ -25,13 +28,13 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("three");
         assertMatchesSearch(new TableCell(1, 2), new TableCell(2, 2));
 
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(2, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 2));
     }
 
@@ -40,13 +43,13 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("three");
         assertMatchesSearch(new TableCell(1, 2), new TableCell(2, 2));
 
-        TableCell matchingCell = filteredModel.findPreviousMatchingCell(TableCell.NO_MATCH_TABLE_CELL);
+        TableCell matchingCell = matchFinder.findPreviousMatchingCell(TableCell.NO_MATCH_TABLE_CELL);
         assertEquals(matchingCell, new TableCell(2, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findPreviousMatchingCell(matchingCell);
+        matchingCell = matchFinder.findPreviousMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(2, 2));
     }
 
@@ -55,15 +58,15 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("seven");
         assertMatchesSearch(new TableCell(1, 1));
 
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
         assertEquals(matchingCell, new TableCell(1, 1));
 
         //find next cell after matchingCell
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 1));
 
         //find previous cell after matchingCell
-        matchingCell = filteredModel.findPreviousMatchingCell(matchingCell);
+        matchingCell = matchFinder.findPreviousMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 1));
     }
 
@@ -72,13 +75,13 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("itsallgonehorriblywrong");
         assertMatchesSearch();
 
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, matchingCell);
 
-        matchingCell = filteredModel.findNextMatchingCell(null);
+        matchingCell = matchFinder.findNextMatchingCell(null);
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, matchingCell);
 
-        matchingCell = filteredModel.findPreviousMatchingCell(matchingCell);
+        matchingCell = matchFinder.findPreviousMatchingCell(matchingCell);
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, matchingCell);
     }
 
@@ -86,19 +89,19 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("three");
         assertMatchesSearch(new TableCell(0, 2), new TableCell(1, 2));
 
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
         assertEquals(matchingCell, new TableCell(0, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+        matchingCell = matchFinder.findNextMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(0, 2));
 
-        matchingCell = filteredModel.findPreviousMatchingCell(matchingCell);
+        matchingCell = matchFinder.findPreviousMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findPreviousMatchingCell(matchingCell);
+        matchingCell = matchFinder.findPreviousMatchingCell(matchingCell);
         assertEquals(matchingCell, new TableCell(0, 2));
     }
 
@@ -106,19 +109,19 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("three");
         assertMatchesSearch(new TableCell(0, 2), new TableCell(1, 2));
 
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
         assertEquals(matchingCell, new TableCell(0, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(filteredModel.getLastFindResult());
+        matchingCell = matchFinder.findNextMatchingCell(matchFinder.getLastFindResult());
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findNextMatchingCell(filteredModel.getLastFindResult());
+        matchingCell = matchFinder.findNextMatchingCell(matchFinder.getLastFindResult());
         assertEquals(matchingCell, new TableCell(0, 2));
 
-        matchingCell = filteredModel.findPreviousMatchingCell(filteredModel.getLastFindResult());
+        matchingCell = matchFinder.findPreviousMatchingCell(matchFinder.getLastFindResult());
         assertEquals(matchingCell, new TableCell(1, 2));
 
-        matchingCell = filteredModel.findPreviousMatchingCell(filteredModel.getLastFindResult());
+        matchingCell = matchFinder.findPreviousMatchingCell(matchFinder.getLastFindResult());
         assertEquals(matchingCell, new TableCell(0, 2));
     }
 
@@ -134,18 +137,18 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setSearchTerm("three");
         filteredModel.setFilterRows(false);
         assertMatchesSearch(new TableCell(1, 2), new TableCell(2, 2));
-        TableCell matchingCell = filteredModel.findFirstMatchingCell();
-        assertEquals(matchingCell, filteredModel.getLastFindResult());
+        TableCell matchingCell = matchFinder.findFirstMatchingCell();
+        assertEquals(matchingCell, matchFinder.getLastFindResult());
 
         testTableModel.fireTableDataChanged();
-        assertEquals(matchingCell, filteredModel.getLastFindResult());
+        assertEquals(matchingCell, matchFinder.getLastFindResult());
 
         testTableModel.fireTableStructureChanged();
-        assertEquals(matchingCell, filteredModel.getLastFindResult());
+        assertEquals(matchingCell, matchFinder.getLastFindResult());
 
         testTableModel.setValueAt("wibble", 1, 2);
         testTableModel.fireTableCellUpdated(1, 2);
-        assertEquals(matchingCell, filteredModel.getLastFindResult());
+        assertEquals(matchingCell, matchFinder.getLastFindResult());
     }
 
     public void testFindPerformance() {
@@ -155,11 +158,13 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setFilterRows(false);
         filteredModel.setSearchTerm("eu");
 
+        MatchFinder matchFinder = new MatchFinder(new DirectColumnSource(filteredModel), filteredModel);
+
         long startTime = System.currentTimeMillis();
         TableCell matchingCell = null;
         Set<TableCell> matchingCells = new HashSet<TableCell>();
         for ( int loop=0; loop < 100000; loop++) {
-            matchingCell = filteredModel.findNextMatchingCell(matchingCell);
+            matchingCell = matchFinder.findNextMatchingCell(matchingCell);
             matchingCells.add(matchingCell);
         }
 
@@ -172,14 +177,32 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         DefaultTableModel d = new DefaultTableModel(new Object[] { "col1", "col2"}, 0);
         RowFilteringTableModel f = new RowFilteringTableModel(d);
         f.setSearchTerm("test");
-        TableCell lastCell = f.findFirstMatchingCell();
+        MatchFinder matchFinder = new MatchFinder(new DirectColumnSource(f), f);
+        TableCell lastCell = matchFinder.findFirstMatchingCell();
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, lastCell);
 
-        lastCell = f.findPreviousMatchingCell(lastCell);
+        lastCell = matchFinder.findPreviousMatchingCell(lastCell);
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, lastCell);
     }
 
     public void testModulus() {
         System.out.println(-12 % 10);
+    }
+
+    private class DirectColumnSource implements MatchFinder.ColumnSource {
+
+        private RowFilteringTableModel filteredModel;
+
+        public DirectColumnSource(RowFilteringTableModel filteredModel) {
+            this.filteredModel = filteredModel;
+        }
+
+        public int getTableModelColumnIndex(int columnModelIndex) {
+            return columnModelIndex;
+        }
+
+        public int getColumnCount() {
+            return filteredModel.getColumnCount();
+        }
     }
 }

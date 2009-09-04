@@ -43,7 +43,7 @@ import java.util.*;
  * for best filter performance, a higher up-front depth is best, but for large tables (tens of thousands of
  * cells) this may require a large amount of heap space. Most systems will opt for a trade-off between the two.
  */
-public class RowFilteringTableModel extends CustomEventTableModel {
+public class RowFilteringTableModel extends CustomEventTableModel implements IndexedTableModel {
 
     private TableModel wrappedModel;
     private int[] rowMap;
@@ -56,7 +56,6 @@ public class RowFilteringTableModel extends CustomEventTableModel {
     private Map<MutableRowIndex, TreeSet<Integer>> matchingRowsAndCols;
     private TreeSet[] matchingColumnsByWrappedModelRowIndex;
     private boolean filter = true;
-    private TableCell lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -105,86 +104,18 @@ public class RowFilteringTableModel extends CustomEventTableModel {
         }
     }
 
-    public boolean isLastFindResult(int row, int col) {
-        return lastFindResult.isCellAt(row, col);
-    }
-
-    public TableCell getLastFindResult() {
-        return lastFindResult;
-    }
-
-    public void clearLastFind() {
-        this.lastFindResult = TableCell.NO_MATCH_TABLE_CELL;
-    }
-
-    /**
-     * @return the next matching TableCell instance starting at the cell provided, or TableCell.NO_MATCH_TABLE_CELL if no cells
-     * match the current search. The returned cell may eqaul the lastMatch if there is only one matching cell
-     */
-    public TableCell findNextMatchingCell(TableCell cell) {
-        cell = cell != null && cell != TableCell.NO_MATCH_TABLE_CELL ? cell : new TableCell(0,0);
-        return getNextMatchingCell(0, cell.getRow(), cell.getCol() + 1, true);
-    }
-
-    public TableCell findPreviousMatchingCell(TableCell cell) {
-        cell = cell != null && cell != TableCell.NO_MATCH_TABLE_CELL ? cell : new TableCell(0,0);
-        return getNextMatchingCell(0, cell.getRow(), cell.getCol() - 1, false);
-    }
-
-    /**
-     * @return the first matching TableCell instance starting from cell 0,0 - or TableCell.NO_MATCH_TABLE_CELL if no cells match the current search
-     */
-    public TableCell findFirstMatchingCell() {
-        return getNextMatchingCell(0, 0, 0, true);
-    }
-
-    private TableCell getNextMatchingCell(int rowsSearched, int currentRow, int currentCol, boolean isForwards) {
-        //in case we are finding the next cell from a cell location which is no longer valid in the table
-        //currentRow may be >= rowCount, but we just carry on the find from the nearest valid row
-        currentRow = Math.min(getRowCount() - 1, currentRow);
-
-        TableCell result = TableCell.NO_MATCH_TABLE_CELL;
-        if (currentRow >= 0 && isSearchTermSet() && rowsSearched <= getRowCount()) {
-            result = getNextMatchInRow(currentRow, currentCol, isForwards);
-            if (result == TableCell.NO_MATCH_TABLE_CELL) {
-                int nextRow = isForwards ?
-                        (currentRow + 1) % getRowCount() :
-                        currentRow == 0 ? getRowCount() - 1 : currentRow - 1;
-                int nextCol = isForwards ? 0 : getColumnCount() - 1;
-                result = getNextMatchingCell(rowsSearched + 1, nextRow, nextCol, isForwards);
-            }
-        }
-        lastFindResult = result;
-        return result;
-    }
-
-    //returns the cell at currentRow / currentCol if it matches, or the next matching cell in the row
-    //either forwards or backwards, including
-    private TableCell getNextMatchInRow(int currentRow, int currentCol, boolean isForwards) {
-        TableCell result = TableCell.NO_MATCH_TABLE_CELL;
-        TreeSet<Integer> colsForThisRow = matchingColumnsByWrappedModelRowIndex[rowMap[currentRow]];
-        if (colsForThisRow != null) {
-            List<Integer> colList = new ArrayList<Integer>(colsForThisRow);
-            int searchResult = Collections.binarySearch(colList, currentCol);
-            if ( searchResult < 0 ) { //if the exact cell we are looking for is not found
-                searchResult = isForwards ?  (-searchResult) - 1 : (-searchResult - 2);
-            }
-
-            if (searchResult >= 0 && searchResult < colList.size()) {
-                result = new TableCell(currentRow, colList.get(searchResult));
-            }
-        }
-        return result;
-    }
-
     public void clearSearch() {
         this.searchTerm = null;
         recalculateAndFireDataChanged();
     }
 
     public boolean isCellMatchingSearch(int rowIndex, int colIndex) {
-        Set s = matchingColumnsByWrappedModelRowIndex[rowMap[rowIndex]];
-        return s != null && s.contains(colIndex);
+        boolean result = false;
+        if ( isSearchTermSet() ) {
+            Set s = matchingColumnsByWrappedModelRowIndex[rowMap[rowIndex]];
+            result = s != null && s.contains(colIndex);
+        }
+        return result;
     }
 
     /** Format specified by column index will be lost if a table structure change event occurs **/
