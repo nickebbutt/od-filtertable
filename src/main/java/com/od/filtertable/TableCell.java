@@ -18,10 +18,16 @@ public class TableCell {
         this.col = col;
     }
 
+    /*
+     * @return the table row index
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * @return column index in the table column model
+     */
     public int getCol() {
         return col;
     }
