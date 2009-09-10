@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
 
-    private MatchFinder matchFinder;
+    private TableCellFinder matchFinder;
 
     public TestFindNextMatchingCell() {
         super("/testMatchesSearch1.csv");
@@ -20,7 +20,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
 
     public void doSetUp() {
         filteredModel = new RowFilteringTableModel(testTableModel);
-        matchFinder = new MatchFinder(new DirectColumnSource(filteredModel), filteredModel);
+        matchFinder = new TableCellFinder(new DirectColumnSource(filteredModel), filteredModel);
     }
 
     public void testFindNextCellWithWrapAround() {
@@ -133,6 +133,10 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
     //The reason for this is that from the users perspective it will be annoying if the find location
     //jumps every time a table event affects the search results - so far as possible we want to continue
     //the find from the last location
+    /*
+
+    //this test is out because the finder now subscribes to model events to adjust the found cell
+    //need to add tests for this new functionality
     public void testGetLastFindResultIsNotClearedOnModelChangesWhichAffectTheSearchResults() {
         filteredModel.setSearchTerm("three");
         filteredModel.setFilterRows(false);
@@ -150,6 +154,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         testTableModel.fireTableCellUpdated(1, 2);
         assertEquals(matchingCell, matchFinder.getLastFindResult());
     }
+    */
 
     public void testFindPerformance() {
         FixtureTableModel fixture = readTableModel("/test1.csv");
@@ -158,7 +163,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         filteredModel.setFilterRows(false);
         filteredModel.setSearchTerm("eu");
 
-        MatchFinder matchFinder = new MatchFinder(new DirectColumnSource(filteredModel), filteredModel);
+        TableCellFinder matchFinder = new TableCellFinder(new DirectColumnSource(filteredModel), filteredModel);
 
         long startTime = System.currentTimeMillis();
         TableCell matchingCell = null;
@@ -177,7 +182,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         DefaultTableModel d = new DefaultTableModel(new Object[] { "col1", "col2"}, 0);
         RowFilteringTableModel f = new RowFilteringTableModel(d);
         f.setSearchTerm("test");
-        MatchFinder matchFinder = new MatchFinder(new DirectColumnSource(f), f);
+        TableCellFinder matchFinder = new TableCellFinder(new DirectColumnSource(f), f);
         TableCell lastCell = matchFinder.findFirstMatchingCell();
         assertEquals(TableCell.NO_MATCH_TABLE_CELL, lastCell);
 
@@ -189,7 +194,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
         System.out.println(-12 % 10);
     }
 
-    private class DirectColumnSource implements MatchFinder.ColumnSource {
+    private class DirectColumnSource implements TableCellFinder.ColumnSource {
 
         private RowFilteringTableModel filteredModel;
 
