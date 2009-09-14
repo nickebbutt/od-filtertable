@@ -56,6 +56,7 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     private Map<MutableRowIndex, TreeSet<Integer>> matchingRowsAndCols;
     private TreeSet[] matchingColumnsByWrappedModelRowIndex;
     private boolean filter = true;
+    private int matchCount;
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -82,7 +83,7 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     public void buildIndexToDepth(int initialDepth) {
-        tableModelIndexer.buildIndex(initialDepth);
+        tableModelIndexer.rebuildIndex(initialDepth);
     }
 
     public void setSearchTerm(String searchTerm) {
@@ -90,6 +91,21 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
             this.searchTerm = searchTerm;
             recalculateAndFireDataChanged();
         }
+    }
+
+    public int getMatchCount() {
+        return matchCount;
+    }
+
+    public void setIncludeSubstringsInSearch(boolean include) {
+        if ( include != tableModelIndexer.isIncludeSubstringsInSearch()) {
+            tableModelIndexer.setIncludeSubstrings(include);
+            recalculateAndFireDataChanged();
+        }
+    }
+
+    public boolean isIncludeSubstringsInSearch() {
+        return tableModelIndexer.isIncludeSubstringsInSearch();
     }
 
     /**
@@ -186,10 +202,12 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     //so we need to rebuild our maps
     private void doSearchAndRecalculate(boolean forceRecalculate) {
 
-        Map<MutableRowIndex, TreeSet<Integer>> newMatchingRowsAndCols = tableModelIndexer.getMatchingColumnsByRowIndex(searchTerm);
+        TableCellSet s = tableModelIndexer.getCellsContaining(searchTerm);
+        Map<MutableRowIndex, TreeSet<Integer>> newMatchingRowsAndCols = s.getRowColumnMap();
 
         boolean matchesHaveChanged = newMatchingRowsAndCols != matchingRowsAndCols;
         if ( forceRecalculate || matchesHaveChanged) {
+            matchCount = s.size();
             matchingRowsAndCols = newMatchingRowsAndCols;
             createNewMatchingColumnsByRow();
             if ( filter ) {
@@ -263,7 +281,7 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
                     }
 
                     public void tableDataChanged(TableModelEvent e) {
-                        tableModelIndexer.buildIndex();
+                        tableModelIndexer.rebuildIndex();
                         recalculateAndFireDataChanged();
                         clearOldRowBitsetAndRowMap();
                     }

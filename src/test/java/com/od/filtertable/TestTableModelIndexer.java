@@ -303,39 +303,39 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceNotChangedIfUpdateDoesNotAffectFilteredView() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, TreeSet<Integer>> tableCollsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> tableCollsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         tableModel.setValueAt("wibble", 8, 1);
         indexer.reIndexCell(8, 1);
-        assertTrue(tableCollsByRow == indexer.getMatchingColumnsByRowIndex("string4"));
+        assertTrue(tableCollsByRow == indexer.getCellsContaining("string4").getRowColumnMap());
     }
 
     public void testSetOfRowIndexesInstanceChangedIfUpdateCausesNewRowToPassFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
 
         tableModel.setValueAt("string4", 8, 1);
         indexer.reIndexCell(8, 1);
-        assertFalse(colsByRow == indexer.getMatchingColumnsByRowIndex("string4"));
+        assertFalse(colsByRow == indexer.getCellsContaining("string4").getRowColumnMap());
     }
 
      public void testSetOfRowIndexesInstanceChangedIfUpdateCausesOldRowToFailFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         tableModel.setValueAt("string5", 9, 1);
         indexer.reIndexCell(9, 1);
-        assertFalse(colsByRow == indexer.getMatchingColumnsByRowIndex("string4"));
+        assertFalse(colsByRow == indexer.getCellsContaining("string4").getRowColumnMap());
     }
 
     public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnInsertOfNewRowWhichFailsFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.insertRow(1, new ArrayList<Object>(Arrays.asList(new String[] {"wibble", "wibble"})));
         indexer.insertRows(1,1);
-         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow == newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));
@@ -347,11 +347,11 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
     public void testSetOfRowIndexesInstanceUnChangedButMutableRowIndexValuesChangedOnDeleteOfNewRowWhichFailsFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.removeRow(1); tableModel.removeRow(2);
         indexer.removeRows(1,2);
-         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+         Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow == newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));
@@ -363,11 +363,11 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
      public void testSetOfRowIndexesInstanceChangedAndMutableRowIndexValuesChangedOnDeleteOfRowWhichUsedToPassFilters() {
         FixtureTableModel tableModel = readTableModel("/filteredTableTestData.csv");
         TableModelIndexer indexer = new TableModelIndexer(tableModel, 1);
-        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> colsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInOldFilterView = getRowSet(colsByRow);
         tableModel.removeRow(9); tableModel.removeRow(9);
         indexer.removeRows(9,10);
-        Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getMatchingColumnsByRowIndex("string4");
+        Map<MutableRowIndex, TreeSet<Integer>> newColsByRow = indexer.getCellsContaining("string4").getRowColumnMap();
         Set<Integer> rowsIndexesInNewFilterView = getRowSet(newColsByRow);
         assertTrue(colsByRow != newColsByRow);
         assertTrue(rowsIndexesInOldFilterView.contains(9));

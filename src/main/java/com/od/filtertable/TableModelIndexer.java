@@ -44,6 +44,7 @@ public class TableModelIndexer {
     private MutableCharSequence mutableCharRange = new MutableCharSequence();
     protected MutableTableCell[][] tableCells;
     protected int size;
+    private boolean includeSubstrings = true;
 
     public TableModelIndexer(TableModel tableModel, int initialIndexDepth) {
         this(tableModel, false, initialIndexDepth);
@@ -53,7 +54,16 @@ public class TableModelIndexer {
         this.tableModel = tableModel;
         this.filterColumnConfig = new FilterColumnConfig(tableModel);
         this.caseSensitive = caseSensitive;
-        buildIndex(initialIndexDepth);
+        rebuildIndex(initialIndexDepth);
+    }
+
+    public void setIncludeSubstrings(boolean include) {
+        this.includeSubstrings = include;
+        rebuildIndex();
+    }
+
+    public boolean isIncludeSubstringsInSearch() {
+        return includeSubstrings;
     }
 
     public void setTableModel(TableModel t) {
@@ -63,17 +73,17 @@ public class TableModelIndexer {
 
     public void tableStructureChanged() {
         filterColumnConfig.tableChanged(tableModel);
-        buildIndex();
+        rebuildIndex();
     }
 
     //re-build the index to the specified initialDepth
-    public void buildIndex(int initialDepth) {
+    public void rebuildIndex(int initialDepth) {
         this.initialIndexDepth = initialDepth;
-        buildIndex();
+        rebuildIndex();
     }
 
     //re-build the index to the current initial depth
-    public void buildIndex() {
+    public void rebuildIndex() {
         index = new TableCellSetTrieNode(caseSensitive);
         tableCells = new MutableTableCell[((tableModel.getRowCount() * 3) / 2) + 1][tableModel.getColumnCount()];
         size = tableModel.getRowCount();
@@ -83,21 +93,9 @@ public class TableModelIndexer {
     /**
      * @return A TableCellSet of matching cells for the char sequence supplied
      */
-    public Collection<MutableTableCell> getCellsContaining(CharSequence s) {
+    public TableCellSet getCellsContaining(CharSequence s) {
         updateIndexForSequence(s);
         return index.getValues(s);
-    }
-
-    /**
-     * If no changes to the table data have affected the matching cells since the last time
-     * this method was called with sequence s, and no re-indexing has taken place, then the collection instance
-     * returned will be the instance as before and will have identical contents.
-     * If the matching cells have changed then a new instance will be returned.
-     * @return a Map of MutableRowIndex to set columns which contain the CharSequence.
-     */
-    public Map<MutableRowIndex, TreeSet<Integer>> getMatchingColumnsByRowIndex(CharSequence s) {
-        updateIndexForSequence(s);
-        return index.getValues(s).getRowColumnMap();
     }
 
     //rows have been inserted to the source model
@@ -126,22 +124,22 @@ public class TableModelIndexer {
 
     public void setFormatter(FilterFormatter filterFormat, Integer... columnIndexes) {
         filterColumnConfig.setFormatter(filterFormat, columnIndexes);
-        buildIndex();
+        rebuildIndex();
     }
 
     public void setFormatter(FilterFormatter filterFormat, Class... columnClasses) {
         filterColumnConfig.setFormatter(filterFormat, columnClasses);
-        buildIndex();
+        rebuildIndex();
     }
 
     public void setFormatter(FilterFormatter filterFormat, String... columnNames) {
         filterColumnConfig.setFormatter(filterFormat, columnNames);
-        buildIndex();
+        rebuildIndex();
     }
 
     public void clearFormatters() {
         filterColumnConfig.clearFormatters();
-        buildIndex();
+        rebuildIndex();
     }
 
     public void trimIndexToInitialDepth() {
@@ -217,7 +215,8 @@ public class TableModelIndexer {
         cell.setIndexedDepth(maxDepth);
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
-            for ( int start = 0; start < mutableCharRange.totalSequenceLength(); start ++ ) {
+            int maxStartLocation = includeSubstrings ? mutableCharRange.totalSequenceLength() : 1;
+            for ( int start = 0; start < maxStartLocation; start ++ ) {
                 mutableCharRange.setStart(start);
                 mutableCharRange.setEnd(Math.min(start + maxDepth, mutableCharRange.totalSequenceLength()));
                 index.addValueForAllPrefixes(mutableCharRange, cell);
@@ -229,7 +228,8 @@ public class TableModelIndexer {
         int depthToRemove = cell.getIndexedDepth();
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
-            for ( int start = 0; start < mutableCharRange.totalSequenceLength(); start ++ ) {
+            int maxStartLocation = includeSubstrings ? mutableCharRange.totalSequenceLength() : 1;
+            for ( int start = 0; start < maxStartLocation; start ++ ) {
                 mutableCharRange.setStart(start);
                 mutableCharRange.setEnd(Math.min(start + depthToRemove, mutableCharRange.totalSequenceLength()));
                 index.removeValueForAllPrefixes(mutableCharRange, cell);

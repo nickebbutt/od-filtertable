@@ -96,9 +96,10 @@ class TableCellSet extends HashSet<MutableTableCell> {
     /**
      * @return the Map of MutableRowIndex to the set of cols which pass the filters for that row
      *
-     * If the TableCellSet contents has not changed since last time this method was called (the same cells are matching),
-     * the same map instance will be returned. However the actual values of the mutableRowIndex keys may have been adjusted due
-     * to row inserts/deletes in the source model
+     * If no changes to the table data have affected the matching cells since the last time
+     * this method was called with sequence s, and no re-indexing has taken place, then the collection instance
+     * returned will be the same instance as before and will have identical contents.
+     * If the matching cells have changed then a new instance will be returned.
      */
     public HashMap<MutableRowIndex, TreeSet<Integer>> getRowColumnMap() {
         if ( mutableRowsToCols == null ) {
