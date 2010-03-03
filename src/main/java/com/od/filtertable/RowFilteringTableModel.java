@@ -190,8 +190,8 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     private void recalculateRowStatusBitSetsOnDataUpdate() {
+        setOldBitSetAndRowMap();
         if ( isSearchTermSet() ) {
-            setOldBitSetAndRowMap();
             doSearchAndRecalculate(false);
         }
     }
