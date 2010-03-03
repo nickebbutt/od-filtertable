@@ -181,8 +181,8 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     private void recalculateRowStatusBitSets() {
         //we still want to do the search even if filter is false, since find functionality may
         //still use isCellMatchingSearch
+        setOldBitSetAndRowMap();
         if ( isSearchTermSet() ) {
-            setOldBitSetAndRowMap();
             doSearchAndRecalculate(true);
         } else {
             initializeNonFilteredRowMap();

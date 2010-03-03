@@ -126,6 +126,23 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         mockery.assertIsSatisfied();
     }
 
+     public void testInsertWhereNoFiltersAreSet() {
+        filteredModel.clearSearch();
+
+        //All three of the rows in this range contain values which pass the filters, so inserting the range
+        //should add three row in the filtered view
+        filteredModel.addTableModelListener(mockListener);
+        mockery.checking(new Expectations() {{
+            one(mockListener).tableChanged(with(equal(new TableModelEventWithEquals(filteredModel, 7, 9, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT))));
+        }});
+        testTableModel.insertRows(7,
+            (ArrayList<Object>)testTableModel.getRow(1).clone(),
+            (ArrayList<Object>)testTableModel.getRow(2).clone(),
+            (ArrayList<Object>)testTableModel.getRow(3).clone()
+        );
+        mockery.assertIsSatisfied();
+    }
+
     public void testInsertRangeWhereAllRowsPassFilters() {
         filteredModel.setSearchTerm(STRING1);
 
@@ -367,6 +384,20 @@ public class TestRowFilteringTableModel extends AbstractFilteredTableTest {
         testTableModel.fireTableRowsUpdated(5, 7);
 
         assertTrue(tableModelsAreEqual(readTableModel("/testUpdateRequiringDiscontiguousDeletesCausesDataChangeEvent.csv"), filteredModel));
+        mockery.assertIsSatisfied();
+    }
+
+    public void testUpdateWhenNoFilterSet() {
+        filteredModel.clearSearch();
+        filteredModel.addTableModelListener(mockListener);
+
+        mockery.checking(new Expectations() {{
+            one(mockListener).tableChanged(with(equal(new TableModelEventWithEquals(filteredModel, 5, 7, -1, TableModelEvent.UPDATE))));
+        }});
+        testTableModel.setValueAt("wibble", 5, 1 );
+        testTableModel.setValueAt("test1", 6, 0 );
+        testTableModel.setValueAt("wibble", 7, 1 );
+        testTableModel.fireTableRowsUpdated(5, 7);
         mockery.assertIsSatisfied();
     }
 
