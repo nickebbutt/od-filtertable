@@ -45,6 +45,7 @@ public class TableModelIndexer {
     protected MutableTableCell[][] tableCells;
     protected int size;
     private boolean includeSubstrings = true;
+    private LinkedList<MutableTableCell> cellsToReindex = new LinkedList<MutableTableCell>();
 
     public TableModelIndexer(TableModel tableModel, int initialIndexDepth) {
         this(tableModel, false, initialIndexDepth);
@@ -264,13 +265,16 @@ public class TableModelIndexer {
 
             int newIndexDepth = s.length();
 
-            //iterate array since concurrent modification exeception is possible
             Collection<MutableTableCell> cellCollection = index.getValues(subString);
-            MutableTableCell[] cells = cellCollection.toArray(new MutableTableCell[cellCollection.size()]);
-            for ( MutableTableCell cell : cells ) {
+            //have to add tol list to avoid concurrent mod
+            for ( MutableTableCell cell : cellCollection ) {
                 if ( cell.getIndexedDepth() < newIndexDepth ) {
-                    addToIndex(cell, newIndexDepth);
+                    cellsToReindex.add(cell);
                 }
+            }
+
+            while(cellsToReindex.size() > 0) {
+                addToIndex(cellsToReindex.remove(0), newIndexDepth);
             }
         }
     }
