@@ -148,14 +148,14 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
                 (ArrayList<Object>)tableModel.getRow(0).clone()
         );
         indexer.insertRows(0, 1);
-        assertEquals(4, indexer.tableCells.length);
+        assertEquals(5, indexer.tableCells.length);
 
         tableModel.insertRows(0,
                 (ArrayList<Object>)tableModel.getRow(0).clone(),
                 (ArrayList<Object>)tableModel.getRow(0).clone()
         );
         indexer.insertRows(0, 1);
-        assertEquals(7, indexer.tableCells.length);
+        assertEquals(5, indexer.tableCells.length);
 
         tableModel.insertRows(0,
                 (ArrayList<Object>)tableModel.getRow(0).clone(),
@@ -163,7 +163,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
                 (ArrayList<Object>)tableModel.getRow(0).clone()
         );
         indexer.insertRows(0, 2);
-        assertEquals(11, indexer.tableCells.length);
+        assertEquals(13, indexer.tableCells.length);
 
         for (int loop=0; loop < 20; loop++ ) {
             tableModel.insertRows(0, (ArrayList<Object>)tableModel.getRow(0).clone()
@@ -171,7 +171,7 @@ public class TestTableModelIndexer extends AbstractFilteredTableTest {
         }
         //the table is growing to more than ((capacity*3)/2)+1 so the next capacity is the total new rows
         indexer.insertRows(0, 19);
-        assertEquals(28, indexer.tableCells.length);
+        assertEquals(43, indexer.tableCells.length);
 
          tableModel.insertRows(0,
                 (ArrayList<Object>)tableModel.getRow(0).clone()
