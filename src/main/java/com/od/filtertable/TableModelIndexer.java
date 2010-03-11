@@ -86,7 +86,8 @@ public class TableModelIndexer {
     //re-build the index to the current initial depth
     public void rebuildIndex() {
         index = new TableCellSetTrieNode(caseSensitive);
-        tableCells = new MutableTableCell[((tableModel.getRowCount() * 3) / 2) + 1][tableModel.getColumnCount()];
+        int currentRowCount = tableModel.getRowCount();
+        tableCells = createExpandedTableCellsArray(currentRowCount);
         size = tableModel.getRowCount();
         populateWithTableCellsAndAddToIndex(0, size - 1);
     }
@@ -248,14 +249,17 @@ public class TableModelIndexer {
         tableCells[row][col].setValue(tableModel.getValueAt(row, col));
     }
 
-    //n.b. see ArrayList.ensureCapacity for the derivation
     private void ensureCapacity(int newSize) {
         if ( newSize > tableCells.length ) {
-            int newCapacity = Math.max((tableCells.length * 3)/2 + 1, newSize);
-            MutableTableCell[][] newTableCells = new MutableTableCell[newCapacity][tableModel.getRowCount()];
+            MutableTableCell[][] newTableCells = createExpandedTableCellsArray(newSize);
             System.arraycopy(tableCells, 0, newTableCells, 0, size);
             this.tableCells = newTableCells;
         }
+    }
+
+    //create a new array with room for future inserts, see ArrayList.ensureCapacity for the derivation
+    private MutableTableCell[][] createExpandedTableCellsArray(int newRowCount) {
+        return new MutableTableCell[((newRowCount * 3) / 2) + 1][tableModel.getColumnCount()];
     }
 
     private void updateIndexForSequence(CharSequence s) {
