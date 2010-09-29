@@ -84,7 +84,7 @@ public class TableCellFinder implements TableModelListener {
                 int nextRow = isForwards ?
                         (currentRow + 1) % indexedTableModel.getRowCount() :
                         currentRow == 0 ? indexedTableModel.getRowCount() - 1 : currentRow - 1;
-                int nextCol = isForwards ? 0 : indexedTableModel.getColumnCount() - 1;
+                int nextCol = isForwards ? 0 : columnSource.getColumnCount() - 1;
                 result = getNextMatchingCell(rowsSearched + 1, nextRow, nextCol, isForwards);
             }
         }
