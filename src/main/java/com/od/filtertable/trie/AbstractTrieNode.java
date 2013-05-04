@@ -20,7 +20,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.od.filtertable;
+package com.od.filtertable.trie;
 
 import java.util.*;
 

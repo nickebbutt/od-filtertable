@@ -22,6 +22,8 @@
 
 package com.od.filtertable;
 
+import com.od.filtertable.trie.AbstractTrieNode;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Nick Ebbutt

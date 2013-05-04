@@ -22,6 +22,9 @@
 
 package com.od.filtertable;
 
+import com.od.filtertable.index.MutableCharSequence;
+import com.od.filtertable.trie.CharTrie;
+
 import javax.swing.table.TableModel;
 import java.util.*;
 

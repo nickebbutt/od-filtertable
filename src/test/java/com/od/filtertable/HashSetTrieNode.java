@@ -22,6 +22,8 @@
 
 package com.od.filtertable;
 
+import com.od.filtertable.trie.AbstractTrieNode;
+
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashSet;

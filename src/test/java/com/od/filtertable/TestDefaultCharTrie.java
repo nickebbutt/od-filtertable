@@ -22,6 +22,7 @@
 
 package com.od.filtertable;
 
+import com.od.filtertable.trie.AbstractTrieNode;
 import junit.framework.TestCase;
 
 import java.util.Set;
