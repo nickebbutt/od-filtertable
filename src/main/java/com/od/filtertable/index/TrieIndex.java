@@ -27,4 +27,7 @@ public interface TrieIndex<V> {
      * Find all the values associated with CharSequence s and any other CharSequence for which s is a prefix
      */
     Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection);
+
+    
+    Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection, int maxMatches);
 }

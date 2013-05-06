@@ -111,6 +111,7 @@ public class SimpleIndex<V> implements TrieIndex<V> {
      * e.g. for the search term 'A' values stored against node 'A' will be added to targetCollection first, followed by 
      * 'AB' and 'AC'
      */
+    @Override
     public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection, int maxMatches) {
         lock.readLock().lock();
         try {
