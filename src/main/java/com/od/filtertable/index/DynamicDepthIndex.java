@@ -120,6 +120,19 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
         return targetCollection;
     }
 
+    @Override
+    public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection, int maxMatches) {
+        Collection<IndexedValue<V>> c = getIndexedValuesForPrefix(s);
+        int matchCount = 0;
+        for ( IndexedValue<V> i : c) {
+            if(matchCount++ < maxMatches) {
+                targetCollection.add(i.getValue());
+            } else {
+                break;
+            }
+        }
+        return targetCollection;    }
+
     private void add(CharSequence s, IndexedValue<V> val) {
         add(s, val, initialDepth, 0);
     }

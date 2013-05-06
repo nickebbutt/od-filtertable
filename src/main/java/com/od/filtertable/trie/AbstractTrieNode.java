@@ -155,6 +155,8 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
                     for ( V value : values) {
                         if (  matchCount++ < maxMatches ) {
                             targetCollection.add(value);    
+                        } else {
+                            break;
                         }
                     }
                     return matchCount < maxMatches;
