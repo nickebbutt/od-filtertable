@@ -13,11 +13,23 @@
     <packaging>jar</packaging>
     <version>1.0.6</version>
     <dependencies> 
-    		<dependency>
+        <dependency>
             <scope>test</scope>
             <groupId>org.jmock</groupId>
             <artifactId>jmock</artifactId>
             <version>2.5.0</version>
-        </dependency> 
+        </dependency>
+        <dependency>
+            <scope>test</scope>
+            <groupId>org.chorusbdd</groupId>
+            <artifactId>chorus</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
+            <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+        </dependency>
     </dependencies>
 </project>

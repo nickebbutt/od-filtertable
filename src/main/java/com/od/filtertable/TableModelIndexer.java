@@ -124,7 +124,7 @@ public class TableModelIndexer {
     public void reIndexCell(int row, int col) {
         removeFromIndex(tableCells[row][col]);
         refreshTableCellValue(row, col);
-        addToIndex(tableCells[row][col], initialIndexDepth);
+        addToIndex(tableCells[row][col], initialIndexDepth, 0);
     }
 
     public void setFormatter(FilterFormatter filterFormat, Integer... columnIndexes) {
@@ -185,7 +185,7 @@ public class TableModelIndexer {
             for ( int col = 0; col < tableModel.getColumnCount(); col ++) {
                 tableCells[row][col] = new MutableTableCell(rowIndex, col);
                 refreshTableCellValue(row, col);
-                addToIndex(tableCells[row][col], initialIndexDepth);
+                addToIndex(tableCells[row][col], initialIndexDepth, 0);
             }
         }
     }
@@ -216,7 +216,12 @@ public class TableModelIndexer {
         }
     }
 
-    private void addToIndex(MutableTableCell cell, int maxDepth) {
+    /**
+     * @param cell           - cell/value to add to the index
+     * @param maxDepth       - maximum depth to index, i.e. index for the first n letters of the char sequence
+     * @param startingDepth  - usually 0, to store cell against all prefixes, but where we have already stored to depth n, may be n + 1 to save work 
+     */
+    private void addToIndex(MutableTableCell cell, int maxDepth, int startingDepth) {
         cell.setIndexedDepth(maxDepth);
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
@@ -224,7 +229,7 @@ public class TableModelIndexer {
             for ( int start = 0; start < maxStartLocation; start ++ ) {
                 mutableCharRange.setStart(start);
                 mutableCharRange.setEnd(Math.min(start + maxDepth, mutableCharRange.totalSequenceLength()));
-                index.addValueForAllPrefixes(mutableCharRange, cell);
+                index.addValueForPrefixesFromDepth(mutableCharRange, cell, startingDepth);
             }
         }
     }
@@ -281,7 +286,7 @@ public class TableModelIndexer {
             }
 
             while(cellsToReindex.size() > 0) {
-                addToIndex(cellsToReindex.remove(0), newIndexDepth);
+                addToIndex(cellsToReindex.remove(0), newIndexDepth, newIndexDepth);
             }
         }
     }

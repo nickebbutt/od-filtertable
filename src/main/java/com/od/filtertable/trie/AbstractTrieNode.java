@@ -51,19 +51,27 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
     }
 
     public void addValue(CharSequence key, V value) {
-       add(key, value, false);
+       add(key, value, key.length());
     }
 
     public void removeValue(CharSequence key, V value) {
-       remove(key, value, false);
+       remove(key, value, key.length());
     }
 
     public void addValueForAllPrefixes(CharSequence key, V value) {
-       add(key, value, true);
+       add(key, value, 0);
     }
 
     public void removeValueForAllPrefixes(CharSequence key, V value) {
-       remove(key, value, true);
+       remove(key, value, 0);
+    }
+
+    public void addValueForPrefixesFromDepth(CharSequence key, V value, int minLength) {
+        add(key, value, minLength);
+    }
+
+    public void removeValueForPrefixesFromDepth(CharSequence key, V value, int minLength) {
+        remove(key, value, minLength);
     }
 
     public void trimToDepth(int maximumDepth) {
@@ -81,30 +89,36 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
     abstract protected C createValuesCollection();
 
 
-    private void add(CharSequence key, V value, boolean addForPrefixes) {
-        if ( depth == key.length()) {
+    private void add(CharSequence key, V value, int addValueMinDepth) {
+        if ( depth >= addValueMinDepth ) {
             values.add(value);
-        } else {
-            if ( addForPrefixes ) {
-                values.add(value);
-            }
+        }
+        
+        if ( depth < key.length()) {
             AbstractTrieNode<V, C> child = getOrCreateChild(key);
-            child.add(key, value, addForPrefixes);
+            child.add(key, value, addValueMinDepth);
         }
     }
 
-    private void remove(CharSequence key, V value, boolean removeForAllPrefixes) {
-        if ( depth == key.length()) {
+    private void remove(CharSequence key, V value, int removeValueMinDepth) {
+        if ( depth >= removeValueMinDepth ) {
             values.remove(value);
-        } else {
-            if ( removeForAllPrefixes ) {
-                values.remove(value);
-            }
+        }
+        
+        if ( depth < key.length()) {
             AbstractTrieNode<V, C> child = getOrCreateChild(key);
-            child.remove(key, value, removeForAllPrefixes);
+            child.remove(key, value, removeValueMinDepth);
         }
     }
 
+    /**
+     * If values have been added 'with prefixes' this node will contain both values stored under the key for this node
+     * (e.g NO) plus the values stored against all substrings, NODE, NOOK, NOODLE etc. 
+     * 
+     * Otherwise values will just be those stored against the key for this node exactly (NO)
+     * 
+     * @return values stored for this key
+     */
     public C getValues(CharSequence key) {
         if ( depth == key.length() ) {
             return values;
@@ -112,6 +126,80 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
             AbstractTrieNode<V, C> n = getChild(getNextChar(key), false);
             return n == null ? getEmptyCollection() : n.getValues(key);
         }
+    }
+
+    public Collection<V> getValuesWithPrefixes(CharSequence key) {
+        Collection<V> collection = createValuesCollection();
+        return getValuesWithPrefixes(key, collection);
+    }
+    
+    /**
+     * This method returns all values stored for key and its substrings, by iterating the descendant nodes under the node matching key.
+     * This is only useful where values have not been added 'with prefixes', although performance will be worse due to the 
+     * need to dynamically iterate and create the result set.
+     */
+    @Override
+    public Collection<V> getValuesWithPrefixes(CharSequence key, final Collection<V> targetCollection) {
+        return getValuesWithPrefixes(key, targetCollection, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public Collection<V> getValuesWithPrefixes(CharSequence key, final Collection<V> targetCollection, final int maxMatches) {
+        CharTrie<V,C> node = getTrieNode(key);
+        if ( node != null) {
+            node.accept(new TrieVisitor<V, C>() {
+                int matchCount = 0;
+                
+                public boolean visit(CharTrie<V, C> trieNode) {
+                    Collection<V> values = ((AbstractTrieNode)trieNode).values;
+                    for ( V value : values) {
+                        if (  matchCount++ < maxMatches ) {
+                            targetCollection.add(value);    
+                        }
+                    }
+                    return matchCount < maxMatches;
+                }
+            });
+        }
+        return targetCollection;
+    }
+    
+    public void accept(TrieVisitor<V, C> v) {
+        boolean continueVisit = v.visit(this);
+        LinkedListNode<V, C> currentChild = headNodeInChildList;
+        while(continueVisit && currentChild != null) {
+            currentChild.value.accept(v);
+            currentChild = currentChild.nextNode;
+        }
+    }
+
+    public void accept(TrieVisitor<V, C> v, CharSequence key, int minDepth) {
+        if ( depth >= minDepth) {
+            v.visit(this);
+        }
+        
+        if ( depth < key.length() ) {
+            AbstractTrieNode<V, C> n = getChild(getNextChar(key), false);
+            if ( n != null) {
+                n.accept(v, key, minDepth);
+            }
+        }
+    }
+
+    /**
+     * @return the trie node representing the key, if it exists
+     */
+    public CharTrie<V, C> getTrieNode(CharSequence key) {
+        CharTrie<V,C> result = null;
+        if ( depth == key.length()) {
+            return this;
+        } else {
+            AbstractTrieNode<V, C> n = getChild(getNextChar(key), false);
+            if ( n != null) {
+                result = n.getTrieNode(key);
+            }
+        }
+        return result;
     }
 
     abstract protected C getEmptyCollection();    
@@ -127,31 +215,46 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
 
     private AbstractTrieNode<V, C> getChild(char c, boolean addIfDoesNotExist) {
         AbstractTrieNode<V, C> result = null;
-
+        
         LinkedListNode<V, C> lastChild = null;
         LinkedListNode<V, C> currentChild = headNodeInChildList;
+        
+        //iterate the current children and insert new node into correct position by char value (maintain alphabetical ordering)
         while(currentChild != null) {
             if ( currentChild.value.key == c) {
                 result = currentChild.value;
+                break;
+            } else if ( currentChild.value.key > c) {
+                if ( addIfDoesNotExist) {
+                    result = createChildNode(caseSensitive, depth + 1, c);
+                    insertNewNode(result, lastChild, currentChild);
+                }
                 break;
             }
             lastChild = currentChild;
             currentChild = currentChild.nextNode;
         }
-
-        if ( result == null && addIfDoesNotExist ) {
+        
+        if ( addIfDoesNotExist && result == null ) {
             result = createChildNode(caseSensitive, depth + 1, c);
-            appendToChildList(lastChild, result);
+            LinkedListNode<V, C> newListNode = new LinkedListNode<V, C>(result);
+            if (lastChild != null) {
+                lastChild.nextNode = newListNode;
+            } else {
+                headNodeInChildList = newListNode; 
+            }
         }
         return result;
     }
 
-    private void appendToChildList(LinkedListNode<V, C> lastChild, AbstractTrieNode<V, C> result) {
-        LinkedListNode<V, C> newListNode = new LinkedListNode<V, C>(result);
-        if ( lastChild == null ) {
-            headNodeInChildList = newListNode;
-        } else {
+    private void insertNewNode(AbstractTrieNode<V, C> newNode, LinkedListNode<V, C> lastChild, LinkedListNode<V, C> currentChild) {
+        LinkedListNode<V, C> newListNode = new LinkedListNode<V, C>(newNode);
+        if ( lastChild != null) {
             lastChild.nextNode = newListNode;
+            newListNode.nextNode = currentChild;
+        } else {
+            newListNode.nextNode = headNodeInChildList;
+            headNodeInChildList = newListNode;
         }
     }
 

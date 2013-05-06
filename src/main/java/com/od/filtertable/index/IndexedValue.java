@@ -7,7 +7,7 @@ package com.od.filtertable.index;
  * A value stored in the index, along with the string last used to store it in the index,
  * and the depth to which the index was populated
  */
-public class IndexedValue<V> implements Comparable<V>{
+public class IndexedValue<V> {
     
     private int indexedDepth;
     private V value;
@@ -37,9 +37,4 @@ public class IndexedValue<V> implements Comparable<V>{
         return value;
     }
 
-    public int compareTo(V o) {
-        return indexKey.toString().compareTo(
-                ((IndexedValue) o).getIndexKey().toString()
-        );
-    }
 }

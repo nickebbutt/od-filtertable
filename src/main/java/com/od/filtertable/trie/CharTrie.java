@@ -37,9 +37,20 @@ import java.util.Collection;
  * (f)-(o)-|
  *         |-(x)
  *
- * The stores values of type V at each node, in a Collection<V>
+ * This stores values of type V at each node, in a Collection<V>
+ *     
+ * When adding to the index, we each value is added under a given key, or char sequence.
+ * We can a)
+ *   add the value into the collection for only the terminal/leaf node which represents the entire char sequence specified.
+ *   or b)
+ *   add the value for the node representing the entire sequence, plus for every prefix of the sequence (e.g. N, NO, NOD, NODE)
+ *
+ * b) is more expensive in memory, but does result in near-zero processing time when returning matches from prefix searches. 
+ * 
+ * If using a) the alternative way of supporting prefix searches would be to build the equivalent collection dynamically 
+ * by iterating all sub-nodes of the node matching a prefix. This could be done by n = getTrieNode(prefix) and n.accept(visitor) 
+ * This would be a lot less expensive in memory but more computationally expensive/slower when processing queries
  */
-
 public interface CharTrie<V, C extends Collection<V>> {
 
     /**
@@ -65,12 +76,55 @@ public interface CharTrie<V, C extends Collection<V>> {
     void removeValueForAllPrefixes(CharSequence key, V value);
 
     /**
+     * Add value to the trie nodes for path matching key, and to any parent nodes/prefixes which are at least minLength chars long
+     */
+    void addValueForPrefixesFromDepth(CharSequence key, V value, int minLength);
+
+    /**
+     * Remove value to the trie nodes for path matching key, and to any parent nodes/prefixes which are at least minLength chars long
+     */
+    void removeValueForPrefixesFromDepth(CharSequence key, V value, int minLength);
+    
+    /**
      * @return the values stored against the trie node for the path matching key
+     * If values were added 'for prefixes' then this will include values stored for char sequences where key is a suffix
      */
     C getValues(CharSequence key);
+
+    /**
+     * This method adds all values stored for key and its substrings into targetCollection, by iterating the descendant 
+     * nodes under the node matching key. This is only useful where values were not been added 'with prefixes', although 
+     * performance will be worse due to the need to dynamically iterate and create the result set.
+     * 
+     * @targetCollection the collection into which result values will be collated 
+     */
+    Collection<V> getValuesWithPrefixes(CharSequence key, Collection<V> targetCollection);
+
+
+    /**
+     * Similar to above method but returns only a maximum of maxMatches results, 
+     **/
+    Collection<V> getValuesWithPrefixes(CharSequence key, Collection<V> targetCollection, int maxMatches);
+
+    /**
+     * @return the trie node representing the key, if it exists
+     */
+    CharTrie<V, C> getTrieNode(CharSequence key);
 
     /**
      * remove from the trie any child nodes at depth greater than maximumDepth
      */
     void trimToDepth(int maximumDepth);
+
+    /**
+     * Visit all nodes in the trie structure from this node
+     */
+    void accept(TrieVisitor<V, C> v);
+    
+    /**
+     * Visit nodes in the trie structure which represent the char sequence or one of its prefixes, 
+     * and are at least minLength nodes deep (or represent a prefix which is at least minLength chars long)
+     */
+    void accept(TrieVisitor<V, C> v, CharSequence key, int minDepth);
+
 }
