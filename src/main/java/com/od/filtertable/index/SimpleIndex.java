@@ -1,8 +1,9 @@
 package com.od.filtertable.index;
 
+import com.od.filtertable.trie.AbstractTrieNode;
+
 import java.util.Collection;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class SimpleIndex<V> implements TrieIndex<V> {
 
     private final boolean indexSubstrings;
-    private final SimpleTrieNode<V> index;
+    private final AbstractTrieNode<V, ? extends Collection<V>> index;
     private final IdentityHashMap<V, IndexedValue<V>> identityHashMap = new IdentityHashMap<V, IndexedValue<V>>();
     
     private final MutableCharSequence mutableCharSequence = new MutableCharSequence();
@@ -36,7 +37,15 @@ public class SimpleIndex<V> implements TrieIndex<V> {
     * @param indexSubstrings    - e.g. if search term is AR, whether this matches BAR and ROAR, or just AR, ARK, etc
     */
     public SimpleIndex(boolean isCaseSensitive, boolean indexSubstrings) {
-        this.index = new SimpleTrieNode<V>(isCaseSensitive);
+        this(new HashSetTrieNode<V>(isCaseSensitive), indexSubstrings);
+    }
+    
+   /*
+   * @param trie               - the trie structure which will be used to maintain the index
+   * @param indexSubstrings    - e.g. if search term is AR, whether this matches BAR and ROAR, or just AR, ARK, etc
+   */
+    public SimpleIndex(AbstractTrieNode<V, ? extends Collection<V>> trie, boolean indexSubstrings) {
+        this.index = trie;
         this.indexSubstrings = indexSubstrings;
     }
 
