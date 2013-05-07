@@ -175,7 +175,7 @@ public class TestFindNextMatchingCell extends AbstractFilteredTableTest {
 
         System.out.println("100000 find next cell: " + (System.currentTimeMillis() - startTime) + " millis");
         assertEquals(1592, matchingCells.size());
-        assertTrue(System.currentTimeMillis() - startTime < 200);
+        assertTrue(System.currentTimeMillis() - startTime < 500);
     }
 
     public void testEmptyTable() {
