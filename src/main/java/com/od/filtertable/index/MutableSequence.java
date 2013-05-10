@@ -26,50 +26,57 @@ package com.od.filtertable.index;
  * Avoids generating unnecessary String instances using String.substring(x,x)
  * Otherwise each indexing generates thousands of short lived String instances
  */
-public class MutableCharArraySequence implements MutableCharSequence {
+public class MutableSequence implements MutableCharSequence {
 
-    public static final char[] EMPTY_SEGMENT = new char[]{};
-    private char[] segment;
+    public static final String EMPTY_SEGMENT = "";
+    private CharSequence segment;
     private int start = 0;
     private int end = 0;
 
-    public MutableCharArraySequence() {}
+    public MutableSequence() {}
 
-    public MutableCharArraySequence(char[] c) {
+    public MutableSequence(CharSequence c) {
         this.segment = c;
-        end = segment.length;
+        this.end = segment.length();
     }
-
+    
+    @Override
     public int length() {
         return end - start;
     }
 
+    @Override
     public int totalSequenceLength() {
-        return segment.length;
+        return segment.length();
     }
 
+    @Override
     public char charAt(int index) {
-        return segment[start + index];
+        return segment.charAt(start + index);
     }
 
-    public void setSegment(char[] segment) {
+    public void setSegment(CharSequence segment) {
         this.segment = segment == null ? EMPTY_SEGMENT : segment;
     }
 
+    @Override
     public void setStart(int start) {
         this.start = start;
     }
 
     @Override
     public void incrementStart(int v) {
-        this.start = this.start + v;
+        start += v;
     }
-
+    
+    @Override
     public void setEnd(int end) {
         this.end = end;
     }
 
+    @Override
     public CharSequence subSequence(int start, int end) {
-        throw new UnsupportedOperationException("MutableCharArraySequence does not support subSequence");
+        throw new UnsupportedOperationException("MutableCharSequence does not support subSequence");
     }
+
 }

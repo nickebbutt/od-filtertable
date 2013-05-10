@@ -28,7 +28,7 @@ public class SimpleIndex<V> implements TrieIndex<V> {
     private final AbstractTrieNode<V, ? extends Collection<V>> index;
     private final IdentityHashMap<V, IndexedValue<V>> identityHashMap = new IdentityHashMap<V, IndexedValue<V>>();
     
-    private final MutableCharSequence mutableCharSequence = new MutableCharSequence();
+    private final MutableSequence mutableCharSequence = new MutableSequence();
     
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 

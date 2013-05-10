@@ -31,7 +31,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
     private final int initialDepth;
     private final IdentityHashMap<V, IndexedValue<V>> identityHashMap = new IdentityHashMap<V, IndexedValue<V>>();
     
-    private final MutableCharSequence mutableCharSequence = new MutableCharSequence();
+    private final MutableSequence mutableCharSequence = new MutableSequence();
     private final LinkedList<IndexedValue<V>> cellsToReindex = new LinkedList<IndexedValue<V>>();    
     
     private ReadWriteLock lock = new ReentrantReadWriteLock();

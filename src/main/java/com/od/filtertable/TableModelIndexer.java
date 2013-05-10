@@ -22,7 +22,7 @@
 
 package com.od.filtertable;
 
-import com.od.filtertable.index.MutableCharSequence;
+import com.od.filtertable.index.MutableSequence;
 import com.od.filtertable.trie.CharTrie;
 
 import javax.swing.table.TableModel;
@@ -44,7 +44,7 @@ public class TableModelIndexer {
     private int initialIndexDepth;
     private boolean caseSensitive;
     private CharTrie<MutableTableCell, TableCellSet> index = new TableCellSetTrieNode(false);
-    private MutableCharSequence mutableCharRange = new MutableCharSequence();
+    private MutableSequence mutableCharRange = new MutableSequence();
     protected MutableTableCell[][] tableCells;
     protected int size;
     private boolean includeSubstrings = true;

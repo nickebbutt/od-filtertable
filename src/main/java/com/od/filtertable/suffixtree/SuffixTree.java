@@ -1,6 +1,8 @@
 package com.od.filtertable.suffixtree;
 
+import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;
+import com.od.filtertable.index.MutableSequence;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,14 +13,14 @@ import java.util.Collections;
  * Time: 19:00
  */
 public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
-        
+
     private SuffixTreeNode<V> firstChild;
 
     /**
      * Create a root node
      */
     public SuffixTree() {
-        super(new MutableCharSequence());
+        super(new MutableSequence());
     }
     
     public SuffixTree(CharSequence s) {
@@ -26,7 +28,8 @@ public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
     }
 
     public void add(CharSequence s, V value) {
-        add(new MutableCharSequence(s), value);
+        MutableCharSequence c = addTerminalCharAndCheck(s);
+        add(c, value);
     }
 
     public void add(MutableCharSequence s, V value) {
@@ -63,7 +66,7 @@ public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
     }
 
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
-        return get(new MutableCharSequence(c), targetCollection);
+        return get(new MutableSequence(c), targetCollection);
     }
     
     public Collection<V> get(MutableCharSequence s, Collection<V> targetCollection) {
