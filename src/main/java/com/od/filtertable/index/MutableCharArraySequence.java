@@ -26,34 +26,28 @@ package com.od.filtertable.index;
  * Avoids generating unnecessary String instances using String.substring(x,x)
  * Otherwise each indexing generates thousands of short lived String instances
  */
-public class MutableCharSequence implements CharSequence {
+public class MutableCharArraySequence implements CharSequence {
 
-    public static final String EMPTY_SEGMENT = "";
-    private CharSequence segment;
+    public static final char[] EMPTY_SEGMENT = new char[]{};
+    private char[] segment;
     private int start = 0;
     private int end = 0;
 
-    public MutableCharSequence() {}
-
-    public MutableCharSequence(CharSequence c) {
-        this.segment = c;
-        this.start = 0;
-        this.end = segment.length();
-    }
+    public MutableCharArraySequence() {}
 
     public int length() {
         return end - start;
     }
 
     public int totalSequenceLength() {
-        return segment.length();
+        return segment.length;
     }
 
     public char charAt(int index) {
-        return segment.charAt(start + index);
+        return segment[start + index];
     }
 
-    public void setSegment(CharSequence segment) {
+    public void setSegment(char[] segment) {
         this.segment = segment == null ? EMPTY_SEGMENT : segment;
     }
 
@@ -61,16 +55,11 @@ public class MutableCharSequence implements CharSequence {
         this.start = start;
     }
 
-    public void incrementStart(int v) {
-        start += v;
-    }
-    
     public void setEnd(int end) {
         this.end = end;
     }
 
     public CharSequence subSequence(int start, int end) {
-        throw new UnsupportedOperationException("MutableCharSequence does not support subSequence");
+        throw new UnsupportedOperationException("MutableCharArraySequence does not support subSequence");
     }
-
 }

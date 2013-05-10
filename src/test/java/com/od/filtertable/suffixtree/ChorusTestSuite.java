@@ -1,4 +1,4 @@
-package com.od.filtertable.index;
+package com.od.filtertable.suffixtree;
 
 import junit.framework.TestSuite;
 import org.chorusbdd.chorus.ChorusJUnitRunner;
@@ -14,6 +14,6 @@ public class ChorusTestSuite {
 
     public static TestSuite suite() {
 
-        return ChorusJUnitRunner.suite("-f src/test/java/com/od/filtertable/index -h com.od");
+        return ChorusJUnitRunner.suite("-f src/test/java/com/od/filtertable/suffixtree -h com.od");
     }
 }
