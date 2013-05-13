@@ -27,7 +27,7 @@ public class SuffixTreeTerminalNode<V> extends AbstractSuffixTreeNode<V> {
     }
 
     public Collection<V> get(MutableCharSequence s, Collection<V> targetCollection) {
-        if ( s.length() <= getSharedPrefixCount(s, label) ) {
+        if ( s.length() <= CharUtils.getSharedPrefixCount(s, label) ) {
             targetCollection.addAll(values);        
         } 
         return targetCollection;
