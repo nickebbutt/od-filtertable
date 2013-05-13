@@ -90,4 +90,20 @@ public abstract class AbstractSuffixTreeNode<V> implements SuffixTreeNode<V> {
     private char getLastChar(CharSequence s) {
         return s.charAt(s.length() - 1);
     }
+
+    protected boolean isLowerValue(MutableCharSequence b, char[] c) {
+        int shared = Math.min(b.length(), c.length);
+        boolean result = false;
+        for ( int i = 0; i < shared; i++) {
+            if ( b.charAt(i) < c[i]) {
+                result = true; 
+                break;
+            }
+        }
+        
+        if ( ! result ) {
+            result = b.length() <= c.length;
+        }
+        return result;
+    }
 }

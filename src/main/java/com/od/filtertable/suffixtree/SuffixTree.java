@@ -44,8 +44,19 @@ public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
             SuffixTreeNode<V> lastNode = null;
             boolean inserted = false;
             while (currentNode != null) {
-                if ( getSharedPrefixCount(s, currentNode.getLabel()) > 0) {
+                char[] currentNodeLabel = currentNode.getLabel();
+                if ( getSharedPrefixCount(s, currentNodeLabel) > 0) {
                     //insert into current node
+                    inserted = true;
+                    break;
+                } else if (s.charAt(0) < currentNodeLabel[0]) {
+                    SuffixTreeTerminalNode n = createNewTerminalNode(s, value);
+                    n.setNextPeer(currentNode);
+                    if ( lastNode == null ) {
+                        firstChild = n;    
+                    } else {
+                        lastNode.setNextPeer(n);
+                    }
                     inserted = true;
                     break;
                 }
@@ -75,11 +86,16 @@ public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
         
         SuffixTreeNode currentNode = firstChild;
         Collection<V> result = Collections.emptySet();
+        boolean foundMatch = false;
         while ( currentNode != null) {
             int sharedCharCount = getSharedPrefixCount(s, currentNode.getLabel());
             if ( sharedCharCount > 0) {
                 result = currentNode.get(s, targetCollection);
-                break;
+                foundMatch = true;
+            } else if ( foundMatch ) {
+                break; 
+                //since alphabetical, if we already found at least one match, and the next match fails
+                //we can assume all subsequent will fail
             }
             currentNode = currentNode.getNextPeer();
         }
