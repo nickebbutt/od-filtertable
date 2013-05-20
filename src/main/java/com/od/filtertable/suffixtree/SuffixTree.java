@@ -1,5 +1,6 @@
 package com.od.filtertable.suffixtree;
 
+import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
@@ -120,8 +121,8 @@ public abstract class SuffixTree<V> {
             while(i.isValid()) {
                 int sharedCharCount = i.getSharedChars(s);
                 if ( sharedCharCount > 0) {
-                    s.incrementStart(sharedCharCount);
-                    i.getCurrentNode().get(s, targetCollection);
+                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(sharedCharCount, s.length()));
+                    i.getCurrentNode().get(s1, targetCollection);
                     foundMatch = true;
                 } else if ( s.length() == 0 ) { //matched all chars, include
                     i.getCurrentNode().get(s, targetCollection);

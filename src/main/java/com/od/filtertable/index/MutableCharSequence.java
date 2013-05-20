@@ -20,4 +20,6 @@ public interface MutableCharSequence extends CharSequence {
     void setEnd(int end);
 
     CharSequence subSequence(int start, int end);
+    
+    char[] toArray(int start, int end);
 }

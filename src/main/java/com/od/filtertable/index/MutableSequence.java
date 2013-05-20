@@ -75,6 +75,16 @@ public class MutableSequence implements MutableCharSequence {
     }
 
     @Override
+    public char[] toArray(int start, int end) {
+        int length = end - start;
+        char[] result = new char[length];
+        for (int c = 0; c < length; c++) {
+            result[c] = charAt(c + start);
+        }
+        return result;
+    }
+    
+    @Override
     public CharSequence subSequence(int start, int end) {
         throw new UnsupportedOperationException("MutableCharSequence does not support subSequence");
     }

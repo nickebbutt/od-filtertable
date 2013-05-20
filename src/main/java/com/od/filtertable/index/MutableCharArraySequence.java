@@ -47,7 +47,7 @@ public class MutableCharArraySequence implements MutableCharSequence {
     public int totalSequenceLength() {
         return segment.length;
     }
-
+                     
     public char charAt(int index) {
         return segment[start + index];
     }
@@ -71,5 +71,15 @@ public class MutableCharArraySequence implements MutableCharSequence {
 
     public CharSequence subSequence(int start, int end) {
         throw new UnsupportedOperationException("MutableCharArraySequence does not support subSequence");
+    }
+
+    @Override
+    public char[] toArray(int start, int end) {
+        int length = end - start;
+        char[] result = new char[length];
+        for (int c = 0; c < length; c++) {
+            result[c] = charAt(c + start);
+        }
+        return result;
     }
 }
