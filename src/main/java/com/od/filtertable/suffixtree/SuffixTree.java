@@ -4,26 +4,28 @@ import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * User: nick
  * Date: 07/05/13
  * Time: 19:00
  */
-public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
+public abstract class SuffixTree<V> {
 
-    private SuffixTreeNode<V> firstChild;
+    SuffixTree<V> firstChild;
+    SuffixTree<V> nextPeer;
+    Collection<V> values;
+
+    char[] label = CharUtils.EMPTY_CHAR_ARRAY;
 
     /**
      * Create a root node
      */
     public SuffixTree() {
-        super(new MutableSequence());
     }
-    
+
     public SuffixTree(CharSequence s) {
-        super(s);
+        this.label = CharUtils.createCharArray(s);
     }
 
     public void add(CharSequence s, V value) {
@@ -32,114 +34,114 @@ public abstract class SuffixTree<V> extends AbstractSuffixTreeNode<V> {
     }
 
     public void add(MutableCharSequence s, V value) {
-        //strip our label from the sequence leaving any remaining chars
-        s.incrementStart(label.length);
         
-        ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
-        boolean inserted = false;
-        while (i.isValid()) {
-            if ( i.getSharedChars(s) > 0) {
-                //insert into current node
-                inserted = true;
-                break;
-            } else if (i.shouldInsert(s) ) {
-                SuffixTreeTerminalNode n = createNewTerminalNode(s, value);
-                i.insert(n);
-                inserted = true;
-                break;
+        if (s.length() == 0) {
+            addValue(value);
+        } else {
+            ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
+            boolean added = false;
+            while (i.isValid()) {
+                int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
+                if (matchingChars == s.length() ) {
+                    s.incrementStart(matchingChars);
+                    i.getCurrentNode().add(s, value);
+                    added = true;
+                    break;
+                } else if ( matchingChars > 0) {
+                    split(i, s, value, matchingChars);
+                    added = true;
+                    break;
+                }
+                i.next();
             }
-            i.next();
-        }
-        
-        if ( ! inserted ) {
-            i.insert(createNewTerminalNode(s, value));   
-        }
-        
+
+            if (!added) {
+                insert(i, s, value);
+            }        
+        }      
     }
 
-    private SuffixTreeTerminalNode<V> createNewTerminalNode(MutableCharSequence s, V value) {
-        SuffixTreeTerminalNode<V> n = new SuffixTreeTerminalNode<V>(s);
-        n.addValue(getCollectionFactory(), value);
-        return n;
+    private void split(ChildNodeIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
+        char[] labelForReplacement = CharUtils.getPrefix(s, matchingChars);
+
+        SuffixTree<V> nodeToReplace = i.getCurrentNode();
+        int labelLengthForReplacementChild = nodeToReplace.label.length - matchingChars;
+        char[] labelForReplacementChild = CharUtils.getSuffix(nodeToReplace.label, labelLengthForReplacementChild);
+        
+        int labelLengthForNewChild = s.length() - matchingChars;
+        char[] labelForNewChild = CharUtils.getSuffix(s, labelLengthForNewChild);
+        
+        SuffixTree<V> replacementNode = createNewSuffixTreeNode();
+        replacementNode.label = labelForReplacement;
+        i.replaceCurrent(replacementNode);
+        
+        SuffixTree<V> replacementChild = createNewSuffixTreeNode();
+        replacementChild.label = labelForReplacementChild;
+        replacementChild.firstChild = nodeToReplace.firstChild;
+        replacementChild.values = nodeToReplace.values;
+
+        SuffixTree<V> newChild = createNewSuffixTreeNode();
+        newChild.label = labelForNewChild;
+        newChild.addValue(value);
+
+        boolean newChildFirst = CharUtils.isLowerValue(labelForNewChild, labelForReplacementChild);
+        SuffixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
+        SuffixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
+        
+        replacementNode.firstChild = firstChild;
+        firstChild.nextPeer = secondChild;
+    }
+
+    private void insert(ChildNodeIterator<V> i, MutableCharSequence s, V value) {
+        SuffixTree<V> newNode = createNewSuffixTreeNode();
+        newNode.label = CharUtils.createCharArray(s);
+        newNode.addValue(value);
+        i.insert(newNode);
+    }
+
+    private void addValue(V value) {
+        if ( values == null) {
+            values = getCollectionFactory().createTerminalNodeCollection();
+        }
+        values.add(value);
     }
 
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
         return get(new MutableSequence(c), targetCollection);
     }
-    
+
     public Collection<V> get(MutableCharSequence s, Collection<V> targetCollection) {
-        //strip our label from the sequence leaving any remaining chars
-        s.incrementStart(label.length); 
-        ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
-        boolean foundMatch = false;
-        
-        //get results from all nodes which share a prefix
-        while(i.isValid()) {
-            int sharedCharCount = i.getSharedChars(s);
-            if ( sharedCharCount > 0) {
-                i.getCurrentNode().get(s, targetCollection);
-                foundMatch = true;
-            } else if (foundMatch) {
-                break;
-                //since alphabetical, if we already found at least one match, and the next match fails
-                //we can assume all subsequent will fail
+        if ( isTerminalNode() ) {
+            targetCollection.addAll(values);
+        } else {
+            ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
+            boolean foundMatch = false;                      
+            //get results from all nodes which share a prefix
+            while(i.isValid()) {
+                int sharedCharCount = i.getSharedChars(s);
+                if ( sharedCharCount > 0) {
+                    s.incrementStart(sharedCharCount);
+                    i.getCurrentNode().get(s, targetCollection);
+                    foundMatch = true;
+                } else if ( s.length() == 0 ) { //matched all chars, include
+                    i.getCurrentNode().get(s, targetCollection);
+                    foundMatch = true;
+                } else if (foundMatch) {
+                    break;
+                    //since alphabetical, if we already found at least one match, and the next match fails
+                    //we can assume all subsequent will fail
+                }
+                i.next();
             }
-            i.next();
         }
         return targetCollection;
     }
 
-    public char[] getLabel() {
-        return label;
-    }
+    protected abstract SuffixTree<V> createNewSuffixTreeNode();
 
     protected abstract CollectionFactory<V> getCollectionFactory();
-    
-    
-    public static class ChildNodeIterator<V> {
 
-        private SuffixTree<V> suffixTree;
-        private SuffixTreeNode<V> currentNode;
-        private SuffixTreeNode<V> lastNode;
-        
-        public ChildNodeIterator(SuffixTree<V> suffixTree) {
-            this.suffixTree = suffixTree;
-            currentNode = suffixTree.firstChild;
-        }
-        
-        public boolean isValid() {
-            return currentNode != null;        
-        }
-        
-        public void next() {
-            lastNode = currentNode;
-            currentNode = currentNode.getNextPeer();    
-        }
-        
-        public SuffixTreeNode<V> getCurrentNode() {
-            return currentNode;
-        }
-        
-        public SuffixTreeNode<V> getLastNode() {
-            return lastNode;
-        }
-
-        public int getSharedChars(MutableCharSequence s) {
-            return CharUtils.getSharedPrefixCount(s, currentNode.getLabel());
-        }
-
-        public boolean shouldInsert(MutableCharSequence s) {
-            return s.charAt(0) < currentNode.getLabel()[0];
-        }
-
-        public void insert(SuffixTreeNode<V> n) {
-            n.setNextPeer(currentNode);
-            if ( lastNode == null ) {
-                suffixTree.firstChild = n;
-            } else {
-                lastNode.setNextPeer(n);
-            }
-        }
+    public boolean isTerminalNode() {
+        return label.length > 0 /* root node */ && label[label.length - 1] == CharUtils.TERMINAL_CHAR;
     }
-
 }

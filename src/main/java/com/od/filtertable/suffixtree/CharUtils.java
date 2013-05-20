@@ -11,7 +11,9 @@ import com.od.filtertable.index.MutableSequence;
  */
 public class CharUtils {
 
-    private static final char TERMINAL_CHAR = '$'; //TODO, revise choice
+    public static final char[] EMPTY_CHAR_ARRAY = new char[0];
+    
+    public static final char TERMINAL_CHAR = '$';
 
     public static int getSharedPrefixCount(CharSequence s, char[] label) {
         int shared = 0;
@@ -30,8 +32,7 @@ public class CharUtils {
         for ( int c = 0; c < s.length(); c++) {
             result[c] = s.charAt(c);
         }
-        
-        for (int c = 0; c < chars.length; c++) {
+                                                                      for (int c = 0; c < chars.length; c++) {
             result[c + s.length()] = chars[c];
         }
         return new MutableCharArraySequence(result);
@@ -61,19 +62,53 @@ public class CharUtils {
         return s.charAt(s.length() - 1);
     }
 
-//    public static boolean isLowerValue(MutableCharSequence b, char[] c) {
-//        int shared = Math.min(b.length(), c.length);
-//        boolean result = false;
-//        for ( int i = 0; i < shared; i++) {
-//            if ( b.charAt(i) < c[i]) {
-//                result = true; 
-//                break;
-//            }
-//        }
-//        
-//        if ( ! result ) {
-//            result = b.length() <= c.length;
-//        }
-//        return result;
-//    }
+    public static char[] getPrefix(MutableCharSequence s, int length) {
+        char[] result = new char[length];
+        for ( int c = 0; c < length; c++) {
+            result[c] = s.charAt(c);
+        }
+        return result;
+    }
+
+    public static char[] getSuffix(MutableCharSequence s, int length) {
+        char[] result = new char[length];
+        int start = s.length() - length;
+        for ( int c = 0; c < length; c++) {
+            result[c] = s.charAt(start + c);
+        }
+        return result;
+    }
+
+    public static char[] getSuffix(char[] s, int length) {
+        char[] result = new char[length];
+        int start = s.length - length;
+        for ( int c = 0; c < length; c++) {
+            result[c] = s[start + c];
+        }
+        return result;
+    }
+
+    public static char[] createCharArray(CharSequence s) {
+        char[] ch = new char[s.length()];
+        for ( int c = 0; c < s.length(); c++) {
+            ch[c] = s.charAt(c);    
+        }
+        return ch;
+    }
+
+    public static boolean isLowerValue(char[] b, char[] c) {
+        int shared = Math.min(b.length, c.length);
+        boolean result = false;
+        for ( int i = 0; i < shared; i++) {
+            if ( b[i] < c[i]) {
+                result = true; 
+                break;
+            }
+        }
+        
+        if ( ! result ) {
+            result = b.length <= c.length;
+        }
+        return result;
+    }
 }

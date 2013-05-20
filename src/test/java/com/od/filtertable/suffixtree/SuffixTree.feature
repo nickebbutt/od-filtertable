@@ -22,6 +22,7 @@
       Then a search for A returns VAL1
       And a search for B returns VAL2
       
+    @Split
     Scenario: Search returns results in alphabetical order
       Given I create a suffix tree
       When I add a value VAL1 under key AB

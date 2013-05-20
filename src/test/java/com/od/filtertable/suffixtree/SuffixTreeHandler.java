@@ -21,18 +21,7 @@ public class SuffixTreeHandler extends ChorusAssert {
 
     @Step("I create a suffix tree")
     public void createIndex() {
-        suffixTree = new SuffixTree<String>() {
-
-            @Override
-            protected CollectionFactory<String> getCollectionFactory() {
-                return new CollectionFactory<String>() {
-                    @Override
-                    public Collection<String> createTerminalNodeCollection() {
-                        return new HashSet<String>();
-                    }
-                };
-            }
-        };
+        suffixTree = new StringSuffixTree();
     }
 
     @Step("I add a value (.*) under key (.*)")
@@ -54,4 +43,21 @@ public class SuffixTreeHandler extends ChorusAssert {
         assertEquals("expected values in search results", expected, actualOrdered);
     }
 
+    private static class StringSuffixTree extends SuffixTree<String> {
+
+        @Override
+        protected SuffixTree createNewSuffixTreeNode() {
+            return new StringSuffixTree();
+        }
+
+        @Override
+        protected CollectionFactory<String> getCollectionFactory() {
+            return new CollectionFactory<String>() {
+                @Override
+                public Collection<String> createTerminalNodeCollection() {
+                    return new HashSet<String>();
+                }
+            };
+        }
+    }
 }
