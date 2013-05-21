@@ -4,6 +4,7 @@ import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
+import java.io.PrintWriter;
 import java.util.Collection;
 
 /**
@@ -44,14 +45,19 @@ public abstract class SuffixTree<V> {
             while (i.isValid()) {
                 int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
                 if (matchingChars == s.length() ) {
-                    s.incrementStart(matchingChars);
-                    i.getCurrentNode().add(s, value);
+                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(matchingChars, s.length()));
+                    i.getCurrentNode().add(s1, value);
                     added = true;
                     break;
-                } else if ( matchingChars > 0) {
+                } else if ( matchingChars > 0 && matchingChars < i.getCurrentNode().label.length) {
                     split(i, s, value, matchingChars);
                     added = true;
                     break;
+                } else if ( matchingChars > 0) {
+                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(matchingChars, s.length()));
+                    i.getCurrentNode().add(s1, value);
+                    added = true;
+                    break;                
                 }
                 i.next();
             }
@@ -136,6 +142,34 @@ public abstract class SuffixTree<V> {
             }
         }
         return targetCollection;
+    }
+    
+    public void printStructure(int level, PrintWriter w) {
+        StringBuilder sb = new StringBuilder();
+        addIndent(level, sb);
+        sb.append(label);
+        if ( values != null) {
+            sb.append("\n");
+            addIndent(level, sb);
+            sb.append("val: ");
+            for (Object o : values) {
+                sb.append(o.toString()).append(" ");    
+            }
+        }
+        sb.append(" -->\n");
+        w.print(sb.toString());
+        w.flush();
+        ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
+        while (i.isValid()) {
+            i.getCurrentNode().printStructure(level + 1, w);
+            i.next();
+        }
+    }
+
+    private void addIndent(int level, StringBuilder sb) {
+        for ( int loop=0; loop < level; loop++) {
+            sb.append("  ");
+        }
     }
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();

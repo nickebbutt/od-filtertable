@@ -97,7 +97,10 @@ public class CharUtils {
     }
 
     public static boolean isLowerValue(char[] b, char[] c) {
-        int shared = Math.min(b.length, c.length);
+        //do not compare terminal char
+        int blength = b.length > 0 && b[b.length - 1] == TERMINAL_CHAR ? b.length - 1 : b.length;
+        int clength = c.length > 0 && c[c.length - 1] == TERMINAL_CHAR ? c.length - 1 : c.length;
+        int shared = Math.min(blength, clength);
         boolean result = false;
         for ( int i = 0; i < shared; i++) {
             if ( b[i] < c[i]) {
@@ -107,7 +110,7 @@ public class CharUtils {
         }
         
         if ( ! result ) {
-            result = b.length <= c.length;
+            result = blength <= clength;
         }
         return result;
     }

@@ -5,6 +5,7 @@ import org.chorusbdd.chorus.annotations.Handler;
 import org.chorusbdd.chorus.annotations.Step;
 import org.chorusbdd.chorus.util.assertion.ChorusAssert;
 
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -39,7 +40,8 @@ public class SuffixTreeHandler extends ChorusAssert {
 
         Collection<String> actual = suffixTree.get(key, new LinkedHashSet<String>());
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
-        
+
+        //suffixTree.printStructure(0, new PrintWriter(System.out));
         assertEquals("expected values in search results", expected, actualOrdered);
     }
 

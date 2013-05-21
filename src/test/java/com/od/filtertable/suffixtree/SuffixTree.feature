@@ -28,6 +28,16 @@
       When I add a value VAL1 under key AB
       And I add a value VAL2 under key AA
       Then a search for A returns VAL2, VAL1
+
+    @ALPHABETICAL
+    Scenario: Search finds all substrings
+      Given I create a suffix tree
+      When I add a value VAL1 under key ABA
+      And I add a value VAL2 under key AAA
+      And I add a value VAL3 under key AA
+      And I add a value VAL4 under key BA
+      Then a search for A returns VAL3, VAL2, VAL1
+      
       
      
       
