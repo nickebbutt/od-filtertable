@@ -1,6 +1,5 @@
 package com.od.filtertable.suffixtree;
 
-import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
@@ -43,11 +42,11 @@ public abstract class SuffixTree<V> {
             boolean added = false;
             while (i.isValid()) {
                 int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
-                if (matchingChars == s.length() ) {
+                if (matchingChars == s.length() /* since s must end with terminal char, this  be a terminal node */ ) {
                     addToChild(s, value, i, matchingChars);
                     added = true;
                     break;
-                } else if ( matchingChars > 0 && matchingChars == i.getCurrentNode().label.length) {
+                } else if ( matchingChars == i.getCurrentNode().label.length /*whole prefix matched */) {
                     addToChild(s, value, i, matchingChars);
                     added = true;
                     break;
@@ -55,6 +54,10 @@ public abstract class SuffixTree<V> {
                     split(i, s, value, matchingChars);
                     added = true;
                     break;              
+                } else if ( CharUtils.isLowerValue(CharUtils.createCharArray(s), i.getCurrentNode().label)) {
+                    insert(i, s, value);
+                    added = true;
+                    break;
                 }
                 i.next();
             }
