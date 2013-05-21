@@ -36,7 +36,6 @@ public abstract class SuffixTree<V> {
     }
 
     public void add(MutableCharSequence s, V value) {
-        
         if (s.length() == 0) {
             addValue(value);
         } else {
@@ -45,19 +44,17 @@ public abstract class SuffixTree<V> {
             while (i.isValid()) {
                 int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
                 if (matchingChars == s.length() ) {
-                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(matchingChars, s.length()));
-                    i.getCurrentNode().add(s1, value);
+                    addToChild(s, value, i, matchingChars);
                     added = true;
                     break;
-                } else if ( matchingChars > 0 && matchingChars < i.getCurrentNode().label.length) {
+                } else if ( matchingChars > 0 && matchingChars == i.getCurrentNode().label.length) {
+                    addToChild(s, value, i, matchingChars);
+                    added = true;
+                    break;
+                } else if ( matchingChars > 0) {  //only part of the current node label matched
                     split(i, s, value, matchingChars);
                     added = true;
-                    break;
-                } else if ( matchingChars > 0) {
-                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(matchingChars, s.length()));
-                    i.getCurrentNode().add(s1, value);
-                    added = true;
-                    break;                
+                    break;              
                 }
                 i.next();
             }
@@ -66,6 +63,12 @@ public abstract class SuffixTree<V> {
                 insert(i, s, value);
             }        
         }      
+    }
+
+    private void addToChild(MutableCharSequence s, V value, ChildNodeIterator<V> i, int matchingChars) {
+        s.incrementStart(matchingChars);        
+        i.getCurrentNode().add(s, value);
+        s.decrementStart(matchingChars);
     }
 
     private void split(ChildNodeIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
@@ -126,12 +129,8 @@ public abstract class SuffixTree<V> {
             //get results from all nodes which share a prefix
             while(i.isValid()) {
                 int sharedCharCount = i.getSharedChars(s);
-                if ( sharedCharCount > 0) {
-                    MutableCharArraySequence s1 = new MutableCharArraySequence(s.toArray(sharedCharCount, s.length()));
-                    i.getCurrentNode().get(s1, targetCollection);
-                    foundMatch = true;
-                } else if ( s.length() == 0 ) { //matched all chars, include
-                    i.getCurrentNode().get(s, targetCollection);
+                if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
+                    getValues(s, targetCollection, i, sharedCharCount);
                     foundMatch = true;
                 } else if (foundMatch) {
                     break;
@@ -143,7 +142,13 @@ public abstract class SuffixTree<V> {
         }
         return targetCollection;
     }
-    
+
+    private void getValues(MutableCharSequence s, Collection<V> targetCollection, ChildNodeIterator<V> i, int sharedCharCount) {
+        s.incrementStart(sharedCharCount);
+        i.getCurrentNode().get(s, targetCollection);
+        s.decrementStart(sharedCharCount);
+    }
+
     public void printStructure(int level, PrintWriter w) {
         StringBuilder sb = new StringBuilder();
         addIndent(level, sb);

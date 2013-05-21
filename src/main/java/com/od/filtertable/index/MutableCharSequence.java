@@ -17,9 +17,12 @@ public interface MutableCharSequence extends CharSequence {
 
     void incrementStart(int v);
 
+    void decrementStart(int v);
+
     void setEnd(int end);
 
     CharSequence subSequence(int start, int end);
     
     char[] toArray(int start, int end);
+
 }

@@ -62,7 +62,11 @@ public class MutableCharArraySequence implements MutableCharSequence {
 
     @Override
     public void incrementStart(int v) {
-        this.start = this.start + v;
+        this.start += v;
+    }
+    
+    public void decrementStart(int v) {
+        this.start -= v;
     }
 
     public void setEnd(int end) {

@@ -68,7 +68,12 @@ public class MutableSequence implements MutableCharSequence {
     public void incrementStart(int v) {
         start += v;
     }
-    
+
+    @Override
+    public void decrementStart(int v) {
+        start -= v;
+    }
+
     @Override
     public void setEnd(int end) {
         this.end = end;
