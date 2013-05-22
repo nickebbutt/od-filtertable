@@ -19,58 +19,58 @@ public abstract class SuffixTree<V> {
 
     char[] label = CharUtils.EMPTY_CHAR_ARRAY;
 
-    /**
-     * Create a root node
-     */
-    public SuffixTree() {
-    }
-
-    public SuffixTree(CharSequence s) {
-        this.label = CharUtils.createCharArray(s);
-    }
-
     public void add(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
-        add(c, value);
+        addToTree(c, value, new ChildNodeIteratorPool<V>());
     }
 
-    public void add(MutableCharSequence s, V value) {
+    private void addToTree(MutableCharSequence s, V value, IteratorPool<V> iteratorPool) {
         if (s.length() == 0) {
+            //since when adding initial s always ends with terminal char, this is a terminal node, add the value
             addValue(value);
         } else {
-            ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
-            boolean added = false;
-            while (i.isValid()) {
-                int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
-                if (matchingChars == s.length() /* since s must end with terminal char, this  be a terminal node */ ) {
-                    addToChild(s, value, i, matchingChars);
-                    added = true;
-                    break;
-                } else if ( matchingChars == i.getCurrentNode().label.length /*whole prefix matched */) {
-                    addToChild(s, value, i, matchingChars);
-                    added = true;
-                    break;
-                } else if ( matchingChars > 0) {  //only part of the current node label matched
-                    split(i, s, value, matchingChars);
-                    added = true;
-                    break;              
-                } else if ( CharUtils.isLowerValue(CharUtils.createCharArray(s), i.getCurrentNode().label)) {
-                    insert(i, s, value);
-                    added = true;
-                    break;
-                }
-                i.next();
+            //there are still chars to add, see if they match any existing children, if not insert a new child node
+            ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+            try {
+                doAdd(s, value, i, iteratorPool);
+            } finally {
+                iteratorPool.returnIterator(i);
             }
-
-            if (!added) {
-                insert(i, s, value);
-            }        
         }      
     }
 
-    private void addToChild(MutableCharSequence s, V value, ChildNodeIterator<V> i, int matchingChars) {
+    private void doAdd(MutableCharSequence s, V value, ChildNodeIterator<V> i, IteratorPool<V> p) {
+        boolean added = false;
+        while (i.isValid()) {
+            int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
+            if (matchingChars == s.length() /* since s must end with terminal char, this  be a terminal node */ ) {
+                addToChild(s, value, i, matchingChars, p);
+                added = true;
+                break;
+            } else if ( matchingChars == i.getCurrentNode().label.length /*whole prefix matched */) {
+                addToChild(s, value, i, matchingChars, p);
+                added = true;
+                break;
+            } else if ( matchingChars > 0) {  //only part of the current node label matched
+                split(i, s, value, matchingChars);
+                added = true;
+                break;              
+            } else if ( CharUtils.compare(s, i.getCurrentNode().label) == -1) {
+                insert(i, s, value);
+                added = true;
+                break;
+            }
+            i.next();
+        }
+
+        if (!added) {
+            insert(i, s, value);
+        }
+    }
+
+    private void addToChild(MutableCharSequence s, V value, ChildNodeIterator<V> i, int matchingChars, IteratorPool<V> iteratorPool) {
         s.incrementStart(matchingChars);        
-        i.getCurrentNode().add(s, value);
+        i.getCurrentNode().addToTree(s, value, iteratorPool);
         s.decrementStart(matchingChars);
     }
 
@@ -97,7 +97,7 @@ public abstract class SuffixTree<V> {
         newChild.label = labelForNewChild;
         newChild.addValue(value);
 
-        boolean newChildFirst = CharUtils.isLowerValue(labelForNewChild, labelForReplacementChild);
+        boolean newChildFirst = CharUtils.compare(labelForNewChild, labelForReplacementChild) == -1;
         SuffixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
         SuffixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
@@ -120,30 +120,38 @@ public abstract class SuffixTree<V> {
     }
 
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
-        return get(new MutableSequence(c), targetCollection);
+        return getFromTree(new MutableSequence(c), targetCollection, new ChildNodeIteratorPool<V>());
     }
 
-    public Collection<V> get(MutableCharSequence s, Collection<V> targetCollection) {
+    private Collection<V> getFromTree(MutableCharSequence s, Collection<V> targetCollection, IteratorPool<V> iteratorPool) {
         if ( isTerminalNode() ) {
             targetCollection.addAll(values);
         } else {
-            ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
-            boolean foundMatch = false;                      
-            //get results from all nodes which share a prefix
-            while(i.isValid()) {
-                int sharedCharCount = i.getSharedChars(s);
-                if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
-                    getValues(s, targetCollection, i, sharedCharCount);
-                    foundMatch = true;
-                } else if (foundMatch) {
-                    break;
-                    //since alphabetical, if we already found at least one match, and the next match fails
-                    //we can assume all subsequent will fail
-                }
-                i.next();
+            ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+            try {
+                doGet(s, targetCollection, i);
+            } finally {
+                iteratorPool.returnIterator(i);
             }
         }
         return targetCollection;
+    }
+
+    private void doGet(MutableCharSequence s, Collection<V> targetCollection, ChildNodeIterator<V> i) {
+        boolean foundMatch = false;
+        //get results from all nodes which share a prefix
+        while(i.isValid()) {
+            int sharedCharCount = i.getSharedChars(s);
+            if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
+                getValues(s, targetCollection, i, sharedCharCount);
+                foundMatch = true;
+            } else if (foundMatch) {
+                break;
+                //since alphabetical, if we already found at least one match, and the next match fails
+                //we can assume all subsequent will fail
+            }
+            i.next();
+        }
     }
 
     private void getValues(MutableCharSequence s, Collection<V> targetCollection, ChildNodeIterator<V> i, int sharedCharCount) {

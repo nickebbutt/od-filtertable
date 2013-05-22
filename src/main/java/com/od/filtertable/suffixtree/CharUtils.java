@@ -96,21 +96,54 @@ public class CharUtils {
         return ch;
     }
 
-    public static boolean isLowerValue(char[] b, char[] c) {
-        //do not compare terminal char
+    /**
+     * Compare a CharSequence to a char[]
+     * Duplicating the char[] comparison logic since aiming for near-zero object creation on critical path
+     */
+    public static int compare(CharSequence b, char[] c) {
+        //exclude terminal chars
+        int blength = b.length() > 0 && b.charAt(b.length() - 1) == TERMINAL_CHAR ? b.length() - 1 : b.length();
+        int clength = c.length > 0 && c[c.length - 1] == TERMINAL_CHAR ? c.length - 1 : c.length;
+
+        int shared = Math.min(blength, clength);
+        int result = 0;
+        for ( int i = 0; i < shared; i++) {
+            char bchar = b.charAt(i);
+            if ( bchar != c[i]) {
+                result = bchar < c[i] ? -1 : 1;
+                break;
+            }
+        }
+
+        //if all shared chars are equal the shorter sorts first
+        if ( result == 0 ) {
+            result = blength < clength ? -1 :
+                    blength == clength ? 0 : 1;
+        }
+        return result;    
+    }
+
+    /**
+     * Compare a char[] to a char[]
+     */
+    public static int compare(char[] b, char[] c) {
+        //exclude terminal chars
         int blength = b.length > 0 && b[b.length - 1] == TERMINAL_CHAR ? b.length - 1 : b.length;
         int clength = c.length > 0 && c[c.length - 1] == TERMINAL_CHAR ? c.length - 1 : c.length;
+        
         int shared = Math.min(blength, clength);
-        boolean result = false;
+        int result = 0;
         for ( int i = 0; i < shared; i++) {
-            if ( b[i] < c[i]) {
-                result = true; 
+            if ( b[i] != c[i]) {
+                result = b[i] < c[i] ? -1 : 1; 
                 break;
             }
         }
         
-        if ( ! result ) {
-            result = blength <= clength;
+        //if all shared chars are equal the shorter sorts first
+        if ( result == 0 ) {
+            result = blength < clength ? -1 :
+                blength == clength ? 0 : 1;
         }
         return result;
     }
