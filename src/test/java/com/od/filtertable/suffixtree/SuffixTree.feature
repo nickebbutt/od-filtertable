@@ -34,6 +34,7 @@
       And I add a value VAL2 under key AAA
       And I add a value VAL3 under key AA
       And I add a value VAL4 under key BA
+      And I show the tree structure
       Then a search for A returns VAL3, VAL2, VAL1
       And a search for AA returns VAL3, VAL2
       And a search for AB returns VAL1

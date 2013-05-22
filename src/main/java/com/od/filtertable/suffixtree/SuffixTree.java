@@ -160,32 +160,19 @@ public abstract class SuffixTree<V> {
         s.decrementStart(sharedCharCount);
     }
 
-    public void printStructure(int level, PrintWriter w) {
-        StringBuilder sb = new StringBuilder();
-        addIndent(level, sb);
-        sb.append(label);
-        if ( values != null) {
-            sb.append("\n");
-            addIndent(level, sb);
-            sb.append("val: ");
-            for (Object o : values) {
-                sb.append(o.toString()).append(" ");    
-            }
-        }
-        sb.append(" -->\n");
-        w.print(sb.toString());
-        w.flush();
-        ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
-        while (i.isValid()) {
-            i.getCurrentNode().printStructure(level + 1, w);
+    public boolean accept(SuffixTreeVisitor v) {
+        return accept(v, new ChildNodeIteratorPool<V>());
+    }
+    
+    public boolean accept(SuffixTreeVisitor v, IteratorPool<V> iteratorPool) {
+        boolean shouldContinue = v.visit(this);
+        ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+        while(i.isValid() && shouldContinue) {
+            shouldContinue = i.getCurrentNode().accept(v, iteratorPool);
             i.next();
         }
-    }
-
-    private void addIndent(int level, StringBuilder sb) {
-        for ( int loop=0; loop < level; loop++) {
-            sb.append("  ");
-        }
+        v.visitComplete(this);
+        return shouldContinue;
     }
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();

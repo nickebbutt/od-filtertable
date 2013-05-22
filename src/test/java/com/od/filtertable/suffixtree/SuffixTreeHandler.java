@@ -30,6 +30,12 @@ public class SuffixTreeHandler extends ChorusAssert {
         suffixTree.add(key, value);
     }
     
+    @Step("I show the tree structure")
+    public void showTheTreeStucture() {
+        LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out));
+        suffixTree.accept(v);
+    }
+    
     @Step("a search for (.*) returns (.*)")
     public void doSearch(String key, String values) {
         StringTokenizer st = new StringTokenizer(values, ",");
