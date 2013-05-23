@@ -36,19 +36,35 @@ public class SuffixTreeHandler extends ChorusAssert {
         suffixTree.accept(v);
     }
     
+    @Step("the suffix tree contains keys (.*)")
+    public void checkContainsKeys(String keys) {
+        List<String> expected = getExpectedList(keys);
+        
+        KeySetVisitor<String> v = new KeySetVisitor<String>();
+        suffixTree.accept(v);
+        List<String> actual = v.getLabels();
+        
+        assertEquals("Expected " + keys, expected, actual);
+    }
+    
     @Step("a search for (.*) returns (.*)")
     public void doSearch(String key, String values) {
-        StringTokenizer st = new StringTokenizer(values, ",");
-        List<String> expected = new ArrayList<String>();
-        while(st.hasMoreTokens()) {
-            expected.add(st.nextToken().trim());
-        }
+        List<String> expected = getExpectedList(values);
 
         Collection<String> actual = suffixTree.get(key, new LinkedHashSet<String>());
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
         //suffixTree.printStructure(0, new PrintWriter(System.out));
         assertEquals("expected values in search results", expected, actualOrdered);
+    }
+
+    private List<String> getExpectedList(String values) {
+        StringTokenizer st = new StringTokenizer(values, ",");
+        List<String> expected = new ArrayList<String>();
+        while(st.hasMoreTokens()) {
+            expected.add(st.nextToken().trim());
+        }
+        return expected;
     }
 
     private static class StringSuffixTree extends SuffixTree<String> {
