@@ -1,6 +1,5 @@
 package com.od.filtertable.suffixtree;
 
-import java.util.LinkedList;
 import java.util.Stack;
 
 /**

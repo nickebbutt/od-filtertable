@@ -11,6 +11,16 @@ import com.od.filtertable.index.MutableSequence;
  */
 public class CharUtils {
 
+    /**
+     * Reuse a thread local instance since many tens of thousands of these are otherwise created when indexing a large dataset
+     */
+    private static ThreadLocal<CharSequenceWithTerminalNode> charSequenceWithTerminalNodeThreadLocal = 
+        new ThreadLocal<CharSequenceWithTerminalNode>() {
+            public CharSequenceWithTerminalNode initialValue() {
+                return new CharSequenceWithTerminalNode();
+            }
+    };
+    
     public static final char[] EMPTY_CHAR_ARRAY = new char[0];
     
     public static final char TERMINAL_CHAR = '$';
@@ -32,7 +42,7 @@ public class CharUtils {
         for ( int c = 0; c < s.length(); c++) {
             result[c] = s.charAt(c);
         }
-                                                                      for (int c = 0; c < chars.length; c++) {
+        for (int c = 0; c < chars.length; c++) {
             result[c + s.length()] = chars[c];
         }
         return new MutableCharArraySequence(result);
@@ -41,7 +51,9 @@ public class CharUtils {
     public static MutableCharSequence addTerminalCharAndCheck(CharSequence s) {
         MutableCharSequence result;
         if ( getLastChar(s) != TERMINAL_CHAR) {
-            result = new MutableSequence(append(s, new char[]{TERMINAL_CHAR}));        
+            CharSequenceWithTerminalNode n = charSequenceWithTerminalNodeThreadLocal.get();
+            n.setSequence(s);
+            result = n;     
         } else {
             result = new MutableSequence(s);
         }
