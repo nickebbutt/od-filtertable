@@ -47,6 +47,13 @@ public class SuffixTreeHandler extends ChorusAssert {
         assertEquals("Expected " + keys, expected, actual);
     }
     
+    @Step("the number of nodes is (\\d+)") 
+    public void countNodes(int number) {
+        NodeCountVisitor n = new NodeCountVisitor();
+        suffixTree.accept(n);
+        assertEquals("Expect " + number + " nodes", number, n.getNodeCount());
+    }
+    
     @Step("a search for (.*) returns (.*)")
     public void doSearch(String key, String values) {
         List<String> expected = getExpectedList(values);
@@ -54,7 +61,6 @@ public class SuffixTreeHandler extends ChorusAssert {
         Collection<String> actual = suffixTree.get(key, new LinkedHashSet<String>());
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
-        //suffixTree.printStructure(0, new PrintWriter(System.out));
         assertEquals("expected values in search results", expected, actualOrdered);
     }
 

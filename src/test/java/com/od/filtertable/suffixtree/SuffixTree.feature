@@ -35,6 +35,7 @@
       And I add a value VAL3 under key AA
       And I add a value VAL4 under key BA
       Then the suffix tree contains keys AA, AAA, ABA, BA
+      And the number of nodes is 7
       And a search for A returns VAL3, VAL2, VAL1
       And a search for AA returns VAL3, VAL2
       And a search for AB returns VAL1
@@ -47,6 +48,7 @@
       When I add a value VAL2 under key AB
       When I add a value VAL3 under key AA
       Then the suffix tree contains keys AA, AB, AC
+      And the number of nodes is 5
       And a search for A returns VAL3, VAL2, VAL1
 
 
