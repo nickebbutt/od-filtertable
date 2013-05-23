@@ -174,6 +174,29 @@ public abstract class SuffixTree<V> {
         v.visitComplete(this);
         return shouldContinue;
     }
+    
+    public void remove(CharSequence s, V value) {
+        MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
+        removeFromTree(c, value, new ChildNodeIteratorPool<V>());
+    }
+
+    private void removeFromTree(MutableCharSequence c, V value, ChildNodeIteratorPool<V> childNodeIteratorPool) {
+        if ( c.length() == 0) {
+            values.remove(value);
+        } else {
+            ChildNodeIterator<V> iterator = childNodeIteratorPool.getIterator(this);
+            while(iterator.isValid()) {
+                SuffixTree<V> current = iterator.getCurrentNode();
+                int matchingChars = CharUtils.getSharedPrefixCount(c, current.label);
+                if ( matchingChars == current.label.length) {
+                    c.incrementStart(matchingChars);
+                    current.removeFromTree(c, value, childNodeIteratorPool);
+                    break;
+                }
+                iterator.next();
+            }
+        }
+    }
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();
 

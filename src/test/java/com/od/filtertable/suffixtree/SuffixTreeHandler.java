@@ -30,6 +30,11 @@ public class SuffixTreeHandler extends ChorusAssert {
         suffixTree.add(key, value);
     }
     
+    @Step("I remove a value (.*) under key (.*)")
+    public void remove(String value, String key) {
+        suffixTree.remove(key, value);
+    }
+    
     @Step("I show the tree structure")
     public void showTheTreeStucture() {
         LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out));
