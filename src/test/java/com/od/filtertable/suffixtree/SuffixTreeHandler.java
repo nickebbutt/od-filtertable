@@ -61,9 +61,20 @@ public class SuffixTreeHandler extends ChorusAssert {
     
     @Step("a search for (.*) returns (.*)")
     public void doSearch(String key, String values) {
+        search(key, values, Integer.MAX_VALUE);
+    }
+
+    @Step("a search with maxItems=(\\d+) for (.*) returns (.*)")
+    public void doSearch(int maxItems, String key, String values) {
+        search(key, values, maxItems);
+    }
+    
+    private void search(String key, String values, int maxItems) {
         List<String> expected = getExpectedList(values);
 
-        Collection<String> actual = suffixTree.get(key, new LinkedHashSet<String>());
+        Collection<String> actual = maxItems == Integer.MAX_VALUE ? 
+            suffixTree.get(key, new LinkedHashSet<String>()) :
+            suffixTree.get(key, new LinkedHashSet<String>(), maxItems);
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
         assertEquals("expected values in search results", expected, actualOrdered);

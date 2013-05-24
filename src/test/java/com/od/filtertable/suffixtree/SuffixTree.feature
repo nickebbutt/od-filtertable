@@ -69,7 +69,6 @@
       And I remove a value VAL2 under key ABD
       Then the number of nodes is 1
   
-    @FAILING
     Scenario: Removing all values compresses node structure complex
       When I add a value VAL1 under key ABC
       And I add a value VAL2 under key ABD
@@ -82,6 +81,12 @@
       And I remove a value VAL3 under key AB
       Then the number of nodes is 1
   
+    Scenario: Getting a limited number of results
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABD
+      And I add a value VAL3 under key AB
+      Then a search for A returns VAL3, VAL1, VAL2
+      And a search with maxItems=2 for A returns VAL3, VAL1
 
   #And I show the tree structure
       

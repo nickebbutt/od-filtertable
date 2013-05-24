@@ -31,22 +31,6 @@ public class ChildNodeIterator<V> {
         return currentNode;
     }
 
-    public SuffixTree<V> getLastNode() {
-        return lastNode;
-    }
-
-    public int getSharedChars(MutableCharSequence s) {
-        return CharUtils.getSharedPrefixCount(s, currentNode.label);
-    }
-
-    public boolean shouldInsert(MutableCharSequence s) {
-        return s.charAt(0) < currentNode.label[0];
-    }
-
-    public int getCurrentLabelLength() {
-        return currentNode.label.length;
-    }
-
     public void insert(SuffixTree<V> newNode) {
         if (lastNode != null)  {
             lastNode.nextPeer = newNode;
@@ -83,4 +67,20 @@ public class ChildNodeIterator<V> {
             parent.firstChild = currentNode.nextPeer;
         }
     }
+    
+//    public SuffixTree<V> getLastNode() {
+//        return lastNode;
+//    }
+
+//    public int getSharedChars(MutableCharSequence s) {
+//        return CharUtils.getSharedPrefixCount(s, currentNode.label);
+//    }
+//
+//    public boolean shouldInsert(MutableCharSequence s) {
+//        return s.charAt(0) < currentNode.label[0];
+//    }
+//
+//    public int getCurrentLabelLength() {
+//        return currentNode.label.length;
+//    }
 }

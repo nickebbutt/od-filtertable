@@ -3,7 +3,6 @@ package com.od.filtertable.suffixtree;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
-import java.io.PrintWriter;
 import java.util.Collection;
 
 /**
@@ -19,6 +18,9 @@ public abstract class SuffixTree<V> {
 
     char[] label = CharUtils.EMPTY_CHAR_ARRAY;
 
+    /**
+     * Add value to the tree under the key s
+     */
     public void add(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
         addToTree(c, value, new ChildNodeIteratorPool<V>());
@@ -119,52 +121,67 @@ public abstract class SuffixTree<V> {
         values.add(value);
     }
 
+    /**
+     * Get into target collection values from all nodes prefixed with char sequence
+     */
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
-        return getFromTree(new MutableSequence(c), targetCollection, new ChildNodeIteratorPool<V>());
+        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection);
+        accept(new MutableSequence(c), collectValuesVisitor, new ChildNodeIteratorPool<V>());
+        return targetCollection;
     }
-
-    private Collection<V> getFromTree(MutableCharSequence s, Collection<V> targetCollection, IteratorPool<V> iteratorPool) {
-        if ( isTerminalNode() ) {
-            targetCollection.addAll(values);
-        } else {
-            ChildNodeIterator<V> i = iteratorPool.getIterator(this);
-            try {
-                doGet(s, targetCollection, i);
-            } finally {
-                iteratorPool.returnIterator(i);
-            }
-        }
+    
+    /**
+     * Get into target collection values from all nodes prefixed with char sequence, to a limit of maxResults values
+     */
+    public Collection<V> get(CharSequence c, Collection<V> targetCollection, int maxResults) {
+        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults);
+        accept(new MutableSequence(c), collectValuesVisitor, new ChildNodeIteratorPool<V>());
         return targetCollection;
     }
 
-    private void doGet(MutableCharSequence s, Collection<V> targetCollection, ChildNodeIterator<V> i) {
-        boolean foundMatch = false;
-        //get results from all nodes which share a prefix
-        while(i.isValid()) {
-            int sharedCharCount = i.getSharedChars(s);
-            if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
-                getValues(s, targetCollection, i, sharedCharCount);
-                foundMatch = true;
-            } else if (foundMatch) {
-                break;
-                //since alphabetical, if we already found at least one match, and the next match fails
-                //we can assume all subsequent will fail
+    /**
+     * Visit all nodes which are prefixed with char sequence
+     */
+    public void accept(CharSequence c, SuffixTreeVisitor v) {
+        accept(new MutableSequence(c), v, new ChildNodeIteratorPool<V>());    
+    }
+
+    private void accept(MutableCharSequence s, SuffixTreeVisitor<V> visitor, IteratorPool<V> iteratorPool) {
+        ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+        try {
+            if ( s.length() == 0) {
+                accept(visitor, iteratorPool);
+            } else {
+                boolean foundMatch = false;
+                //get results from all nodes which share a prefix
+                while(i.isValid()) {
+                    int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
+                    if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
+                        s.incrementStart(sharedCharCount);
+                        i.getCurrentNode().accept(s, visitor, iteratorPool);
+                        s.decrementStart(sharedCharCount);
+                        foundMatch = true;
+                    } else if (foundMatch) {
+                        break;
+                        //since alphabetical, if we already found at least one match, and the next match fails
+                        //we can assume all subsequent will fail
+                    }
+                    i.next();
+                }
             }
-            i.next();
+        } finally {
+            iteratorPool.returnIterator(i);
         }
     }
 
-    private void getValues(MutableCharSequence s, Collection<V> targetCollection, ChildNodeIterator<V> i, int sharedCharCount) {
-        s.incrementStart(sharedCharCount);
-        i.getCurrentNode().get(s, targetCollection);
-        s.decrementStart(sharedCharCount);
-    }
-
+    /**
+     * Visit all nodes
+     */
     public boolean accept(SuffixTreeVisitor v) {
         return accept(v, new ChildNodeIteratorPool<V>());
     }
     
-    public boolean accept(SuffixTreeVisitor v, IteratorPool<V> iteratorPool) {
+    private boolean accept(SuffixTreeVisitor v, IteratorPool<V> iteratorPool) {
         boolean shouldContinue = v.visit(this);
         ChildNodeIterator<V> i = iteratorPool.getIterator(this);
         while(i.isValid() && shouldContinue) {
@@ -174,7 +191,10 @@ public abstract class SuffixTree<V> {
         v.visitComplete(this);
         return shouldContinue;
     }
-    
+
+    /**
+     * Remove value v from key s, if s exists in the tree 
+     */
     public void remove(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
         removeFromTree(c, value, new ChildNodeIteratorPool<V>());
@@ -190,9 +210,9 @@ public abstract class SuffixTree<V> {
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current.label);
                 if ( matchingChars == current.label.length) {
                     c.incrementStart(matchingChars);
-                    boolean shouldJoin = current.removeFromTree(c, value, childNodeIteratorPool);
-                    if ( shouldJoin ) {
-                        doJoin(i, current);
+                    boolean joinOrRemove = current.removeFromTree(c, value, childNodeIteratorPool);
+                    if ( joinOrRemove ) {
+                        joinOrRemove(i, current);
                     }
                     break;
                 }
@@ -203,10 +223,12 @@ public abstract class SuffixTree<V> {
         return (isTerminalNode() && values.size() == 0) || isOnlyOneChild();
     }
 
-    private void doJoin(ChildNodeIterator<V> i, SuffixTree<V> current) {
+    private void joinOrRemove(ChildNodeIterator<V> i, SuffixTree<V> current) {
         if ( current.isTerminalNode()) {
             i.removeCurrent();    
         } else {
+            //the current node now has just a single child
+            //we should replace it with a new node which combines the prefixes
             SuffixTree<V> joined = createNewSuffixTreeNode();
             char[] newLabel = CharUtils.join(current.label, current.firstChild.label);
             joined.label = newLabel;
