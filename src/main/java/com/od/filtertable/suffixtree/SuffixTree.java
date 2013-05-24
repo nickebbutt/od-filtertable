@@ -180,22 +180,35 @@ public abstract class SuffixTree<V> {
         removeFromTree(c, value, new ChildNodeIteratorPool<V>());
     }
 
-    private void removeFromTree(MutableCharSequence c, V value, ChildNodeIteratorPool<V> childNodeIteratorPool) {
+    private boolean removeFromTree(MutableCharSequence c, V value, ChildNodeIteratorPool<V> childNodeIteratorPool) {
         if ( c.length() == 0) {
             values.remove(value);
         } else {
-            ChildNodeIterator<V> iterator = childNodeIteratorPool.getIterator(this);
-            while(iterator.isValid()) {
-                SuffixTree<V> current = iterator.getCurrentNode();
+            ChildNodeIterator<V> i = childNodeIteratorPool.getIterator(this);
+            while(i.isValid()) {
+                SuffixTree<V> current = i.getCurrentNode();
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current.label);
                 if ( matchingChars == current.label.length) {
                     c.incrementStart(matchingChars);
-                    current.removeFromTree(c, value, childNodeIteratorPool);
+                    boolean shouldJoin = current.removeFromTree(c, value, childNodeIteratorPool);
+                    if ( shouldJoin ) {
+                        doJoin(i, current);
+                    }
                     break;
                 }
-                iterator.next();
+                i.next();
             }
         }
+        
+        return (isTerminalNode() && values.size() == 0) || isOnlyOneChild();
+    }
+
+    private void doJoin(ChildNodeIterator<V> i, SuffixTree<V> current) {
+        SuffixTree<V> joined = createNewSuffixTreeNode();
+        char[] newLabel = CharUtils.join(current.label, current.firstChild.label);
+        joined.label = newLabel;
+        joined.firstChild = current.firstChild.firstChild;
+        i.join(joined);
     }
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();
@@ -204,5 +217,9 @@ public abstract class SuffixTree<V> {
 
     public boolean isTerminalNode() {
         return label.length > 0 /* root node */ && label[label.length - 1] == CharUtils.TERMINAL_CHAR;
+    }
+
+    public boolean isOnlyOneChild() {
+        return firstChild != null && firstChild.nextPeer == null;
     }
 }

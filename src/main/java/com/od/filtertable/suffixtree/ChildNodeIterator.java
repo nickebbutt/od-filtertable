@@ -65,4 +65,9 @@ public class ChildNodeIterator<V> {
         replacementNode.nextPeer = currentNode.nextPeer;
         currentNode = replacementNode;
     }
+
+    public void join(SuffixTree<V> replacementChild) {
+        replacementChild.nextPeer = currentNode.nextPeer;
+        currentNode = replacementChild;
+    }
 }

@@ -107,6 +107,18 @@ public class CharUtils {
         }
         return ch;
     }
+    
+    public static char[] join(char[] a, char[] b) {
+        char[] result = new char[a.length + b.length];
+        for ( int c = 0; c < a.length; c++) {
+            result[c] = a[c];
+        }
+
+        for ( int c = 0; c < b.length; c++) {
+            result[a.length + c] = b[c];
+        }
+        return result;
+    }
 
     /**
      * Compare a CharSequence to a char[]
