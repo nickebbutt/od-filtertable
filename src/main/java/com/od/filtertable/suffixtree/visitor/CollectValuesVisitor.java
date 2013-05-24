@@ -1,4 +1,6 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.suffixtree.visitor;
+
+import com.od.filtertable.suffixtree.SuffixTree;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,7 +28,7 @@ public class CollectValuesVisitor<V> implements SuffixTreeVisitor<V> {
 
     public boolean visit(SuffixTree<V> suffixTree) {
         if ( suffixTree.isTerminalNode()) {
-            Iterator<V> i = suffixTree.values.iterator();
+            Iterator<V> i = suffixTree.getValues().iterator();
             while(i.hasNext() && valueCount < maxValueCount) {
                 targetCollection.add(i.next());
                 valueCount++;

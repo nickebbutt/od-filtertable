@@ -2,6 +2,8 @@ package com.od.filtertable.suffixtree;
 
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
+import com.od.filtertable.suffixtree.visitor.CollectValuesVisitor;
+import com.od.filtertable.suffixtree.visitor.SuffixTreeVisitor;
 
 import java.util.Collection;
 
@@ -12,8 +14,8 @@ import java.util.Collection;
  */
 public abstract class SuffixTree<V> {
 
-    SuffixTree<V> firstChild;
     SuffixTree<V> nextPeer;
+    SuffixTree<V> firstChild;
     Collection<V> values;
 
     char[] label = CharUtils.EMPTY_CHAR_ARRAY;
@@ -23,16 +25,16 @@ public abstract class SuffixTree<V> {
      */
     public void add(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
-        addToTree(c, value, new ChildNodeIteratorPool<V>());
+        addToTree(c, value, new ChildIteratorPool<V>());
     }
 
-    private void addToTree(MutableCharSequence s, V value, IteratorPool<V> iteratorPool) {
+    private void addToTree(MutableCharSequence s, V value, ChildIteratorPool<V> iteratorPool) {
         if (s.length() == 0) {
             //since when adding initial s always ends with terminal char, this is a terminal node, add the value
             addValue(value);
         } else {
             //there are still chars to add, see if they match any existing children, if not insert a new child node
-            ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+            ChildIterator<V> i = iteratorPool.getIterator(this);
             try {
                 doAdd(s, value, i, iteratorPool);
             } finally {
@@ -41,7 +43,7 @@ public abstract class SuffixTree<V> {
         }      
     }
 
-    private void doAdd(MutableCharSequence s, V value, ChildNodeIterator<V> i, IteratorPool<V> p) {
+    private void doAdd(MutableCharSequence s, V value, ChildIterator<V> i, ChildIteratorPool<V> p) {
         boolean added = false;
         while (i.isValid()) {
             int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
@@ -70,13 +72,13 @@ public abstract class SuffixTree<V> {
         }
     }
 
-    private void addToChild(MutableCharSequence s, V value, ChildNodeIterator<V> i, int matchingChars, IteratorPool<V> iteratorPool) {
+    private void addToChild(MutableCharSequence s, V value, ChildIterator<V> i, int matchingChars, ChildIteratorPool<V> iteratorPool) {
         s.incrementStart(matchingChars);        
         i.getCurrentNode().addToTree(s, value, iteratorPool);
         s.decrementStart(matchingChars);
     }
 
-    private void split(ChildNodeIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
+    private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
         char[] labelForReplacement = CharUtils.getPrefix(s, matchingChars);
 
         SuffixTree<V> nodeToReplace = i.getCurrentNode();
@@ -107,7 +109,7 @@ public abstract class SuffixTree<V> {
         firstChild.nextPeer = secondChild;
     }
 
-    private void insert(ChildNodeIterator<V> i, MutableCharSequence s, V value) {
+    private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
         SuffixTree<V> newNode = createNewSuffixTreeNode();
         newNode.label = CharUtils.createCharArray(s);
         newNode.addValue(value);
@@ -126,7 +128,7 @@ public abstract class SuffixTree<V> {
      */
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection);
-        accept(new MutableSequence(c), collectValuesVisitor, new ChildNodeIteratorPool<V>());
+        accept(new MutableSequence(c), collectValuesVisitor, new ChildIteratorPool<V>());
         return targetCollection;
     }
     
@@ -135,7 +137,7 @@ public abstract class SuffixTree<V> {
      */
     public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults);
-        accept(new MutableSequence(c), collectValuesVisitor, new ChildNodeIteratorPool<V>());
+        accept(new MutableSequence(c), collectValuesVisitor, new ChildIteratorPool<V>());
         return targetCollection;
     }
 
@@ -143,11 +145,11 @@ public abstract class SuffixTree<V> {
      * Visit all nodes which are prefixed with char sequence
      */
     public void accept(CharSequence c, SuffixTreeVisitor v) {
-        accept(new MutableSequence(c), v, new ChildNodeIteratorPool<V>());    
+        accept(new MutableSequence(c), v, new ChildIteratorPool<V>());    
     }
 
-    private void accept(MutableCharSequence s, SuffixTreeVisitor<V> visitor, IteratorPool<V> iteratorPool) {
-        ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+    private void accept(MutableCharSequence s, SuffixTreeVisitor<V> visitor, ChildIteratorPool<V> iteratorPool) {
+        ChildIterator<V> i = iteratorPool.getIterator(this);
         try {
             if ( s.length() == 0) {
                 accept(visitor, iteratorPool);
@@ -178,12 +180,12 @@ public abstract class SuffixTree<V> {
      * Visit all nodes
      */
     public boolean accept(SuffixTreeVisitor v) {
-        return accept(v, new ChildNodeIteratorPool<V>());
+        return accept(v, new ChildIteratorPool<V>());
     }
     
-    private boolean accept(SuffixTreeVisitor v, IteratorPool<V> iteratorPool) {
+    private boolean accept(SuffixTreeVisitor v, ChildIteratorPool<V> iteratorPool) {
         boolean shouldContinue = v.visit(this);
-        ChildNodeIterator<V> i = iteratorPool.getIterator(this);
+        ChildIterator<V> i = iteratorPool.getIterator(this);
         while(i.isValid() && shouldContinue) {
             shouldContinue = i.getCurrentNode().accept(v, iteratorPool);
             i.next();
@@ -197,20 +199,20 @@ public abstract class SuffixTree<V> {
      */
     public void remove(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
-        removeFromTree(c, value, new ChildNodeIteratorPool<V>());
+        removeFromTree(c, value, new ChildIteratorPool<V>());
     }
 
-    private boolean removeFromTree(MutableCharSequence c, V value, ChildNodeIteratorPool<V> childNodeIteratorPool) {
+    private boolean removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool) {
         if ( c.length() == 0) {
             values.remove(value);
         } else {
-            ChildNodeIterator<V> i = childNodeIteratorPool.getIterator(this);
+            ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
                 SuffixTree<V> current = i.getCurrentNode();
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current.label);
                 if ( matchingChars == current.label.length) {
                     c.incrementStart(matchingChars);
-                    boolean joinOrRemove = current.removeFromTree(c, value, childNodeIteratorPool);
+                    boolean joinOrRemove = current.removeFromTree(c, value, childIteratorPool);
                     if ( joinOrRemove ) {
                         joinOrRemove(i, current);
                     }
@@ -223,7 +225,7 @@ public abstract class SuffixTree<V> {
         return (isTerminalNode() && values.size() == 0) || isOnlyOneChild();
     }
 
-    private void joinOrRemove(ChildNodeIterator<V> i, SuffixTree<V> current) {
+    private void joinOrRemove(ChildIterator<V> i, SuffixTree<V> current) {
         if ( current.isTerminalNode()) {
             i.removeCurrent();    
         } else {
@@ -241,6 +243,14 @@ public abstract class SuffixTree<V> {
     protected abstract SuffixTree<V> createNewSuffixTreeNode();
 
     protected abstract CollectionFactory<V> getCollectionFactory();
+
+    public char[] getLabel() {
+        return label;
+    }
+
+    public Collection<V> getValues() {
+        return values;
+    }
 
     public boolean isTerminalNode() {
         return label.length > 0 /* root node */ && label[label.length - 1] == CharUtils.TERMINAL_CHAR;

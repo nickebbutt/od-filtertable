@@ -1,4 +1,6 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.suffixtree.visitor;
+
+import com.od.filtertable.suffixtree.SuffixTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,7 @@ public class KeySetVisitor<V> implements SuffixTreeVisitor<V> {
     @Override
     public boolean visit(SuffixTree<V> suffixTree) {
         //add the label chars
-        sb.append(suffixTree.label);
+        sb.append(suffixTree.getLabel());
         if (suffixTree.isTerminalNode()) {
             removeLastCharacter();
             allKeys.add(sb.toString());
@@ -30,7 +32,7 @@ public class KeySetVisitor<V> implements SuffixTreeVisitor<V> {
     @Override
     public void visitComplete(SuffixTree<V> suffixTree) {
         //remove the label chars
-        int chars = suffixTree.label.length;
+        int chars = suffixTree.getLabel().length;
         if ( suffixTree.isTerminalNode()) {
             chars--;
         }

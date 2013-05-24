@@ -1,4 +1,6 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.suffixtree.visitor;
+
+import com.od.filtertable.suffixtree.SuffixTree;
 
 import java.io.PrintWriter;
 
@@ -21,12 +23,10 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
         indentLevel++;
         StringBuilder sb = new StringBuilder();
         addIndent(indentLevel, sb);
-        sb.append(suffixTree.label);
-        if ( suffixTree.values != null) {
-            //sb.append("\n");
-            //addIndent(indentLevel, sb);
+        sb.append(suffixTree.getLabel());
+        if ( suffixTree.getValues() != null) {
             sb.append("\t vals: ");
-            for (Object o : suffixTree.values) {
+            for (Object o : suffixTree.getValues()) {
                 sb.append(o.toString()).append(" ");
             }
         }
@@ -57,7 +57,7 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
 //        sb.append(" -->\n");
 //        w.print(sb.toString());
 //        w.flush();
-//        ChildNodeIterator<V> i = new ChildNodeIterator<V>(this);
+//        ChildIterator<V> i = new ChildIterator<V>(this);
 //        while (i.isValid()) {
 //            i.getCurrentNode().printStructure(level + 1, w);
 //            i.next();

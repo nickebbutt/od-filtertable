@@ -1,4 +1,6 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.suffixtree.visitor;
+
+import com.od.filtertable.suffixtree.SuffixTree;
 
 /**
  * User: nick

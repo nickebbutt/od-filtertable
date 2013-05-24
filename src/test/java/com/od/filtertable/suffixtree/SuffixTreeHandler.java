@@ -1,6 +1,8 @@
 package com.od.filtertable.suffixtree;
 
-import com.od.filtertable.suffixtree.SuffixTree;
+import com.od.filtertable.suffixtree.visitor.KeySetVisitor;
+import com.od.filtertable.suffixtree.visitor.LoggingVisitor;
+import com.od.filtertable.suffixtree.visitor.NodeCountVisitor;
 import org.chorusbdd.chorus.annotations.Handler;
 import org.chorusbdd.chorus.annotations.Step;
 import org.chorusbdd.chorus.util.assertion.ChorusAssert;
