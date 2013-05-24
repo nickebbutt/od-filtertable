@@ -37,7 +37,7 @@ public class StandardIndexHandler extends ChorusAssert {
     
     @Step("I add value (.*) under key (.*)")
     public void addAValue(String value, String key) {
-        index.addOrUpdate(value.trim(), key);     
+        index.add(value.trim(), key);     
     }
     
     @Step("a prefix search for (.*) returns (.*)")

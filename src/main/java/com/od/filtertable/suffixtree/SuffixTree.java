@@ -133,7 +133,7 @@ public abstract class SuffixTree<V> {
     /**
      * Get into target collection values from all nodes prefixed with char sequence, to a limit of maxResults values
      */
-    public Collection<V> get(CharSequence c, Collection<V> targetCollection, int maxResults) {
+    public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults);
         accept(new MutableSequence(c), collectValuesVisitor, new ChildNodeIteratorPool<V>());
         return targetCollection;

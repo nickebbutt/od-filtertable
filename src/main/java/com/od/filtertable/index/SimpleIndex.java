@@ -22,15 +22,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * This saves a lot of memory, but will be much slower, especially for short search strings.
  * Consider enforcing a minimum search term length, or switching to DynamicDepthIndex if this is a problem
  */
-public class SimpleIndex<V> implements TrieIndex<V> {
+public class SimpleIndex<V> extends AbstractSimpleIndex<V> {
 
-    private final boolean indexSubstrings;
     private final AbstractTrieNode<V, ? extends Collection<V>> index;
-    private final IdentityHashMap<V, IndexedValue<V>> identityHashMap = new IdentityHashMap<V, IndexedValue<V>>();
-    
-    private final MutableSequence mutableCharSequence = new MutableSequence();
-    
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /*
     * @param isCaseSensitive    - support a case sensitive search
@@ -45,126 +39,27 @@ public class SimpleIndex<V> implements TrieIndex<V> {
    * @param indexSubstrings    - e.g. if search term is AR, whether this matches BAR and ROAR, or just AR, ARK, etc
    */
     public SimpleIndex(AbstractTrieNode<V, ? extends Collection<V>> trie, boolean indexSubstrings) {
+        super(indexSubstrings);
         this.index = trie;
-        this.indexSubstrings = indexSubstrings;
     }
 
-    /**
-     * If V is already in the index first remove it
-     * Then store v into the index under CharSequence s
-     */
     @Override
-    public void addOrUpdate(V v, CharSequence s) {
-        lock.writeLock().lock();
-        try {
-            IndexedValue<V> val = identityHashMap.get(v);
-            if (val != null) {
-                CharSequence indexKey = val.getIndexKey();
-                boolean indexFieldChanged = !indexKey.equals(s);
-                if (indexFieldChanged) {
-                    remove(indexKey, v);
-                }
-            } else {
-                val = new IndexedValue<V>(v);
-                identityHashMap.put(v, val);
-            }
-            val.setIndexKey(s);
-            add(s, v);
-        } finally {
-            lock.writeLock().unlock();
-        }
-
+    protected <C extends Collection<V>> C doGetValuesWithPrefixes(CharSequence s, C targetCollection, int maxValues) {
+        return index.getValuesWithPrefixes(s, targetCollection, maxValues);
     }
 
-    /**
-     * Remove v from the index
-     */
     @Override
-    public void remove(V v) {
-        lock.writeLock().lock();
-        try {
-            IndexedValue<V> val = identityHashMap.get(v);
-            if (val != null) {
-                CharSequence lastIndexedString = val.getIndexKey();
-                remove(lastIndexedString, v);
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
-
+    protected Collection<V> doGetValues(CharSequence s) {
+        return index.getValues(s);
     }
 
-    /**
-     * Find all the values associated with CharSequence s and any other CharSequence for which s is a prefix
-     * 
-     * The SimpleIndex makes an additional guarantee that target collection will be populated with values in 
-     * alphabetical ordering from the internal char structure, 
-     * e.g. for the search term 'A' values stored against node 'A' will be added to targetCollection first, followed by 
-     * 'AB' and 'AC'
-     */
-    public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection) {
-        lock.readLock().lock();
-        try {
-            return index.getValuesWithPrefixes(s, targetCollection);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Find all the values associated with CharSequence s and any other CharSequence for which s is a prefix, up to 
-     * a certain number of values
-     *
-     * The SimpleIndex makes an additional guarantee that target collection will be populated with values in 
-     * alphabetical ordering from the internal char structure, 
-     * e.g. for the search term 'A' values stored against node 'A' will be added to targetCollection first, followed by 
-     * 'AB' and 'AC'
-     */
     @Override
-    public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection, int maxMatches) {
-        lock.readLock().lock();
-        try {
-            return index.getValuesWithPrefixes(s, targetCollection, maxMatches);
-        } finally {
-            lock.readLock().unlock();
-        }
+    protected void addToIndex(CharSequence s, V val) {
+        index.addValue(s, val);
     }
 
-    /**
-     * Find all the values associated with the exact CharSequence s
-     */
-    public Collection<V> getValues(CharSequence s) {
-        lock.readLock().lock();
-        try {
-            return index.getValues(s);
-        } finally {
-            lock.readLock().unlock();
-        }    
-    }
-
-    /**
-     * @param s - the char sequence against which which we want to store val 
-     * @param val - value to add to the index
-     */
-    private void add(CharSequence s, V val) {
-        mutableCharSequence.setSegment(s);
-        int lastChar = indexSubstrings ? s.length() : 1;
-        for ( int startChar = 0; startChar < lastChar; startChar ++) {
-            int endChar = s.length();
-            mutableCharSequence.setStart(startChar);
-            mutableCharSequence.setEnd(endChar);
-            index.addValue(mutableCharSequence, val);            
-        }
-    }
-
-    private void remove(CharSequence s, V val) {
-        mutableCharSequence.setSegment(s);
-        int lastChar = indexSubstrings ? s.length() : 1;
-        for ( int startChar = 0; startChar < lastChar; startChar ++) {
-            int endChar = s.length();
-            mutableCharSequence.setStart(startChar);
-            mutableCharSequence.setEnd(endChar);
-            index.removeValue(mutableCharSequence, val);
-        }
+    @Override
+    protected void removeFromIndex(CharSequence s, V val) {
+        index.removeValue(s, val);
     }
 }

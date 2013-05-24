@@ -98,13 +98,13 @@ public interface CharTrie<V, C extends Collection<V>> {
      * 
      * @targetCollection the collection into which result values will be collated 
      */
-    Collection<V> getValuesWithPrefixes(CharSequence key, Collection<V> targetCollection);
+    <R extends Collection<V>> R getValuesWithPrefixes(CharSequence key, R targetCollection);
 
 
     /**
      * Similar to above method but returns only a maximum of maxMatches results, 
      **/
-    Collection<V> getValuesWithPrefixes(CharSequence key, Collection<V> targetCollection, int maxMatches);
+    <R extends Collection<V>> R getValuesWithPrefixes(CharSequence key, R targetCollection, int maxMatches);
 
     /**
      * @return the trie node representing the key, if it exists

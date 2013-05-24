@@ -29,7 +29,6 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
     private final boolean indexSubstrings;
     private final IndexTrieNode<V> index;
     private final int initialDepth;
-    private final IdentityHashMap<V, IndexedValue<V>> identityHashMap = new IdentityHashMap<V, IndexedValue<V>>();
     
     private final MutableSequence mutableCharSequence = new MutableSequence();
     private final LinkedList<IndexedValue<V>> cellsToReindex = new LinkedList<IndexedValue<V>>();    
@@ -51,23 +50,12 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
      * If V is already in the index first remove it
      * Then store v into the index under CharSequence s
      */
-    @Override
-    public void addOrUpdate(V v, CharSequence s) {
+    public void add(CharSequence s, V v) {
         lock.writeLock().lock();
         try {
-            IndexedValue<V> val = identityHashMap.get(v);
-            if (val != null) {
-                CharSequence indexKey = val.getIndexKey();
-                boolean indexFieldChanged = !indexKey.equals(s);
-                if (indexFieldChanged) {
-                    remove(indexKey, val);
-                }
-            } else {
-                val = new IndexedValue<V>(v);
-                identityHashMap.put(v, val);
-            }
+            IndexedValue<V> val = new IndexedValue<V>(v);
             val.setIndexKey(s);
-            add(s, val);
+            doAdd(s, val);
         } finally {
             lock.writeLock().unlock();
         }
@@ -77,15 +65,11 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
     /**
      * Remove v from the index
      */
-    @Override
-    public void remove(V v) {
+    public void remove(CharSequence s, V v) {
         lock.writeLock().lock();
         try {
-            IndexedValue<V> val = identityHashMap.get(v);
-            if (val != null) {
-                CharSequence lastIndexedString = val.getIndexKey();
-                remove(lastIndexedString, val);
-            }
+            IndexedValue<V> val = new IndexedValue<V>(v);
+            doRemove(s, val);
         } finally {
             lock.writeLock().unlock();
         }
@@ -111,8 +95,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
      * If you only wish to find/iterate the matches consider using getIndexedValuesForPrefix which returns 
      * the values wrapped as an IndexValue but avoids the work required to populate targetCollection
      */
-    @Override
-    public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection) {
+    public <R extends Collection<V>> R getValuesForPrefix(CharSequence s, R targetCollection) {
         Collection<IndexedValue<V>> c = getIndexedValuesForPrefix(s);
         for ( IndexedValue<V> i : c) {
             targetCollection.add(i.getValue());
@@ -120,8 +103,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
         return targetCollection;
     }
 
-    @Override
-    public Collection<V> getValuesForPrefix(CharSequence s, Collection<V> targetCollection, int maxMatches) {
+    public <R extends Collection<V>> R getValuesForPrefix(CharSequence s, R targetCollection, int maxMatches) {
         Collection<IndexedValue<V>> c = getIndexedValuesForPrefix(s);
         int matchCount = 0;
         for ( IndexedValue<V> i : c) {
@@ -131,10 +113,11 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
                 break;
             }
         }
-        return targetCollection;    }
+        return targetCollection;    
+    }
 
-    private void add(CharSequence s, IndexedValue<V> val) {
-        add(s, val, initialDepth, 0);
+    private void doAdd(CharSequence s, IndexedValue<V> val) {
+        doAdd(s, val, initialDepth, 0);
     }
 
     /**
@@ -143,7 +126,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
      * @param maxDepth       - maximum depth to index, i.e. index for the first n letters of the char sequence
      * @param startingDepth  - usually 0, to store val against all prefixes, but where we have already stored to depth n, may be n + 1 to save work 
      */
-    private void add(CharSequence s, IndexedValue<V> val, int maxDepth, int startingDepth) {
+    private void doAdd(CharSequence s, IndexedValue<V> val, int maxDepth, int startingDepth) {
         mutableCharSequence.setSegment(s);
         int lastChar = indexSubstrings ? s.length() : 1;
         for ( int startChar = 0; startChar < lastChar; startChar ++) {
@@ -155,7 +138,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
         val.setIndexedDepth(maxDepth);        
     }
 
-    private void remove(CharSequence s, IndexedValue<V> val) {
+    private void doRemove(CharSequence s, IndexedValue<V> val) {
         int depth = val.getIndexedDepth();
         mutableCharSequence.setSegment(s);
         int lastChar = indexSubstrings ? s.length() : 1;
@@ -188,7 +171,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
 
             while(cellsToReindex.size() > 0) {
                 IndexedValue<V> v = cellsToReindex.remove(0);
-                add(v.getIndexKey(), v, newIndexDepth, newIndexDepth);
+                doAdd(v.getIndexKey(), v, newIndexDepth, newIndexDepth);
             }
         }
     }

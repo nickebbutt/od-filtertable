@@ -138,13 +138,11 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
      * This is only useful where values have not been added 'with prefixes', although performance will be worse due to the 
      * need to dynamically iterate and create the result set.
      */
-    @Override
-    public Collection<V> getValuesWithPrefixes(CharSequence key, final Collection<V> targetCollection) {
+    public <R extends Collection<V>> R getValuesWithPrefixes(CharSequence key, final R targetCollection) {
         return getValuesWithPrefixes(key, targetCollection, Integer.MAX_VALUE);
     }
 
-    @Override
-    public Collection<V> getValuesWithPrefixes(CharSequence key, final Collection<V> targetCollection, final int maxMatches) {
+    public <R extends Collection<V>> R getValuesWithPrefixes(CharSequence key, final R targetCollection, final int maxMatches) {
         CharTrie<V,C> node = getTrieNode(key);
         if ( node != null) {
             node.accept(new TrieVisitor<V, C>() {
