@@ -88,7 +88,6 @@ public class SuffixTreeHandler extends ChorusAssert {
         @Override
         protected CollectionFactory<String> getCollectionFactory() {
             return new CollectionFactory<String>() {
-                @Override
                 public Collection<String> createTerminalNodeCollection() {
                     return new HashSet<String>();
                 }

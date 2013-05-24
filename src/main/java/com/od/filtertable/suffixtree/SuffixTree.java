@@ -204,11 +204,16 @@ public abstract class SuffixTree<V> {
     }
 
     private void doJoin(ChildNodeIterator<V> i, SuffixTree<V> current) {
-        SuffixTree<V> joined = createNewSuffixTreeNode();
-        char[] newLabel = CharUtils.join(current.label, current.firstChild.label);
-        joined.label = newLabel;
-        joined.firstChild = current.firstChild.firstChild;
-        i.join(joined);
+        if ( current.isTerminalNode()) {
+            i.removeCurrent();    
+        } else {
+            SuffixTree<V> joined = createNewSuffixTreeNode();
+            char[] newLabel = CharUtils.join(current.label, current.firstChild.label);
+            joined.label = newLabel;
+            joined.firstChild = current.firstChild.firstChild;
+            joined.values = current.firstChild.values;
+            i.join(joined);        
+        }
     }
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();

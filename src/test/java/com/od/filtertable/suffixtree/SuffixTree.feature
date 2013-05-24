@@ -49,7 +49,6 @@
       And the number of nodes is 5
       And a search for A returns VAL3, VAL2, VAL1
 
-    @REMOVE
     Scenario: I can remove a value
       When I add a value VAL1 under key ABC
       When I add a value VAL2 under key ABC
@@ -62,17 +61,27 @@
       And I remove a value VAL1 under key ABC
       And the number of nodes is 1
 
-    @FAILING
     Scenario: Removing all values compresses node structure
       When I add a value VAL1 under key ABC
       And I add a value VAL2 under key ABD
-      And I show the tree structure
-      Then the number of nodes is 3
-      #And I show the tree structure
-      #And I remove a value VAL1 under key ABC
-      #And I remove a value VAL2 under key ABD
-      #Then the number of nodes is 1
-      #And I show the tree structure
+      Then the number of nodes is 4
+      And I remove a value VAL1 under key ABC
+      And I remove a value VAL2 under key ABD
+      Then the number of nodes is 1
+  
+    @FAILING
+    Scenario: Removing all values compresses node structure complex
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABD
+      And I add a value VAL3 under key AB
+      And the number of nodes is 5
+      And I remove a value VAL1 under key ABC
+      And the number of nodes is 4      
+      And I remove a value VAL2 under key ABD
+      And the number of nodes is 2
+      And I remove a value VAL3 under key AB
+      Then the number of nodes is 1
+  
 
   #And I show the tree structure
       

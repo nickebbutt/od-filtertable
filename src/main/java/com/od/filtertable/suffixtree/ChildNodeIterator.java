@@ -69,5 +69,18 @@ public class ChildNodeIterator<V> {
     public void join(SuffixTree<V> replacementChild) {
         replacementChild.nextPeer = currentNode.nextPeer;
         currentNode = replacementChild;
+        if ( lastNode != null) {
+            lastNode.nextPeer = currentNode;
+        } else {
+            parent.firstChild = currentNode;
+        }
+    }
+
+    public void removeCurrent() {
+        if ( lastNode != null) {
+            lastNode.nextPeer = currentNode.nextPeer;
+        } else {
+            parent.firstChild = currentNode.nextPeer;
+        }
     }
 }

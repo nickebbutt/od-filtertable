@@ -26,6 +26,7 @@ public class CharSequenceWithTerminalNode implements MutableCharSequence{
 
     private void init(CharSequence s) {
         this.s = s;
+        this.start = 0;       
         this.end = s.length() + 1;
     }
 
