@@ -58,7 +58,9 @@ public class SuffixTreeHandler extends ChorusAssert {
     public void countNodes(int number) {
         NodeCountVisitor n = new NodeCountVisitor();
         suffixTree.accept(n);
-        assertEquals("Expect " + number + " nodes", number, n.getNodeCount());
+        
+        //-1 since we don't include the root node in the count for this test
+        assertEquals("Expect " + number + " nodes", number, n.getNodeCount() - 1);
     }
     
     @Step("a search for (.*) returns (.*)")

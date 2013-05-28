@@ -28,7 +28,7 @@ public abstract class SuffixTree<V> {
      */
     public void add(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
-        addToTree(c, value, new ChildIteratorPool<V>());
+        addToTree(c, value, ChildIteratorPool.<V>getIteratorPool());
     }
 
     private void addToTree(MutableCharSequence s, V value, ChildIteratorPool<V> iteratorPool) {
@@ -93,7 +93,7 @@ public abstract class SuffixTree<V> {
         
         SuffixTree<V> replacementNode = createNewSuffixTreeNode();
         replacementNode.label = labelForReplacement;
-        i.replaceCurrent(replacementNode);
+        i.replace(replacementNode);
         
         SuffixTree<V> replacementChild = createNewSuffixTreeNode();
         replacementChild.label = labelForReplacementChild;
@@ -130,7 +130,7 @@ public abstract class SuffixTree<V> {
      */
     public Collection<V> get(CharSequence c, Collection<V> targetCollection) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection);
-        accept(new MutableSequence(c), collectValuesVisitor, new ChildIteratorPool<V>());
+        accept(new MutableSequence(c), collectValuesVisitor, ChildIteratorPool.<V>getIteratorPool());
         return targetCollection;
     }
     
@@ -139,7 +139,7 @@ public abstract class SuffixTree<V> {
      */
     public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults);
-        accept(new MutableSequence(c), collectValuesVisitor, new ChildIteratorPool<V>());
+        accept(new MutableSequence(c), collectValuesVisitor, ChildIteratorPool.<V>getIteratorPool());
         return targetCollection;
     }
 
@@ -147,7 +147,7 @@ public abstract class SuffixTree<V> {
      * Visit all nodes which are prefixed with char sequence
      */
     public void accept(CharSequence c, SuffixTreeVisitor v) {
-        accept(new MutableSequence(c), v, new ChildIteratorPool<V>());    
+        accept(new MutableSequence(c), v, ChildIteratorPool.<V>getIteratorPool());    
     }
 
     private void accept(MutableCharSequence s, SuffixTreeVisitor<V> visitor, ChildIteratorPool<V> iteratorPool) {
@@ -182,7 +182,7 @@ public abstract class SuffixTree<V> {
      * Visit all nodes
      */
     public boolean accept(SuffixTreeVisitor v) {
-        return accept(v, new ChildIteratorPool<V>());
+        return accept(v, ChildIteratorPool.<V>getIteratorPool());
     }
     
     private boolean accept(SuffixTreeVisitor v, ChildIteratorPool<V> iteratorPool) {
@@ -201,7 +201,7 @@ public abstract class SuffixTree<V> {
      */
     public void remove(CharSequence s, V value) {
         MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
-        removeFromTree(c, value, new ChildIteratorPool<V>());
+        removeFromTree(c, value, ChildIteratorPool.<V>getIteratorPool());
     }
 
     private boolean removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool) {
@@ -237,7 +237,7 @@ public abstract class SuffixTree<V> {
             char[] newLabel = CharUtils.join(current.label, ((SuffixTree)current.payload).label);
             joined.label = newLabel;
             joined.payload = ((SuffixTree)current.payload).payload;
-            i.join(joined);        
+            i.replace(joined);        
         }
     }
 

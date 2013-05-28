@@ -4,6 +4,9 @@ package com.od.filtertable.suffixtree;
 * User: nick
 * Date: 16/05/13
 * Time: 08:30
+* 
+* Iterate through the child nodes of a suffix tree node,
+* also supporting insert/remove/replace operations
 */
 public class ChildIterator<V> {
 
@@ -12,8 +15,15 @@ public class ChildIterator<V> {
     private SuffixTree<V> lastNode;
 
     public ChildIterator(SuffixTree<V> parent) {
+        setParent(parent);    
+    }
+    
+    public ChildIterator() {}
+    
+    public void setParent(SuffixTree<V> parent) {
         this.parent = parent;
         currentNode = parent.isTerminalNode() ? null : (SuffixTree<V>)parent.payload;
+        lastNode = null;
     }
 
     public boolean isValid() {
@@ -38,7 +48,7 @@ public class ChildIterator<V> {
         newNode.nextPeer = currentNode;
     }
 
-    public void replaceCurrent(SuffixTree<V> replacementNode) {
+    public void replace(SuffixTree<V> replacementNode) {
         if ( lastNode != null) {
             lastNode.nextPeer = replacementNode;
         } else {
@@ -46,16 +56,6 @@ public class ChildIterator<V> {
         }
         replacementNode.nextPeer = currentNode.nextPeer;
         currentNode = replacementNode;
-    }
-
-    public void join(SuffixTree<V> replacementChild) {
-        replacementChild.nextPeer = currentNode.nextPeer;
-        currentNode = replacementChild;
-        if ( lastNode != null) {
-            lastNode.nextPeer = currentNode;
-        } else {
-            parent.payload = currentNode;
-        }
     }
 
     public void removeCurrent() {

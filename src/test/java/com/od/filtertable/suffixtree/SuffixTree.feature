@@ -34,7 +34,7 @@
       And I add a value VAL3 under key AA
       And I add a value VAL4 under key BA
       Then the suffix tree contains keys AA, AAA, ABA, BA
-      And the number of nodes is 7
+      And the number of nodes is 6
       And a search for A returns VAL3, VAL2, VAL1
       And a search for AA returns VAL3, VAL2
       And a search for AB returns VAL1
@@ -46,7 +46,7 @@
       When I add a value VAL2 under key AB
       When I add a value VAL3 under key AA
       Then the suffix tree contains keys AA, AB, AC
-      And the number of nodes is 5
+      And the number of nodes is 4
       And a search for A returns VAL3, VAL2, VAL1
 
     Scenario: I can remove a value
@@ -54,32 +54,34 @@
       When I add a value VAL2 under key ABC
       And I remove a value VAL1 under key ABC
       Then a search for ABC returns VAL2
-      And the number of nodes is 2
+      And the number of nodes is 1
   
     Scenario: When I remove last value empty terminal node is removed
       When I add a value VAL1 under key ABC
       And I remove a value VAL1 under key ABC
-      And the number of nodes is 1
+      And the number of nodes is 0
 
     Scenario: Removing all values compresses node structure
       When I add a value VAL1 under key ABC
       And I add a value VAL2 under key ABD
-      Then the number of nodes is 4
+      Then the number of nodes is 3
       And I remove a value VAL1 under key ABC
       And I remove a value VAL2 under key ABD
-      Then the number of nodes is 1
+      Then the number of nodes is 0
   
     Scenario: Removing all values compresses node structure complex
       When I add a value VAL1 under key ABC
       And I add a value VAL2 under key ABD
       And I add a value VAL3 under key AB
-      And the number of nodes is 5
+      And the number of nodes is 4
       And I remove a value VAL1 under key ABC
-      And the number of nodes is 4      
+      And the number of nodes is 3
+      And a search for A returns VAL3, VAL2 
       And I remove a value VAL2 under key ABD
-      And the number of nodes is 2
+      And the number of nodes is 1
+      And a search for A returns VAL3
       And I remove a value VAL3 under key AB
-      Then the number of nodes is 1
+      Then the number of nodes is 0
   
     Scenario: Getting a limited number of results
       When I add a value VAL1 under key ABC
