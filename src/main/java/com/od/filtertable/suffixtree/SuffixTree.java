@@ -14,9 +14,12 @@ import java.util.Collection;
  */
 public abstract class SuffixTree<V> {
 
+    //the next node in the linked list of children for this node's parent
     SuffixTree<V> nextPeer;
-    SuffixTree<V> firstChild;
-    Collection<V> values;
+    
+    //use of this field is overloaded to save memory / 1 reference per node instance
+    //this will either be the first child node of a linked list of children, or, for terminal nodes, a collection of values
+    Object payload; 
 
     char[] label = CharUtils.EMPTY_CHAR_ARRAY;
 
@@ -94,8 +97,7 @@ public abstract class SuffixTree<V> {
         
         SuffixTree<V> replacementChild = createNewSuffixTreeNode();
         replacementChild.label = labelForReplacementChild;
-        replacementChild.firstChild = nodeToReplace.firstChild;
-        replacementChild.values = nodeToReplace.values;
+        replacementChild.payload = nodeToReplace.payload;
 
         SuffixTree<V> newChild = createNewSuffixTreeNode();
         newChild.label = labelForNewChild;
@@ -105,7 +107,7 @@ public abstract class SuffixTree<V> {
         SuffixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
         SuffixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
-        replacementNode.firstChild = firstChild;
+        replacementNode.payload = firstChild;
         firstChild.nextPeer = secondChild;
     }
 
@@ -117,10 +119,10 @@ public abstract class SuffixTree<V> {
     }
 
     private void addValue(V value) {
-        if ( values == null) {
-            values = getCollectionFactory().createTerminalNodeCollection();
+        if ( payload == null) {
+            payload = getCollectionFactory().createTerminalNodeCollection();
         }
-        values.add(value);
+        ((Collection<V>)payload).add(value);
     }
 
     /**
@@ -204,7 +206,7 @@ public abstract class SuffixTree<V> {
 
     private boolean removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool) {
         if ( c.length() == 0) {
-            values.remove(value);
+            ((Collection<V>)payload).remove(value);
         } else {
             ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
@@ -222,7 +224,7 @@ public abstract class SuffixTree<V> {
             }
         }
         
-        return (isTerminalNode() && values.size() == 0) || isOnlyOneChild();
+        return (isTerminalNode() && ((Collection<V>)payload).size() == 0) || isOnlyOneChild();
     }
 
     private void joinOrRemove(ChildIterator<V> i, SuffixTree<V> current) {
@@ -232,10 +234,9 @@ public abstract class SuffixTree<V> {
             //the current node now has just a single child
             //we should replace it with a new node which combines the prefixes
             SuffixTree<V> joined = createNewSuffixTreeNode();
-            char[] newLabel = CharUtils.join(current.label, current.firstChild.label);
+            char[] newLabel = CharUtils.join(current.label, ((SuffixTree)current.payload).label);
             joined.label = newLabel;
-            joined.firstChild = current.firstChild.firstChild;
-            joined.values = current.firstChild.values;
+            joined.payload = ((SuffixTree)current.payload).payload;
             i.join(joined);        
         }
     }
@@ -249,7 +250,7 @@ public abstract class SuffixTree<V> {
     }
 
     public Collection<V> getValues() {
-        return values;
+        return isTerminalNode() ? (Collection<V>)payload : null;
     }
 
     public boolean isTerminalNode() {
@@ -257,6 +258,6 @@ public abstract class SuffixTree<V> {
     }
 
     public boolean isOnlyOneChild() {
-        return firstChild != null && firstChild.nextPeer == null;
+        return ! isTerminalNode() && payload != null && ((SuffixTree<V>)payload).nextPeer == null;
     }
 }

@@ -13,7 +13,7 @@ public class ChildIterator<V> {
 
     public ChildIterator(SuffixTree<V> parent) {
         this.parent = parent;
-        currentNode = parent.firstChild;
+        currentNode = parent.isTerminalNode() ? null : (SuffixTree<V>)parent.payload;
     }
 
     public boolean isValid() {
@@ -33,7 +33,7 @@ public class ChildIterator<V> {
         if (lastNode != null)  {
             lastNode.nextPeer = newNode;
         } else {
-            parent.firstChild = newNode; 
+            parent.payload = newNode; 
         }
         newNode.nextPeer = currentNode;
     }
@@ -42,7 +42,7 @@ public class ChildIterator<V> {
         if ( lastNode != null) {
             lastNode.nextPeer = replacementNode;
         } else {
-            parent.firstChild = replacementNode;
+            parent.payload = replacementNode;
         }
         replacementNode.nextPeer = currentNode.nextPeer;
         currentNode = replacementNode;
@@ -54,7 +54,7 @@ public class ChildIterator<V> {
         if ( lastNode != null) {
             lastNode.nextPeer = currentNode;
         } else {
-            parent.firstChild = currentNode;
+            parent.payload = currentNode;
         }
     }
 
@@ -62,7 +62,7 @@ public class ChildIterator<V> {
         if ( lastNode != null) {
             lastNode.nextPeer = currentNode.nextPeer;
         } else {
-            parent.firstChild = currentNode.nextPeer;
+            parent.payload = currentNode.nextPeer;
         }
     }
 }
