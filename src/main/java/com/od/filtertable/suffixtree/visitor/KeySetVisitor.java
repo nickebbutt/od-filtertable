@@ -32,7 +32,7 @@ public class KeySetVisitor<V> implements SuffixTreeVisitor<V> {
     @Override
     public void visitComplete(SuffixTree<V> suffixTree) {
         //remove the label chars
-        int chars = suffixTree.getLabel().length;
+        int chars = suffixTree.getLabelLength();
         if ( suffixTree.isTerminalNode()) {
             chars--;
         }

@@ -36,8 +36,15 @@ public class CharSequenceWithTerminalNode implements MutableCharSequence{
     }
 
     @Override
-    public int totalSequenceLength() {
+    public int getBaseSequenceLength() {
         return s.length() + 1;
+    }
+
+    @Override
+    public CharSequence getBaseSequence() {
+        StringBuilder sb = new StringBuilder(s);
+        sb.append(CharUtils.TERMINAL_CHAR);
+        return sb.toString();
     }
 
     @Override
@@ -53,6 +60,11 @@ public class CharSequenceWithTerminalNode implements MutableCharSequence{
     }
 
     @Override
+    public int getStart() {
+        return this.start;
+    }
+
+    @Override
     public void incrementStart(int v) {
         this.start += v;
     }
@@ -65,6 +77,11 @@ public class CharSequenceWithTerminalNode implements MutableCharSequence{
     @Override
     public void setEnd(int end) {
         this.end = end;
+    }
+
+    @Override
+    public int getEnd() {
+        return this.end;
     }
 
     @Override

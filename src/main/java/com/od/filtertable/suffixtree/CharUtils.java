@@ -37,6 +37,18 @@ public class CharUtils {
         return shared;
     }
 
+    public static int getSharedPrefixCount(CharSequence s, CharSequence s2) {
+        int shared = 0;
+        int maxLength = Math.min(s.length(), s2.length());
+        for ( int c = 0; c < maxLength; c++) {
+            if ( s.charAt(c) != s2.charAt(c) ) {
+                break;
+            }
+            shared++;
+        }
+        return shared;
+    }
+
     public static MutableCharSequence append(CharSequence s, char[] chars) {
         char[] result = new char[s.length() + chars.length];
         for ( int c = 0; c < s.length(); c++) {
@@ -74,7 +86,7 @@ public class CharUtils {
         return s.charAt(s.length() - 1);
     }
 
-    public static char[] getPrefix(MutableCharSequence s, int length) {
+    public static char[] getPrefix(CharSequence s, int length) {
         char[] result = new char[length];
         for ( int c = 0; c < length; c++) {
             result[c] = s.charAt(c);
@@ -82,7 +94,7 @@ public class CharUtils {
         return result;
     }
 
-    public static char[] getSuffix(MutableCharSequence s, int length) {
+    public static char[] getSuffix(CharSequence s, int length) {
         char[] result = new char[length];
         int start = s.length() - length;
         for ( int c = 0; c < length; c++) {
@@ -120,6 +132,29 @@ public class CharUtils {
         return result;
     }
 
+    public static int compare(CharSequence b, CharSequence c) {
+        //exclude terminal chars
+        int blength = b.length() > 0 && b.charAt(b.length() - 1) == TERMINAL_CHAR ? b.length() - 1 : b.length();
+        int clength = c.length() > 0 && c.charAt(c.length() - 1) == TERMINAL_CHAR ? c.length() - 1 : c.length();
+
+        int shared = Math.min(blength, clength);
+        int result = 0;
+        for ( int i = 0; i < shared; i++) {
+            char bchar = b.charAt(i);
+            if ( bchar != c.charAt(i)) {
+                result = bchar < c.charAt(i) ? -1 : 1;
+                break;
+            }
+        }
+
+        //if all shared chars are equal the shorter sorts first
+        if ( result == 0 ) {
+            result = blength < clength ? -1 :
+                    blength == clength ? 0 : 1;
+        }
+        return result;
+    }
+    
     /**
      * Compare a CharSequence to a char[]
      * Duplicating the char[] comparison logic since aiming for near-zero object creation on critical path

@@ -225,10 +225,10 @@ public class TableModelIndexer {
         cell.setIndexedDepth(maxDepth);
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
-            int maxStartLocation = includeSubstrings ? mutableCharRange.totalSequenceLength() : 1;
+            int maxStartLocation = includeSubstrings ? mutableCharRange.getBaseSequenceLength() : 1;
             for ( int start = 0; start < maxStartLocation; start ++ ) {
                 mutableCharRange.setStart(start);
-                mutableCharRange.setEnd(Math.min(start + maxDepth, mutableCharRange.totalSequenceLength()));
+                mutableCharRange.setEnd(Math.min(start + maxDepth, mutableCharRange.getBaseSequenceLength()));
                 index.addValueForPrefixesFromDepth(mutableCharRange, cell, startingDepth);
             }
         }
@@ -238,10 +238,10 @@ public class TableModelIndexer {
         int depthToRemove = cell.getIndexedDepth();
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
-            int maxStartLocation = includeSubstrings ? mutableCharRange.totalSequenceLength() : 1;
+            int maxStartLocation = includeSubstrings ? mutableCharRange.getBaseSequenceLength() : 1;
             for ( int start = 0; start < maxStartLocation; start ++ ) {
                 mutableCharRange.setStart(start);
-                mutableCharRange.setEnd(Math.min(start + depthToRemove, mutableCharRange.totalSequenceLength()));
+                mutableCharRange.setEnd(Math.min(start + depthToRemove, mutableCharRange.getBaseSequenceLength()));
                 index.removeValueForAllPrefixes(mutableCharRange, cell);
             }
         }

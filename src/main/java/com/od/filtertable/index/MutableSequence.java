@@ -39,15 +39,26 @@ public class MutableSequence implements MutableCharSequence {
         this.segment = c;
         this.end = segment.length();
     }
-    
+
+    public MutableSequence(CharSequence s, int start, int end) {
+        this.segment = s;
+        this.start = start;
+        this.end = end;
+    }
+
     @Override
     public int length() {
         return end - start;
     }
 
     @Override
-    public int totalSequenceLength() {
+    public int getBaseSequenceLength() {
         return segment.length();
+    }
+
+    @Override
+    public CharSequence getBaseSequence() {
+        return segment;
     }
 
     @Override
@@ -65,6 +76,11 @@ public class MutableSequence implements MutableCharSequence {
     }
 
     @Override
+    public int getStart() {
+        return start;
+    }
+
+    @Override
     public void incrementStart(int v) {
         start += v;
     }
@@ -77,6 +93,11 @@ public class MutableSequence implements MutableCharSequence {
     @Override
     public void setEnd(int end) {
         this.end = end;
+    }
+
+    @Override
+    public int getEnd() {
+        return end;
     }
 
     @Override

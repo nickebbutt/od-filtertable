@@ -12,7 +12,7 @@ import java.util.Collection;
  * Date: 07/05/13
  * Time: 19:00
  */
-public abstract class SuffixTree<V> {
+public abstract class SuffixTree<V> implements CharSequence {
 
     //the next node in the linked list of children for this node's parent
     SuffixTree<V> nextPeer;
@@ -21,7 +21,9 @@ public abstract class SuffixTree<V> {
     //this will either be the first child node of a linked list of children, or, for terminal nodes, a collection of values
     Object payload; 
 
-    char[] label = CharUtils.EMPTY_CHAR_ARRAY;
+    CharSequence immutableSequence;
+    byte start;
+    byte end;
 
     /**
      * Add value to the tree under the key s
@@ -49,12 +51,12 @@ public abstract class SuffixTree<V> {
     private void doAdd(MutableCharSequence s, V value, ChildIterator<V> i, ChildIteratorPool<V> p) {
         boolean added = false;
         while (i.isValid()) {
-            int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
+            int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
             if (matchingChars == s.length() /* since s must end with terminal char, this  be a terminal node */ ) {
                 addToChild(s, value, i, matchingChars, p);
                 added = true;
                 break;
-            } else if ( matchingChars == i.getCurrentNode().label.length /*whole prefix matched */) {
+            } else if ( matchingChars == i.getCurrentNode().getLabelLength() /*whole prefix matched */) {
                 addToChild(s, value, i, matchingChars, p);
                 added = true;
                 break;
@@ -62,7 +64,7 @@ public abstract class SuffixTree<V> {
                 split(i, s, value, matchingChars);
                 added = true;
                 break;              
-            } else if ( CharUtils.compare(s, i.getCurrentNode().label) == -1) {
+            } else if ( CharUtils.compare(s, i.getCurrentNode()) == -1) {
                 insert(i, s, value);
                 added = true;
                 break;
@@ -82,28 +84,28 @@ public abstract class SuffixTree<V> {
     }
 
     private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
-        char[] labelForReplacement = CharUtils.getPrefix(s, matchingChars);
+       // char[] labelForReplacement = CharUtils.getPrefix(s, matchingChars);
 
         SuffixTree<V> nodeToReplace = i.getCurrentNode();
-        int labelLengthForReplacementChild = nodeToReplace.label.length - matchingChars;
-        char[] labelForReplacementChild = CharUtils.getSuffix(nodeToReplace.label, labelLengthForReplacementChild);
+        //int labelLengthForReplacementChild = nodeToReplace.getLabelLength() - matchingChars;
+        //char[] labelForReplacementChild = CharUtils.getSuffix(nodeToReplace.getLabel(), labelLengthForReplacementChild);
         
         int labelLengthForNewChild = s.length() - matchingChars;
-        char[] labelForNewChild = CharUtils.getSuffix(s, labelLengthForNewChild);
+        //char[] labelForNewChild = CharUtils.getSuffix(s, labelLengthForNewChild);
         
         SuffixTree<V> replacementNode = createNewSuffixTreeNode();
-        replacementNode.label = labelForReplacement;
+        replacementNode.setLabelFromNodePrefix(nodeToReplace, matchingChars);
         i.replace(replacementNode);
         
         SuffixTree<V> replacementChild = createNewSuffixTreeNode();
-        replacementChild.label = labelForReplacementChild;
+        replacementChild.setLabelFromNodeSuffix(nodeToReplace, matchingChars);
         replacementChild.payload = nodeToReplace.payload;
 
         SuffixTree<V> newChild = createNewSuffixTreeNode();
-        newChild.label = labelForNewChild;
+        newChild.setLabel(s.getBaseSequence(), s.getEnd() - labelLengthForNewChild, s.getEnd());
         newChild.addValue(value);
 
-        boolean newChildFirst = CharUtils.compare(labelForNewChild, labelForReplacementChild) == -1;
+        boolean newChildFirst = CharUtils.compare(newChild, replacementChild) == -1;
         SuffixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
         SuffixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
@@ -111,9 +113,15 @@ public abstract class SuffixTree<V> {
         firstChild.nextPeer = secondChild;
     }
 
+    private void setLabel(CharSequence baseSequence, int start, int end) {
+        this.immutableSequence = baseSequence;
+        this.start = (byte)start;
+        this.end = (byte)end;
+    }
+
     private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
         SuffixTree<V> newNode = createNewSuffixTreeNode();
-        newNode.label = CharUtils.createCharArray(s);
+        newNode.setLabel(s.getBaseSequence(), s.getStart(), s.getEnd());
         newNode.addValue(value);
         i.insert(newNode);
     }
@@ -159,7 +167,7 @@ public abstract class SuffixTree<V> {
                 boolean foundMatch = false;
                 //get results from all nodes which share a prefix
                 while(i.isValid()) {
-                    int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode().label);
+                    int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
                     if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
                         s.incrementStart(sharedCharCount);
                         i.getCurrentNode().accept(s, visitor, iteratorPool);
@@ -211,8 +219,8 @@ public abstract class SuffixTree<V> {
             ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
                 SuffixTree<V> current = i.getCurrentNode();
-                int matchingChars = CharUtils.getSharedPrefixCount(c, current.label);
-                if ( matchingChars == current.label.length) {
+                int matchingChars = CharUtils.getSharedPrefixCount(c, current);
+                if ( matchingChars == current.getLabelLength()) {
                     c.incrementStart(matchingChars);
                     boolean joinOrRemove = current.removeFromTree(c, value, childIteratorPool);
                     if ( joinOrRemove ) {
@@ -234,8 +242,9 @@ public abstract class SuffixTree<V> {
             //the current node now has just a single child
             //we should replace it with a new node which combines the prefixes
             SuffixTree<V> joined = createNewSuffixTreeNode();
-            char[] newLabel = CharUtils.join(current.label, ((SuffixTree)current.payload).label);
-            joined.label = newLabel;
+            SuffixTree<V> firstChild = (SuffixTree<V>)current.payload;
+            int newLength = current.getLabelLength() + firstChild.getLabelLength();
+            joined.setLabel(firstChild.getRootSequence(), firstChild.getEnd() - newLength, firstChild.getEnd());
             joined.payload = ((SuffixTree)current.payload).payload;
             i.replace(joined);        
         }
@@ -245,19 +254,66 @@ public abstract class SuffixTree<V> {
 
     protected abstract CollectionFactory<V> getCollectionFactory();
 
-    public char[] getLabel() {
-        return label;
-    }
-
     public Collection<V> getValues() {
         return isTerminalNode() ? (Collection<V>)payload : null;
     }
 
     public boolean isTerminalNode() {
-        return label.length > 0 /* root node */ && label[label.length - 1] == CharUtils.TERMINAL_CHAR;
+        return getLabelLength() > 0 /* root node */ && getLastChar() == CharUtils.TERMINAL_CHAR;
     }
 
     public boolean isOnlyOneChild() {
         return ! isTerminalNode() && payload != null && ((SuffixTree<V>)payload).nextPeer == null;
+    }
+    
+    public CharSequence getLabel() {
+        return new MutableSequence(immutableSequence, start, end);
+    }
+
+    private void setLabelFromNodeSuffix(SuffixTree base, int trimFromStart) {
+        this.immutableSequence = base.getRootSequence();
+        this.start = (byte)(base.getStart() + trimFromStart);
+        this.end = base.getEnd();
+    }
+
+    private void setLabelFromNodePrefix(SuffixTree base, int length) {
+        this.immutableSequence = base.getRootSequence();
+        this.start = base.getStart();
+        this.end = (byte)(base.getStart() + length);
+    }
+    
+    public int getLabelLength() {
+        return end - start;
+    }
+    
+    public char getLastChar() {
+        return immutableSequence.charAt(end - 1);
+    }
+    
+    public CharSequence getRootSequence() {
+        return immutableSequence;
+    }
+    
+    public byte getStart() {
+        return start;
+    }
+    
+    public byte getEnd() {
+        return end;
+    }
+
+    public int length() {
+        return getLabelLength();
+    }
+
+    @Override
+    public char charAt(int index) {
+        return immutableSequence.charAt(start + index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        int newLength = end - start;
+        return new MutableSequence(immutableSequence, this.start + start, this.start + start + newLength);
     }
 }

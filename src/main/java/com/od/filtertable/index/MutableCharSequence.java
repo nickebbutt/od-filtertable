@@ -9,17 +9,23 @@ public interface MutableCharSequence extends CharSequence {
     
     int length();
 
-    int totalSequenceLength();
+    int getBaseSequenceLength();
+    
+    CharSequence getBaseSequence();
 
     char charAt(int index);
 
     void setStart(int start);
+    
+    int getStart();
 
     void incrementStart(int v);
 
     void decrementStart(int v);
 
     void setEnd(int end);
+    
+    int getEnd();
 
     CharSequence subSequence(int start, int end);
     
