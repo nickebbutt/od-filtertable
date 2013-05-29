@@ -18,6 +18,11 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
         super(indexSubstrings);
         this.suffixTree = suffixTree;
     }
+    
+    public void add(CharSequence s, V v) {
+        CharSequence c = CharUtils.addTerminalCharAndCheck(s);
+        super.add(c, v);
+    }
 
     @Override
     protected <R extends Collection<V>> R doGetValuesWithPrefixes(CharSequence s, R targetCollection, int maxValues) {
@@ -32,7 +37,9 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
     @Override
     protected void addToIndex(CharSequence s, V val) {
-        suffixTree.add(s, val);
+        if ( s.length() > 1) {
+            suffixTree.add(s, val);
+        }
     }
 
     @Override

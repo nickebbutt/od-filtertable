@@ -102,7 +102,7 @@ public abstract class SuffixTree<V> implements CharSequence {
         replacementChild.payload = nodeToReplace.payload;
 
         SuffixTree<V> newChild = createNewSuffixTreeNode();
-        newChild.setLabel(s.getBaseSequence(), s.getEnd() - labelLengthForNewChild, s.getEnd());
+        newChild.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceEnd() - labelLengthForNewChild, s.getBaseSequenceEnd());
         newChild.addValue(value);
 
         boolean newChildFirst = CharUtils.compare(newChild, replacementChild) == -1;
@@ -121,7 +121,7 @@ public abstract class SuffixTree<V> implements CharSequence {
 
     private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
         SuffixTree<V> newNode = createNewSuffixTreeNode();
-        newNode.setLabel(s.getBaseSequence(), s.getStart(), s.getEnd());
+        newNode.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceStart(), s.getBaseSequenceEnd());
         newNode.addValue(value);
         i.insert(newNode);
     }

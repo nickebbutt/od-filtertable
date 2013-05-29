@@ -22,6 +22,8 @@
 
 package com.od.filtertable.index;
 
+import com.od.filtertable.suffixtree.CharUtils;
+
 /**
  * Avoids generating unnecessary String instances using String.substring(x,x)
  * Otherwise each indexing generates thousands of short lived String instances
@@ -53,12 +55,16 @@ public class MutableSequence implements MutableCharSequence {
 
     @Override
     public int getBaseSequenceLength() {
-        return segment.length();
+        return segment instanceof MutableSequence ? 
+            ((MutableSequence)segment).getBaseSequenceLength() : 
+            segment.length();
     }
 
     @Override
-    public CharSequence getBaseSequence() {
-        return segment;
+    public CharSequence getImmutableBaseSequence() {
+        return segment instanceof MutableSequence ?
+            ((MutableSequence)segment).getImmutableBaseSequence() :
+            segment;
     }
 
     @Override
@@ -76,8 +82,10 @@ public class MutableSequence implements MutableCharSequence {
     }
 
     @Override
-    public int getStart() {
-        return start;
+    public int getBaseSequenceStart() {
+        return segment instanceof MutableSequence ? 
+            ((MutableSequence) segment).getBaseSequenceStart() + start :
+            start;
     }
 
     @Override
@@ -96,8 +104,8 @@ public class MutableSequence implements MutableCharSequence {
     }
 
     @Override
-    public int getEnd() {
-        return end;
+    public int getBaseSequenceEnd() {
+        return getBaseSequenceStart() + length();
     }
 
     @Override
@@ -113,6 +121,10 @@ public class MutableSequence implements MutableCharSequence {
     @Override
     public CharSequence subSequence(int start, int end) {
         throw new UnsupportedOperationException("MutableCharSequence does not support subSequence");
+    }
+    
+    public String toString() {
+        return new String(CharUtils.createCharArray(this));
     }
 
 }

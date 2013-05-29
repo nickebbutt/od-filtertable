@@ -1,6 +1,6 @@
 package com.od.filtertable.suffixtree;
 
-import com.od.filtertable.index.MutableCharArraySequence;
+//import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 
@@ -10,16 +10,6 @@ import com.od.filtertable.index.MutableSequence;
  * Time: 17:37
  */
 public class CharUtils {
-
-    /**
-     * Reuse a thread local instance since many tens of thousands of these are otherwise created when indexing a large dataset
-     */
-    private static ThreadLocal<CharSequenceWithTerminalNode> charSequenceWithTerminalNodeThreadLocal = 
-        new ThreadLocal<CharSequenceWithTerminalNode>() {
-            public CharSequenceWithTerminalNode initialValue() {
-                return new CharSequenceWithTerminalNode();
-            }
-    };
     
     public static final char[] EMPTY_CHAR_ARRAY = new char[0];
     
@@ -49,23 +39,23 @@ public class CharUtils {
         return shared;
     }
 
-    public static MutableCharSequence append(CharSequence s, char[] chars) {
-        char[] result = new char[s.length() + chars.length];
-        for ( int c = 0; c < s.length(); c++) {
-            result[c] = s.charAt(c);
-        }
-        for (int c = 0; c < chars.length; c++) {
-            result[c + s.length()] = chars[c];
-        }
-        return new MutableCharArraySequence(result);
-    }
+//    public static MutableCharSequence append(CharSequence s, char[] chars) {
+//        char[] result = new char[s.length() + chars.length];
+//        for ( int c = 0; c < s.length(); c++) {
+//            result[c] = s.charAt(c);
+//        }
+//        for (int c = 0; c < chars.length; c++) {
+//            result[c + s.length()] = chars[c];
+//        }
+//        return new MutableCharArraySequence(result);
+//    }
 
     public static MutableCharSequence addTerminalCharAndCheck(CharSequence s) {
         MutableCharSequence result;
         if ( getLastChar(s) != TERMINAL_CHAR) {
-            CharSequenceWithTerminalNode n = charSequenceWithTerminalNodeThreadLocal.get();
-            n.setSequence(s);
-            result = n;     
+            StringBuilder sb = new StringBuilder(s);
+            sb.append(TERMINAL_CHAR);
+            result = new MutableSequence(sb.toString());    
         } else {
             result = new MutableSequence(s);
         }
