@@ -1,15 +1,15 @@
 
-  Feature: Suffix Tree
+  Feature: Radix Tree
     
     Scenario: Add items top level
-      Given I create a suffix tree
+      Given I create a radix tree
       When I add a value VAL1 under key A
       And I add a value VAL2 under key B
       Then a search for A returns VAL1
       And a search for B returns VAL2
       
     Background:
-      Given I create a suffix tree
+      Given I create a radix tree
     
     Scenario: Add items with long labels
       When I add a value VAL1 under key ALABEL
@@ -33,7 +33,7 @@
       And I add a value VAL2 under key AAA
       And I add a value VAL3 under key AA
       And I add a value VAL4 under key BA
-      Then the suffix tree contains keys AA, AAA, ABA, BA
+      Then the radix tree contains keys AA, AAA, ABA, BA
       And the number of nodes is 6
       And a search for A returns VAL3, VAL2, VAL1
       And a search for AA returns VAL3, VAL2
@@ -45,7 +45,7 @@
       When I add a value VAL1 under key AC
       When I add a value VAL2 under key AB
       When I add a value VAL3 under key AA
-      Then the suffix tree contains keys AA, AB, AC
+      Then the radix tree contains keys AA, AB, AC
       And the number of nodes is 4
       And a search for A returns VAL3, VAL2, VAL1
 

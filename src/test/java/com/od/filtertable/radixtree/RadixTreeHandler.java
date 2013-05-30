@@ -1,8 +1,8 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
-import com.od.filtertable.suffixtree.visitor.KeySetVisitor;
-import com.od.filtertable.suffixtree.visitor.LoggingVisitor;
-import com.od.filtertable.suffixtree.visitor.NodeCountVisitor;
+import com.od.filtertable.radixtree.visitor.KeySetVisitor;
+import com.od.filtertable.radixtree.visitor.LoggingVisitor;
+import com.od.filtertable.radixtree.visitor.NodeCountVisitor;
 import org.chorusbdd.chorus.annotations.Handler;
 import org.chorusbdd.chorus.annotations.Step;
 import org.chorusbdd.chorus.util.assertion.ChorusAssert;
@@ -17,38 +17,38 @@ import java.util.*;
  * Time: 22:41
  * To change this template use File | Settings | File Templates.
  */
-@Handler("Suffix Tree")
-public class SuffixTreeHandler extends ChorusAssert {
+@Handler("Radix Tree")
+public class RadixTreeHandler extends ChorusAssert {
 
-    private SuffixTree<String> suffixTree;
+    private RadixTree<String> radixTree;
 
-    @Step("I create a suffix tree")
+    @Step("I create a radix tree")
     public void createIndex() {
-        suffixTree = new StringSuffixTree();
+        radixTree = new StringRadixTree();
     }
 
     @Step("I add a value (.*) under key (.*)")
     public void addAValue(String value, String key) {
-        suffixTree.add(key, value);
+        radixTree.add(key + CharUtils.TERMINAL_CHAR, value);
     }
     
     @Step("I remove a value (.*) under key (.*)")
     public void remove(String value, String key) {
-        suffixTree.remove(key, value);
+        radixTree.remove(key + CharUtils.TERMINAL_CHAR, value);
     }
     
     @Step("I show the tree structure")
     public void showTheTreeStucture() {
         LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out));
-        suffixTree.accept(v);
+        radixTree.accept(v);
     }
     
-    @Step("the suffix tree contains keys (.*)")
+    @Step("the radix tree contains keys (.*)")
     public void checkContainsKeys(String keys) {
         List<String> expected = getExpectedList(keys);
         
         KeySetVisitor<String> v = new KeySetVisitor<String>();
-        suffixTree.accept(v);
+        radixTree.accept(v);
         List<String> actual = v.getLabels();
         
         assertEquals("Expected " + keys, expected, actual);
@@ -57,7 +57,7 @@ public class SuffixTreeHandler extends ChorusAssert {
     @Step("the number of nodes is (\\d+)") 
     public void countNodes(int number) {
         NodeCountVisitor n = new NodeCountVisitor();
-        suffixTree.accept(n);
+        radixTree.accept(n);
         
         //-1 since we don't include the root node in the count for this test
         assertEquals("Expect " + number + " nodes", number, n.getNodeCount() - 1);
@@ -77,8 +77,8 @@ public class SuffixTreeHandler extends ChorusAssert {
         List<String> expected = getExpectedList(values);
 
         Collection<String> actual = maxItems == Integer.MAX_VALUE ? 
-            suffixTree.get(key, new LinkedHashSet<String>()) :
-            suffixTree.get(key, new LinkedHashSet<String>(), maxItems);
+            radixTree.get(key, new LinkedHashSet<String>()) :
+            radixTree.get(key, new LinkedHashSet<String>(), maxItems);
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
         assertEquals("expected values in search results", expected, actualOrdered);
@@ -93,11 +93,17 @@ public class SuffixTreeHandler extends ChorusAssert {
         return expected;
     }
 
-    private static class StringSuffixTree extends SuffixTree<String> {
+    private static class StringRadixTree extends RadixTree<String> {
+
+        public StringRadixTree() {}
+        
+        public StringRadixTree(boolean terminal) {
+            super(terminal);
+        }
 
         @Override
-        protected SuffixTree createNewSuffixTreeNode() {
-            return new StringSuffixTree();
+        protected RadixTree createNewSuffixTreeNode(boolean terminal) {
+            return new StringRadixTree(terminal);
         }
 
         @Override

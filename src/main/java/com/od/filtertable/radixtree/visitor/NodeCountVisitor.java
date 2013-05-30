@@ -1,6 +1,6 @@
-package com.od.filtertable.suffixtree.visitor;
+package com.od.filtertable.radixtree.visitor;
 
-import com.od.filtertable.suffixtree.SuffixTree;
+import com.od.filtertable.radixtree.RadixTree;
 
 /**
  * User: nick
@@ -15,13 +15,13 @@ public class NodeCountVisitor implements SuffixTreeVisitor {
     private int nodeCount;
     
     @Override
-    public boolean visit(SuffixTree suffixTree) {
+    public boolean visit(RadixTree radixTree) {
         nodeCount++;
         return true;
     }
 
     @Override
-    public void visitComplete(SuffixTree suffixTree) {
+    public void visitComplete(RadixTree radixTree) {
     }
     
     public int getNodeCount() {

@@ -22,7 +22,7 @@
 
 package com.od.filtertable.index;
 
-import com.od.filtertable.suffixtree.CharUtils;
+import com.od.filtertable.radixtree.CharUtils;
 
 /**
  * Avoids generating unnecessary String instances using String.substring(x,x)

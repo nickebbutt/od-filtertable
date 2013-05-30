@@ -1,4 +1,4 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 import java.util.Stack;
 
@@ -17,7 +17,7 @@ public class ChildIteratorPool<E> {
     
     private Stack<ChildIterator<E>> iterators = new Stack<ChildIterator<E>>();
     
-    public ChildIterator<E> getIterator(SuffixTree<E> parentNode) {
+    public ChildIterator<E> getIterator(RadixTree<E> parentNode) {
         ChildIterator<E> result;
         if ( iterators.size() == 0) {
             result = new ChildIterator<E>();

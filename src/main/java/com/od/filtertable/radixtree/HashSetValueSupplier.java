@@ -1,4 +1,4 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 import java.util.Collection;
 import java.util.HashSet;

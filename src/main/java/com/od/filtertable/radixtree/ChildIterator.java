@@ -1,4 +1,4 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 /**
 * User: nick
@@ -10,19 +10,19 @@ package com.od.filtertable.suffixtree;
 */
 public class ChildIterator<V> {
 
-    private SuffixTree<V> parent;
-    private SuffixTree<V> currentNode;
-    private SuffixTree<V> lastNode;
+    private RadixTree<V> parent;
+    private RadixTree<V> currentNode;
+    private RadixTree<V> lastNode;
 
-    public ChildIterator(SuffixTree<V> parent) {
+    public ChildIterator(RadixTree<V> parent) {
         setParent(parent);    
     }
     
     public ChildIterator() {}
     
-    public void setParent(SuffixTree<V> parent) {
+    public void setParent(RadixTree<V> parent) {
         this.parent = parent;
-        currentNode = parent.isTerminalNode() ? null : (SuffixTree<V>)parent.payload;
+        currentNode = parent.isTerminalNode() ? null : (RadixTree<V>)parent.payload;
         lastNode = null;
     }
 
@@ -35,11 +35,11 @@ public class ChildIterator<V> {
         currentNode = currentNode.nextPeer;
     }
 
-    public SuffixTree<V> getCurrentNode() {
+    public RadixTree<V> getCurrentNode() {
         return currentNode;
     }
 
-    public void insert(SuffixTree<V> newNode) {
+    public void insert(RadixTree<V> newNode) {
         if (lastNode != null)  {
             lastNode.nextPeer = newNode;
         } else {
@@ -48,7 +48,7 @@ public class ChildIterator<V> {
         newNode.nextPeer = currentNode;
     }
 
-    public void replace(SuffixTree<V> replacementNode) {
+    public void replace(RadixTree<V> replacementNode) {
         if ( lastNode != null) {
             lastNode.nextPeer = replacementNode;
         } else {

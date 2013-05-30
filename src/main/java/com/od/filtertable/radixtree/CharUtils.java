@@ -1,4 +1,4 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 //import com.od.filtertable.index.MutableCharArraySequence;
 import com.od.filtertable.index.MutableCharSequence;

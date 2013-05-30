@@ -1,10 +1,9 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 import com.od.filtertable.index.AbstractSimpleIndex;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,11 +13,11 @@ import java.util.LinkedList;
  */
 public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
-    private SuffixTree<V> suffixTree;
+    private RadixTree<V> radixTree;
 
-    public SimpleSuffixTreeIndex(SuffixTree<V> suffixTree, boolean indexSubstrings) {
+    public SimpleSuffixTreeIndex(RadixTree<V> radixTree, boolean indexSubstrings) {
         super(indexSubstrings);
-        this.suffixTree = suffixTree;
+        this.radixTree = radixTree;
     }
     
     public void add(CharSequence s, V v) {
@@ -28,24 +27,24 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
     @Override
     protected <R extends Collection<V>> R doGetValuesWithPrefixes(CharSequence s, R targetCollection, int maxValues) {
-        return suffixTree.get(s, targetCollection, maxValues);
+        return radixTree.get(s, targetCollection, maxValues);
     }
 
     @Override
     protected Collection<V> doGetValues(CharSequence s) {
         LinkedHashSet<V> result = new LinkedHashSet<V>();
-        return suffixTree.getValues(result);
+        return radixTree.getValues(result);
     }
 
     @Override
     protected void addToIndex(CharSequence s, V val) {
         if ( s.length() > 1) {
-            suffixTree.add(s, val);
+            radixTree.add(s, val);
         }
     }
 
     @Override
     protected void removeFromIndex(CharSequence s, V val) {
-        suffixTree.remove(s, val);
+        radixTree.remove(s, val);
     }
 }

@@ -1,9 +1,9 @@
-package com.od.filtertable.suffixtree;
+package com.od.filtertable.radixtree;
 
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
-import com.od.filtertable.suffixtree.visitor.CollectValuesVisitor;
-import com.od.filtertable.suffixtree.visitor.SuffixTreeVisitor;
+import com.od.filtertable.radixtree.visitor.CollectValuesVisitor;
+import com.od.filtertable.radixtree.visitor.SuffixTreeVisitor;
 
 import java.util.Collection;
 
@@ -12,10 +12,10 @@ import java.util.Collection;
  * Date: 07/05/13
  * Time: 19:00
  */
-public abstract class SuffixTree<V> implements CharSequence {
+public abstract class RadixTree<V> implements CharSequence {
 
     //the next node in the linked list of children for this node's parent
-    SuffixTree<V> nextPeer;
+    RadixTree<V> nextPeer;
     
     //use of this field is overloaded to save memory / 1 reference per node instance
     //this will either be the first child node of a linked list of children, or, for terminal nodes, a collection of values
@@ -24,12 +24,20 @@ public abstract class SuffixTree<V> implements CharSequence {
     CharSequence immutableSequence;
     short start;
     short end;
-    
+    boolean terminal;
+
+    protected RadixTree(boolean terminal) {
+        this.terminal = terminal;
+    }
+
+    protected RadixTree() {
+    }
+
     /**
      * Add value to the tree under the key s
      */
     public void add(CharSequence s, V value) {
-        MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
+        MutableCharSequence c = new MutableSequence(s);
         addToTree(c, value, ChildIteratorPool.<V>getIteratorPool());
     }
 
@@ -84,24 +92,24 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
-        SuffixTree<V> nodeToReplace = i.getCurrentNode();
+        RadixTree<V> nodeToReplace = i.getCurrentNode();
         int labelLengthForNewChild = s.length() - matchingChars;
        
-        SuffixTree<V> replacementNode = createNewSuffixTreeNode();
+        RadixTree<V> replacementNode = createNewSuffixTreeNode(false);
         replacementNode.setLabelFromNodePrefix(nodeToReplace, matchingChars);
         i.replace(replacementNode);
         
-        SuffixTree<V> replacementChild = createNewSuffixTreeNode();
+        RadixTree<V> replacementChild = createNewSuffixTreeNode(nodeToReplace.isTerminalNode());
         replacementChild.setLabelFromNodeSuffix(nodeToReplace, matchingChars);
         replacementChild.payload = nodeToReplace.payload;
 
-        SuffixTree<V> newChild = createNewSuffixTreeNode();
+        RadixTree<V> newChild = createNewSuffixTreeNode(true);
         newChild.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceEnd() - labelLengthForNewChild, s.getBaseSequenceEnd());
         newChild.addValue(value);
 
         boolean newChildFirst = CharUtils.compare(newChild, replacementChild) == -1;
-        SuffixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
-        SuffixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
+        RadixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
+        RadixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
         replacementNode.payload = firstChild;
         firstChild.nextPeer = secondChild;
@@ -114,7 +122,7 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
-        SuffixTree<V> newNode = createNewSuffixTreeNode();
+        RadixTree<V> newNode = createNewSuffixTreeNode(true);
         newNode.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceStart(), s.getBaseSequenceEnd());
         newNode.addValue(value);
         i.insert(newNode);
@@ -199,7 +207,7 @@ public abstract class SuffixTree<V> implements CharSequence {
      * Remove value v from key s, if s exists in the tree 
      */
     public void remove(CharSequence s, V value) {
-        MutableCharSequence c = CharUtils.addTerminalCharAndCheck(s);
+        MutableCharSequence c = new MutableSequence(s);
         removeFromTree(c, value, ChildIteratorPool.<V>getIteratorPool());
     }
 
@@ -209,7 +217,7 @@ public abstract class SuffixTree<V> implements CharSequence {
         } else {
             ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
-                SuffixTree<V> current = i.getCurrentNode();
+                RadixTree<V> current = i.getCurrentNode();
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current);
                 if ( matchingChars == current.getLabelLength()) {
                     c.incrementStart(matchingChars);
@@ -226,22 +234,22 @@ public abstract class SuffixTree<V> implements CharSequence {
         return (isTerminalNode() && payload == null) || isOnlyOneChild();
     }
 
-    private void joinOrRemove(ChildIterator<V> i, SuffixTree<V> current) {
+    private void joinOrRemove(ChildIterator<V> i, RadixTree<V> current) {
         if ( current.isTerminalNode()) {
             i.removeCurrent();    
         } else {
             //the current node now has just a single child
             //we should replace it with a new node which combines the prefixes
-            SuffixTree<V> joined = createNewSuffixTreeNode();
-            SuffixTree<V> firstChild = (SuffixTree<V>)current.payload;
+            RadixTree<V> firstChild = (RadixTree<V>)current.payload;
+            RadixTree<V> joined = createNewSuffixTreeNode(firstChild.isTerminalNode());
             int newLength = current.getLabelLength() + firstChild.getLabelLength();
             joined.setLabel(firstChild.getRootSequence(), firstChild.getEnd() - newLength, firstChild.getEnd());
-            joined.payload = ((SuffixTree)current.payload).payload;
+            joined.payload = firstChild.payload;
             i.replace(joined);        
         }
     }
 
-    protected abstract SuffixTree<V> createNewSuffixTreeNode();
+    protected abstract RadixTree<V> createNewSuffixTreeNode(boolean terminal);
 
     protected abstract ValueSupplier<V> getValueSupplier();
 
@@ -253,24 +261,24 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     public boolean isTerminalNode() {
-        return getLabelLength() > 0 /* root node */ && getLastChar() == CharUtils.TERMINAL_CHAR;
+        return terminal; /* root node */
     }
 
     public boolean isOnlyOneChild() {
-        return ! isTerminalNode() && payload != null && ((SuffixTree<V>)payload).nextPeer == null;
+        return ! isTerminalNode() && payload != null && ((RadixTree<V>)payload).nextPeer == null;
     }
     
     public CharSequence getLabel() {
         return new MutableSequence(immutableSequence, start, end);
     }
 
-    private void setLabelFromNodeSuffix(SuffixTree base, int trimFromStart) {
+    private void setLabelFromNodeSuffix(RadixTree base, int trimFromStart) {
         this.immutableSequence = base.getRootSequence();
         this.start = (short)(base.getStart() + trimFromStart);
         this.end = base.getEnd();
     }
 
-    private void setLabelFromNodePrefix(SuffixTree base, int length) {
+    private void setLabelFromNodePrefix(RadixTree base, int length) {
         this.immutableSequence = base.getRootSequence();
         this.start = base.getStart();
         this.end = (short)(base.getStart() + length);
@@ -278,10 +286,6 @@ public abstract class SuffixTree<V> implements CharSequence {
     
     public int getLabelLength() {
         return end - start;
-    }
-    
-    public char getLastChar() {
-        return immutableSequence.charAt(end - 1);
     }
     
     public CharSequence getRootSequence() {
