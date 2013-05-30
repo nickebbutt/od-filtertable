@@ -22,9 +22,9 @@ public abstract class SuffixTree<V> implements CharSequence {
     Object payload; 
 
     CharSequence immutableSequence;
-    byte start;
-    byte end;
-
+    short start;
+    short end;
+    
     /**
      * Add value to the tree under the key s
      */
@@ -84,15 +84,9 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars) {
-       // char[] labelForReplacement = CharUtils.getPrefix(s, matchingChars);
-
         SuffixTree<V> nodeToReplace = i.getCurrentNode();
-        //int labelLengthForReplacementChild = nodeToReplace.getLabelLength() - matchingChars;
-        //char[] labelForReplacementChild = CharUtils.getSuffix(nodeToReplace.getLabel(), labelLengthForReplacementChild);
-        
         int labelLengthForNewChild = s.length() - matchingChars;
-        //char[] labelForNewChild = CharUtils.getSuffix(s, labelLengthForNewChild);
-        
+       
         SuffixTree<V> replacementNode = createNewSuffixTreeNode();
         replacementNode.setLabelFromNodePrefix(nodeToReplace, matchingChars);
         i.replace(replacementNode);
@@ -115,8 +109,8 @@ public abstract class SuffixTree<V> implements CharSequence {
 
     private void setLabel(CharSequence baseSequence, int start, int end) {
         this.immutableSequence = baseSequence;
-        this.start = (byte)start;
-        this.end = (byte)end;
+        this.start = (short)start;
+        this.end = (short)end;
     }
 
     private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
@@ -127,10 +121,7 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     private void addValue(V value) {
-        if ( payload == null) {
-            payload = getCollectionFactory().createTerminalNodeCollection();
-        }
-        ((Collection<V>)payload).add(value);
+        payload = getValueSupplier().addValue(value, payload);
     }
 
     /**
@@ -213,8 +204,8 @@ public abstract class SuffixTree<V> implements CharSequence {
     }
 
     private boolean removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool) {
-        if ( c.length() == 0) {
-            ((Collection<V>)payload).remove(value);
+        if ( c.length() == 0 && payload != null) {
+            payload = getValueSupplier().removeValue(value, payload);
         } else {
             ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
@@ -232,7 +223,7 @@ public abstract class SuffixTree<V> implements CharSequence {
             }
         }
         
-        return (isTerminalNode() && ((Collection<V>)payload).size() == 0) || isOnlyOneChild();
+        return (isTerminalNode() && payload == null) || isOnlyOneChild();
     }
 
     private void joinOrRemove(ChildIterator<V> i, SuffixTree<V> current) {
@@ -252,10 +243,13 @@ public abstract class SuffixTree<V> implements CharSequence {
 
     protected abstract SuffixTree<V> createNewSuffixTreeNode();
 
-    protected abstract CollectionFactory<V> getCollectionFactory();
+    protected abstract ValueSupplier<V> getValueSupplier();
 
-    public Collection<V> getValues() {
-        return isTerminalNode() ? (Collection<V>)payload : null;
+    public Collection<V> getValues(Collection<V> targetCollection) {
+        if ( isTerminalNode() && payload != null ) { //should only ever be adding to a terminal node 
+            getValueSupplier().addValuesToCollection(targetCollection, payload);
+        } 
+        return targetCollection;
     }
 
     public boolean isTerminalNode() {
@@ -272,14 +266,14 @@ public abstract class SuffixTree<V> implements CharSequence {
 
     private void setLabelFromNodeSuffix(SuffixTree base, int trimFromStart) {
         this.immutableSequence = base.getRootSequence();
-        this.start = (byte)(base.getStart() + trimFromStart);
+        this.start = (short)(base.getStart() + trimFromStart);
         this.end = base.getEnd();
     }
 
     private void setLabelFromNodePrefix(SuffixTree base, int length) {
         this.immutableSequence = base.getRootSequence();
         this.start = base.getStart();
-        this.end = (byte)(base.getStart() + length);
+        this.end = (short)(base.getStart() + length);
     }
     
     public int getLabelLength() {
@@ -294,11 +288,11 @@ public abstract class SuffixTree<V> implements CharSequence {
         return immutableSequence;
     }
     
-    public byte getStart() {
+    public short getStart() {
         return start;
     }
     
-    public byte getEnd() {
+    public short getEnd() {
         return end;
     }
 

@@ -3,6 +3,7 @@ package com.od.filtertable.suffixtree.visitor;
 import com.od.filtertable.suffixtree.SuffixTree;
 
 import java.io.PrintWriter;
+import java.util.LinkedList;
 
 /**
  * User: nick
@@ -13,6 +14,7 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
 
     private int indentLevel = 0;
     private PrintWriter writer;
+    private LinkedList<V> values = new LinkedList<V>();
 
     public LoggingVisitor(PrintWriter writer) {
         this.writer = writer;
@@ -24,9 +26,10 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
         StringBuilder sb = new StringBuilder();
         addIndent(indentLevel, sb);
         sb.append(suffixTree.getLabel());
-        if ( suffixTree.getValues() != null) {
+        values.clear();
+        if ( suffixTree.getValues(values).size() > 0) {
             sb.append("\t vals: ");
-            for (Object o : suffixTree.getValues()) {
+            for (Object o : values) {
                 sb.append(o.toString()).append(" ");
             }
         }
@@ -41,29 +44,6 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
         indentLevel--;
     }
 
-
-//    public void printStructure(int level, PrintWriter w) {
-//        StringBuilder sb = new StringBuilder();
-//        addIndent(level, sb);
-//        sb.append(label);
-//        if ( values != null) {
-//            sb.append("\n");
-//            addIndent(level, sb);
-//            sb.append("val: ");
-//            for (Object o : values) {
-//                sb.append(o.toString()).append(" ");
-//            }
-//        }
-//        sb.append(" -->\n");
-//        w.print(sb.toString());
-//        w.flush();
-//        ChildIterator<V> i = new ChildIterator<V>(this);
-//        while (i.isValid()) {
-//            i.getCurrentNode().printStructure(level + 1, w);
-//            i.next();
-//        }
-//    }
-//
     private void addIndent(int level, StringBuilder sb) {
         for ( int loop=0; loop < level; loop++) {
             sb.append("  ");

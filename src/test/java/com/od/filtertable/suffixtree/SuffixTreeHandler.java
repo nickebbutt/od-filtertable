@@ -101,12 +101,8 @@ public class SuffixTreeHandler extends ChorusAssert {
         }
 
         @Override
-        protected CollectionFactory<String> getCollectionFactory() {
-            return new CollectionFactory<String>() {
-                public Collection<String> createTerminalNodeCollection() {
-                    return new HashSet<String>();
-                }
-            };
+        protected ValueSupplier<String> getValueSupplier() {
+            return new HashSetValueSupplier<String>();
         }
 
     }

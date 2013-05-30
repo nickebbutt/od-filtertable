@@ -3,6 +3,8 @@ package com.od.filtertable.suffixtree;
 import com.od.filtertable.index.AbstractSimpleIndex;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,8 +33,8 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
     @Override
     protected Collection<V> doGetValues(CharSequence s) {
-        Collection<V> collection = suffixTree.getCollectionFactory().createTerminalNodeCollection();
-        return suffixTree.get(s, collection);
+        LinkedHashSet<V> result = new LinkedHashSet<V>();
+        return suffixTree.getValues(result);
     }
 
     @Override
