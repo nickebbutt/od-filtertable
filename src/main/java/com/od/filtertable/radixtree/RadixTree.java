@@ -24,11 +24,6 @@ public abstract class RadixTree<V> implements CharSequence {
     CharSequence immutableSequence;
     short start;
     short end;
-    boolean terminal;
-
-    protected RadixTree(boolean terminal) {
-        this.terminal = terminal;
-    }
 
     protected RadixTree() {
     }
@@ -93,15 +88,15 @@ public abstract class RadixTree<V> implements CharSequence {
         RadixTree<V> nodeToReplace = i.getCurrentNode();
         int labelLengthForNewChild = s.length() - matchingChars;
        
-        RadixTree<V> replacementNode = createNewSuffixTreeNode(false);
+        RadixTree<V> replacementNode = createNewSuffixTreeNode();
         replacementNode.setLabelFromNodePrefix(nodeToReplace, matchingChars);
         i.replace(replacementNode);
         
-        RadixTree<V> replacementChild = createNewSuffixTreeNode(nodeToReplace.isTerminalNode());
+        RadixTree<V> replacementChild = createNewSuffixTreeNode();
         replacementChild.setLabelFromNodeSuffix(nodeToReplace, matchingChars);
         replacementChild.payload = nodeToReplace.payload;
 
-        RadixTree<V> newChild = createNewSuffixTreeNode(true);
+        RadixTree<V> newChild = createNewSuffixTreeNode();
         newChild.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceEnd() - labelLengthForNewChild, s.getBaseSequenceEnd());
         newChild.addValue(value);
 
@@ -120,7 +115,7 @@ public abstract class RadixTree<V> implements CharSequence {
     }
 
     private void insert(ChildIterator<V> i, MutableCharSequence s, V value) {
-        RadixTree<V> newNode = createNewSuffixTreeNode(true);
+        RadixTree<V> newNode = createNewSuffixTreeNode();
         newNode.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceStart(), s.getBaseSequenceEnd());
         newNode.addValue(value);
         i.insert(newNode);
@@ -239,7 +234,7 @@ public abstract class RadixTree<V> implements CharSequence {
             //the current node now has just a single child
             //we should replace it with a new node which combines the prefixes
             RadixTree<V> firstChild = (RadixTree<V>)current.payload;
-            RadixTree<V> joined = createNewSuffixTreeNode(firstChild.isTerminalNode());
+            RadixTree<V> joined = createNewSuffixTreeNode();
             int newLength = current.getLabelLength() + firstChild.getLabelLength();
             joined.setLabel(firstChild.getRootSequence(), firstChild.getEnd() - newLength, firstChild.getEnd());
             joined.payload = firstChild.payload;
@@ -247,7 +242,7 @@ public abstract class RadixTree<V> implements CharSequence {
         }
     }
 
-    protected abstract RadixTree<V> createNewSuffixTreeNode(boolean terminal);
+    protected abstract RadixTree<V> createNewSuffixTreeNode();
 
     protected abstract ValueSupplier<V> getValueSupplier();
 
@@ -259,7 +254,9 @@ public abstract class RadixTree<V> implements CharSequence {
     }
 
     public boolean isTerminalNode() {
-        return terminal; /* root node */
+        return 
+          end != 0 /* root */ && 
+          immutableSequence.charAt(end - 1) == CharUtils.TERMINAL_CHAR; /* root node */
     }
 
     public boolean isOnlyOneChild() {

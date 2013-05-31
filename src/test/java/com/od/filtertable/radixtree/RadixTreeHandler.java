@@ -96,14 +96,10 @@ public class RadixTreeHandler extends ChorusAssert {
     private static class StringRadixTree extends RadixTree<String> {
 
         public StringRadixTree() {}
-        
-        public StringRadixTree(boolean terminal) {
-            super(terminal);
-        }
 
         @Override
-        protected RadixTree createNewSuffixTreeNode(boolean terminal) {
-            return new StringRadixTree(terminal);
+        protected RadixTree createNewSuffixTreeNode() {
+            return new StringRadixTree();
         }
 
         @Override
