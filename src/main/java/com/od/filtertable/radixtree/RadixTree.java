@@ -59,12 +59,10 @@ public abstract class RadixTree<V> implements CharSequence {
     private void doAdd(MutableCharSequence s, V value, ChildIterator<V> i, ChildIteratorPool<V> p) {
         boolean added = false;
         while (i.isValid()) {
-            int matchingChars = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
-            if (matchingChars == s.length() /* since s must end with terminal char, this  be a terminal node */ ) {
-                addToChild(s, value, i, matchingChars, p);
-                added = true;
-                break;
-            } else if ( matchingChars == i.getCurrentNode().getLabelLength() /*whole prefix matched */) {
+            RadixTree<V> currentNode = i.getCurrentNode();
+            int matchingChars = CharUtils.getSharedPrefixCount(s, currentNode);
+            if ( matchingChars == s.length() /* must be a terminal node */
+                || matchingChars == currentNode.getLabelLength()) {
                 addToChild(s, value, i, matchingChars, p);
                 added = true;
                 break;
@@ -72,7 +70,7 @@ public abstract class RadixTree<V> implements CharSequence {
                 split(i, s, value, matchingChars);
                 added = true;
                 break;              
-            } else if ( CharUtils.compare(s, i.getCurrentNode()) == -1) {
+            } else if ( CharUtils.compare(s, currentNode) == -1) {
                 insert(i, s, value);
                 added = true;
                 break;

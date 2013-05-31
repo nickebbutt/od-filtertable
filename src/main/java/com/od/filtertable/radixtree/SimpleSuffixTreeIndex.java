@@ -38,7 +38,7 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
     @Override
     protected void addToIndex(CharSequence s, V val) {
-        if ( s.length() > 1) {
+        if ( s.length() > 1 /* not just the terminal char */) {
             radixTree.add(s, val);
         }
     }
