@@ -95,6 +95,8 @@ public class RadixTreeHandler extends ChorusAssert {
 
     private static class StringRadixTree extends RadixTree<String> {
 
+        private final HashSetValueSupplier<String> stringHashSetValueSupplier = new HashSetValueSupplier<String>();
+
         public StringRadixTree() {}
 
         @Override
@@ -104,7 +106,7 @@ public class RadixTreeHandler extends ChorusAssert {
 
         @Override
         protected ValueSupplier<String> getValueSupplier() {
-            return new HashSetValueSupplier<String>();
+            return stringHashSetValueSupplier;
         }
 
     }
