@@ -1,5 +1,5 @@
 
-  Feature: Radix Tree
+  Feature: Radix Tree Map
     
     Scenario: Add items top level
       Given I create a radix tree
@@ -51,22 +51,22 @@
 
     Scenario: I can remove a value
       When I add a value VAL1 under key ABC
-      When I add a value VAL2 under key ABC
-      And I remove a value VAL1 under key ABC
+      When I add a value VAL2 under key ABCD
+      And I remove the value under key ABC
       Then a search for ABC returns VAL2
       And the number of nodes is 1
   
     Scenario: When I remove last value empty terminal node is removed
       When I add a value VAL1 under key ABC
-      And I remove a value VAL1 under key ABC
+      And I remove the value under key ABC
       And the number of nodes is 0
 
     Scenario: Removing all values compresses node structure
       When I add a value VAL1 under key ABC
       And I add a value VAL2 under key ABD
       Then the number of nodes is 3
-      And I remove a value VAL1 under key ABC
-      And I remove a value VAL2 under key ABD
+      And I remove the value under key ABC
+      And I remove the value under key ABD
       Then the number of nodes is 0
   
     Scenario: Removing all values compresses node structure complex
@@ -74,13 +74,13 @@
       And I add a value VAL2 under key ABD
       And I add a value VAL3 under key AB
       And the number of nodes is 4
-      And I remove a value VAL1 under key ABC
+      And I remove the value under key ABC
       And the number of nodes is 3
       And a search for A returns VAL3, VAL2 
-      And I remove a value VAL2 under key ABD
+      And I remove the value under key ABD
       And the number of nodes is 1
       And a search for A returns VAL3
-      And I remove a value VAL3 under key AB
+      And I remove the value under key AB
       Then the number of nodes is 0
   
     Scenario: Getting a limited number of results

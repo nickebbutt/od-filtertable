@@ -10,7 +10,7 @@ import com.od.filtertable.radixtree.RadixTree;
  * Returns a count of nodes
  * This will include the root node, which has no label, if searching from root level
  */
-public class NodeCountVisitor implements SuffixTreeVisitor {
+public class NodeCountVisitor implements TreeVisitor {
     
     private int nodeCount;
     

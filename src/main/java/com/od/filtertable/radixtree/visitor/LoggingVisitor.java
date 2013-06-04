@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
+import com.od.filtertable.radixtree.ValueSupplier;
 
 import java.io.PrintWriter;
 import java.util.LinkedList;
@@ -10,14 +11,16 @@ import java.util.LinkedList;
  * Date: 22/05/13
  * Time: 17:33
  */
-public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
+public class LoggingVisitor<V> implements TreeVisitor<V> {
 
     private int indentLevel = 0;
     private PrintWriter writer;
+    private ValueSupplier<V> valueSupplier;
     private LinkedList<V> values = new LinkedList<V>();
 
-    public LoggingVisitor(PrintWriter writer) {
+    public LoggingVisitor(PrintWriter writer, ValueSupplier<V> valueSupplier) {
         this.writer = writer;
+        this.valueSupplier = valueSupplier;
     }
     
     @Override
@@ -27,7 +30,7 @@ public class LoggingVisitor<V> implements SuffixTreeVisitor<V> {
         addIndent(indentLevel, sb);
         sb.append(radixTree.getLabel());
         values.clear();
-        if ( radixTree.getValues(values).size() > 0) {
+        if ( radixTree.getValues(values, valueSupplier).size() > 0) {
             sb.append("\t vals: ");
             for (Object o : values) {
                 sb.append(o.toString()).append(" ");

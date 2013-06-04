@@ -17,29 +17,29 @@ import java.util.*;
  * Time: 22:41
  * To change this template use File | Settings | File Templates.
  */
-@Handler("Radix Tree")
+@Handler("Radix Tree Map")
 public class RadixTreeHandler extends ChorusAssert {
 
-    private RadixTree<String> radixTree;
+    private RadixTreeMap<String> radixTree;
 
     @Step("I create a radix tree")
     public void createIndex() {
-        radixTree = new StringRadixTree();
+        radixTree = new RadixTreeMap<String>();
     }
 
     @Step("I add a value (.*) under key (.*)")
     public void addAValue(String value, String key) {
-        radixTree.add(key + CharUtils.TERMINAL_CHAR, value);
+        radixTree.put(key + CharUtils.TERMINAL_CHAR, value);
     }
     
-    @Step("I remove a value (.*) under key (.*)")
-    public void remove(String value, String key) {
-        radixTree.remove(key + CharUtils.TERMINAL_CHAR, value);
+    @Step("I remove the value under key (.*)")
+    public void remove(String key) {
+        radixTree.remove(key + CharUtils.TERMINAL_CHAR);
     }
     
     @Step("I show the tree structure")
     public void showTheTreeStucture() {
-        LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out));
+        LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out), new RadixTreeMap.SingleValueSupplier());
         radixTree.accept(v);
     }
     
@@ -77,8 +77,8 @@ public class RadixTreeHandler extends ChorusAssert {
         List<String> expected = getExpectedList(values);
 
         Collection<String> actual = maxItems == Integer.MAX_VALUE ? 
-            radixTree.get(key, new LinkedHashSet<String>()) :
-            radixTree.get(key, new LinkedHashSet<String>(), maxItems);
+            radixTree.getStartingWith(key, new LinkedHashSet<String>()) :
+            radixTree.getStartingWith(key, new LinkedHashSet<String>(), maxItems);
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
         assertEquals("expected values in search results", expected, actualOrdered);
@@ -93,21 +93,4 @@ public class RadixTreeHandler extends ChorusAssert {
         return expected;
     }
 
-    private static class StringRadixTree extends RadixTree<String> {
-
-        private final HashSetValueSupplier<String> stringHashSetValueSupplier = new HashSetValueSupplier<String>();
-
-        public StringRadixTree() {}
-
-        @Override
-        protected RadixTree createNewSuffixTreeNode() {
-            return new StringRadixTree();
-        }
-
-        @Override
-        protected ValueSupplier<String> getValueSupplier() {
-            return stringHashSetValueSupplier;
-        }
-
-    }
 }

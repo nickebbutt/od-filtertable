@@ -7,7 +7,7 @@ import com.od.filtertable.radixtree.RadixTree;
  * Date: 22/05/13
  * Time: 17:28
  */
-public interface SuffixTreeVisitor<V> {
+public interface TreeVisitor<V> {
 
     /**
      * @return true if visitation should continue

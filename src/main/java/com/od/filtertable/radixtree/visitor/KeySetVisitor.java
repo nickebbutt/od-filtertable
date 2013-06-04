@@ -12,7 +12,7 @@ import java.util.List;
  * 
  * Collect all the keys present in the suffix tree
  */
-public class KeySetVisitor<V> implements SuffixTreeVisitor<V> {
+public class KeySetVisitor<V> implements TreeVisitor<V> {
     
     private StringBuilder sb = new StringBuilder();
     

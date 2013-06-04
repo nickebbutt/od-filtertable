@@ -27,24 +27,27 @@ public class SimpleSuffixTreeIndex<V> extends AbstractSimpleIndex<V> {
 
     @Override
     protected <R extends Collection<V>> R doGetValuesWithPrefixes(CharSequence s, R targetCollection, int maxValues) {
-        return radixTree.get(s, targetCollection, maxValues);
+//        return radixTree.get(s, targetCollection, maxValues);
+        return null;
     }
 
     @Override
     protected Collection<V> doGetValues(CharSequence s) {
-        LinkedHashSet<V> result = new LinkedHashSet<V>();
-        return radixTree.getValues(result);
+//        LinkedHashSet<V> result = new LinkedHashSet<V>();
+//        return radixTree.getValues(result);
+        return null;
     }
 
     @Override
     protected void addToIndex(CharSequence s, V val) {
-        if ( s.length() > 1 /* not just the terminal char */) {
-            radixTree.add(s, val);
-        }
+//        if ( s.length() > 1 /* not just the terminal char */) {
+//            radixTree.add(s, val);
+//        }
+        
     }
 
     @Override
     protected void removeFromIndex(CharSequence s, V val) {
-        radixTree.remove(s, val);
+//        radixTree.remove(s, val);
     }
 }

@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
+import com.od.filtertable.radixtree.ValueSupplier;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -11,23 +12,25 @@ import java.util.Iterator;
  * Date: 24/05/13
  * Time: 14:53
  */
-public class CollectValuesVisitor<V> implements SuffixTreeVisitor<V> {
+public class CollectValuesVisitor<V> implements TreeVisitor<V> {
 
     private Collection<V> targetCollection;
     private int maxValueCount;
+    private ValueSupplier<V> valueSupplier;
 
-    public CollectValuesVisitor(Collection<V> targetCollection) {
-        this(targetCollection, Integer.MAX_VALUE);
+    public CollectValuesVisitor(Collection<V> targetCollection, ValueSupplier<V> valueSupplier) {
+        this(targetCollection, Integer.MAX_VALUE, valueSupplier);
     }
 
-    public CollectValuesVisitor(Collection<V> targetCollection, int maxValueCount) {
+    public CollectValuesVisitor(Collection<V> targetCollection, int maxValueCount, ValueSupplier<V> valueSupplier) {
+        this.valueSupplier = valueSupplier;
         this.targetCollection = new ValueLimitingCollectionWrapper<V>(targetCollection, maxValueCount);
         this.maxValueCount = maxValueCount;
     }
 
     public boolean visit(RadixTree<V> radixTree) {
         if ( radixTree.isTerminalNode()) {
-            radixTree.getValues(targetCollection);
+            radixTree.getValues(targetCollection, valueSupplier);
         }
         return targetCollection.size() < maxValueCount;
     }
