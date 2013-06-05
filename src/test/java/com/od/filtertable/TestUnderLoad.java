@@ -15,7 +15,6 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class TestUnderLoad {
 
-    private static final String allChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private static final int DIFFERENT_VALUES_COUNT = 10000;
     private static final int MAX_STRING_LENGTH = 20;
@@ -28,10 +27,7 @@ public class TestUnderLoad {
 
     @Before
     public void prepare() {
-        testStrings[0] = "AbCdEfGhIjKlMnOpQrStUvWxYz";
-        for ( int count = 1; count <= (DIFFERENT_VALUES_COUNT - 1) ; count++) {
-            testStrings[count] = generateTestString(count - 1);
-        }
+        testStrings = new TestStringGenerator(DIFFERENT_VALUES_COUNT).getTestStrings();
         for ( int count = 0; count < DIFFERENT_VALUES_COUNT ; count++) {
             testDoubles[count] = generateTestDouble();
         }
@@ -92,14 +88,4 @@ public class TestUnderLoad {
         return Math.random();
     }
 
-    private String generateTestString(int lastString) {
-        String s = testStrings[lastString];
-        char randomChar = getRandomChar();
-        char randomChar2 = getRandomChar();
-        return s.replaceFirst(new String(new char[] {randomChar}), new String(new char[] {randomChar2}));
-    }
-
-    private char getRandomChar() {
-        return allChars.charAt((int)(Math.random() * 51));
-    }
 }

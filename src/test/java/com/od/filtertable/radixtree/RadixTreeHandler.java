@@ -29,17 +29,17 @@ public class RadixTreeHandler extends ChorusAssert {
 
     @Step("I add a value (.*) under key (.*)")
     public void addAValue(String value, String key) {
-        radixTree.put(key + CharUtils.TERMINAL_CHAR, value);
+        radixTree.put(key, value);
     }
     
     @Step("I remove the value under key (.*)")
     public void remove(String key) {
-        radixTree.remove(key + CharUtils.TERMINAL_CHAR);
+        radixTree.remove(key);
     }
     
     @Step("I show the tree structure")
     public void showTheTreeStucture() {
-        LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out), new RadixTreeMap.SingleValueSupplier());
+        LoggingVisitor v = new LoggingVisitor(new PrintWriter(System.out), new SingleValueSupplier());
         radixTree.accept(v);
     }
     

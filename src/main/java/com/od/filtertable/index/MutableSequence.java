@@ -48,6 +48,12 @@ public class MutableSequence implements MutableCharSequence {
         this.end = end;
     }
 
+    public void setSegment(CharSequence segment) {
+        this.segment = segment == null ? EMPTY_SEGMENT : segment;
+        this.start = 0;
+        this.end = segment.length();
+    }
+    
     @Override
     public int length() {
         return end - start;
@@ -70,10 +76,6 @@ public class MutableSequence implements MutableCharSequence {
     @Override
     public char charAt(int index) {
         return segment.charAt(start + index);
-    }
-
-    public void setSegment(CharSequence segment) {
-        this.segment = segment == null ? EMPTY_SEGMENT : segment;
     }
 
     @Override
