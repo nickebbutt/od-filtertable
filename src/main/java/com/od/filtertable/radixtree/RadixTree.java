@@ -106,7 +106,7 @@ public class RadixTree<V> implements CharSequence {
         firstChild.nextPeer = secondChild;
     }
 
-    private void setLabel(CharSequence baseSequence, int start, int end) {
+    public void setLabel(CharSequence baseSequence, int start, int end) {
         this.immutableSequence = baseSequence;
         this.start = (short)start;
         this.end = (short)end;
@@ -256,8 +256,8 @@ public class RadixTree<V> implements CharSequence {
         return ! isTerminalNode() && payload != null && ((RadixTree<V>)payload).nextPeer == null;
     }
     
-    public CharSequence getLabel() {
-        return new MutableSequence(immutableSequence, start, end);
+    public String getLabel() {
+        return CharUtils.getString(immutableSequence, start, end);
     }
 
     private void setLabelFromNodeSuffix(RadixTree base, int trimFromStart) {

@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree;
 
 import com.od.filtertable.index.MutableSequence;
+import com.od.filtertable.radixtree.visitor.StringCompressionVisitor;
 import com.od.filtertable.radixtree.visitor.TreeVisitor;
 
 import java.util.Collection;
@@ -51,6 +52,10 @@ public class RadixTreeMap<V> {
 
     public void accept(TreeVisitor<V> v) {
         radixTree.accept(v);
+    }
+    
+    public void compress() {
+        radixTree.accept(new StringCompressionVisitor());
     }
 
 }

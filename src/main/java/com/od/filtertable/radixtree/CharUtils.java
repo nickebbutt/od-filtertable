@@ -84,5 +84,12 @@ public class CharUtils {
         }
         return result;
     }
-   
+
+    public static String getString(CharSequence immutableSequence, short start, short end) {
+        StringBuilder sb = new StringBuilder();
+        for ( int c = start; c < end; c ++) {
+            sb.append(immutableSequence.charAt(c));    
+        }
+        return sb.toString();
+    }
 }
