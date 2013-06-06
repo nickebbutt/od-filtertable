@@ -45,6 +45,7 @@ public class RadixTreeHandler extends ChorusAssert {
     
     @Step("the radix tree contains keys (.*)")
     public void checkContainsKeys(String keys) {
+        radixTree.compress();
         List<String> expected = getExpectedList(keys);
         
         KeySetVisitor<String> v = new KeySetVisitor<String>();

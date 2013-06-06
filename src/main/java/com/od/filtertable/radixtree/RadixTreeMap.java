@@ -55,7 +55,8 @@ public class RadixTreeMap<V> {
     }
     
     public void compress() {
-        radixTree.accept(new StringCompressionVisitor());
+        StringCompressionVisitor v = new StringCompressionVisitor();
+        radixTree.accept(v);
     }
 
 }
