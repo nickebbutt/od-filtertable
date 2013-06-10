@@ -27,4 +27,8 @@ public class TreeConfig<V> {
     public boolean isTerminalNode(RadixTree<V> t) {
         return t.getLastChar() >= terminalNodeRangeStart;
     }
+    
+    public boolean isTerminalChar(char c) {
+        return c >= terminalNodeRangeStart;
+    }
 }

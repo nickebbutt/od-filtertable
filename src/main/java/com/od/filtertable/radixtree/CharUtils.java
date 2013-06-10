@@ -25,22 +25,9 @@ public class CharUtils {
         return shared;
     }
 
-    public static MutableCharSequence addTerminalCharAndCheck(CharSequence s) {
-        MutableCharSequence result;
-        if ( getLastChar(s) != DEFAULT_TERMINAL_CHAR) {
-            StringBuilder sb = new StringBuilder(s);
-            sb.append(DEFAULT_TERMINAL_CHAR);
-            result = new MutableSequence(sb.toString());    
-        } else {
-            result = new MutableSequence(s);
-        }
-        checkTerminalCharsInBody(s);
-        return result;
-    }
-
-    public static void checkTerminalCharsInBody(CharSequence s) {
+    public static void checkTerminalCharsInBody(CharSequence s, TreeConfig t) {
         for ( int c = 0; c < s.length() - 1 ; c++) {
-            if ( s.charAt(c) == DEFAULT_TERMINAL_CHAR) {
+            if ( t.isTerminalChar(s.charAt(c))) {
                 throw new UnsupportedOperationException("Cannot add a char sequence in which the terminal character " 
                     + DEFAULT_TERMINAL_CHAR + " is not the last character");
             }
@@ -62,10 +49,10 @@ public class CharUtils {
     /**
      * Compare two sequences, excluding any terminal characters
      */
-    public static int compare(CharSequence b, CharSequence c) {
+    public static int compare(CharSequence b, CharSequence c, TreeConfig t) {
         //exclude terminal chars
-        int blength = b.length() > 0 && b.charAt(b.length() - 1) == DEFAULT_TERMINAL_CHAR ? b.length() - 1 : b.length();
-        int clength = c.length() > 0 && c.charAt(c.length() - 1) == DEFAULT_TERMINAL_CHAR ? c.length() - 1 : c.length();
+        int blength = b.length() > 0 && t.isTerminalChar(b.charAt(b.length() - 1)) ? b.length() - 1 : b.length();
+        int clength = c.length() > 0 && t.isTerminalChar(c.charAt(c.length() - 1)) ? c.length() - 1 : c.length();
 
         int shared = Math.min(blength, clength);
         int result = 0;

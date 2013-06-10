@@ -56,10 +56,10 @@ public class RadixTree<V> implements CharSequence {
                 added = true;
                 break;
             } else if ( matchingChars > 0) {  //only part of the current node label matched
-                split(i, s, value, matchingChars, treeConfig.getValueSupplier());
+                split(i, s, value, matchingChars, treeConfig);
                 added = true;
                 break;              
-            } else if ( CharUtils.compare(s, currentNode) == -1) {
+            } else if ( CharUtils.compare(s, currentNode, treeConfig) == -1) {
                 insert(i, s, value, treeConfig.getValueSupplier());
                 added = true;
                 break;
@@ -78,7 +78,7 @@ public class RadixTree<V> implements CharSequence {
         s.decrementStart(matchingChars);
     }
 
-    private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars, ValueSupplier<V> valueSupplier) {
+    private void split(ChildIterator<V> i, MutableCharSequence s, V value, int matchingChars, TreeConfig<V> treeConfig) {
         RadixTree<V> nodeToReplace = i.getCurrentNode();
         int labelLengthForNewChild = s.length() - matchingChars;
 
@@ -92,9 +92,9 @@ public class RadixTree<V> implements CharSequence {
 
         RadixTree<V> newChild = new RadixTree<V>();
         newChild.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceEnd() - labelLengthForNewChild, s.getBaseSequenceEnd());
-        newChild.addValue(value, valueSupplier);
+        newChild.addValue(value, treeConfig.getValueSupplier());
 
-        boolean newChildFirst = CharUtils.compare(newChild, replacementChild) == -1;
+        boolean newChildFirst = CharUtils.compare(newChild, replacementChild, treeConfig) == -1;
         RadixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
         RadixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
