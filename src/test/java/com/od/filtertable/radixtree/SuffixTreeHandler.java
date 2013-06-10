@@ -6,16 +6,15 @@ import org.chorusbdd.chorus.annotations.Step;
 /**
  * Created with IntelliJ IDEA.
  * User: nick
- * Date: 06/05/13
- * Time: 22:41
+ * Date: 10/06/13
+ * Time: 21:31
  * To change this template use File | Settings | File Templates.
  */
-@Handler("Radix Tree Map")
-public class RadixTreeHandler extends AbstractRadixTreeHandler {
+@Handler("Suffix Tree Map")
+public class SuffixTreeHandler extends AbstractRadixTreeHandler {
 
-    @Step("I create a radix tree")
+    @Step("I create a suffix tree")
     public void createIndex() {
-        tree = new RadixTreeMap<String>();
+        tree = new SuffixTreeMap<String>();
     }
-
 }

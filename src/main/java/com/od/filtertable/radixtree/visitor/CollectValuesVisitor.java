@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
+import com.od.filtertable.radixtree.TreeConfig;
 import com.od.filtertable.radixtree.ValueSupplier;
 
 import java.util.Collection;
@@ -16,21 +17,21 @@ public class CollectValuesVisitor<V> implements TreeVisitor<V> {
 
     private Collection<V> targetCollection;
     private int maxValueCount;
-    private ValueSupplier<V> valueSupplier;
+    private TreeConfig<V> treeConfig;
 
-    public CollectValuesVisitor(Collection<V> targetCollection, ValueSupplier<V> valueSupplier) {
-        this(targetCollection, Integer.MAX_VALUE, valueSupplier);
+    public CollectValuesVisitor(Collection<V> targetCollection, TreeConfig<V> treeConfig) {
+        this(targetCollection, Integer.MAX_VALUE, treeConfig);
     }
 
-    public CollectValuesVisitor(Collection<V> targetCollection, int maxValueCount, ValueSupplier<V> valueSupplier) {
-        this.valueSupplier = valueSupplier;
+    public CollectValuesVisitor(Collection<V> targetCollection, int maxValueCount, TreeConfig<V> treeConfig) {
+        this.treeConfig = treeConfig;
         this.targetCollection = new ValueLimitingCollectionWrapper<V>(targetCollection, maxValueCount);
         this.maxValueCount = maxValueCount;
     }
 
     public boolean visit(RadixTree<V> radixTree) {
-        if ( radixTree.isTerminalNode()) {
-            radixTree.getValues(targetCollection, valueSupplier);
+        if ( radixTree.isTerminalNode(treeConfig)) {
+            radixTree.getValues(targetCollection, treeConfig);
         }
         return targetCollection.size() < maxValueCount;
     }

@@ -11,7 +11,7 @@ import com.od.filtertable.index.MutableSequence;
  */
 public class CharUtils {
     
-    public static final char TERMINAL_CHAR = '$';
+    public static final char DEFAULT_TERMINAL_CHAR = '\u1000';
 
     public static int getSharedPrefixCount(CharSequence s, CharSequence s2) {
         int shared = 0;
@@ -27,9 +27,9 @@ public class CharUtils {
 
     public static MutableCharSequence addTerminalCharAndCheck(CharSequence s) {
         MutableCharSequence result;
-        if ( getLastChar(s) != TERMINAL_CHAR) {
+        if ( getLastChar(s) != DEFAULT_TERMINAL_CHAR) {
             StringBuilder sb = new StringBuilder(s);
-            sb.append(TERMINAL_CHAR);
+            sb.append(DEFAULT_TERMINAL_CHAR);
             result = new MutableSequence(sb.toString());    
         } else {
             result = new MutableSequence(s);
@@ -40,9 +40,9 @@ public class CharUtils {
 
     public static void checkTerminalCharsInBody(CharSequence s) {
         for ( int c = 0; c < s.length() - 1 ; c++) {
-            if ( s.charAt(c) == TERMINAL_CHAR) {
+            if ( s.charAt(c) == DEFAULT_TERMINAL_CHAR) {
                 throw new UnsupportedOperationException("Cannot add a char sequence in which the terminal character " 
-                    + TERMINAL_CHAR + " is not the last character");
+                    + DEFAULT_TERMINAL_CHAR + " is not the last character");
             }
         }
     }
@@ -64,8 +64,8 @@ public class CharUtils {
      */
     public static int compare(CharSequence b, CharSequence c) {
         //exclude terminal chars
-        int blength = b.length() > 0 && b.charAt(b.length() - 1) == TERMINAL_CHAR ? b.length() - 1 : b.length();
-        int clength = c.length() > 0 && c.charAt(c.length() - 1) == TERMINAL_CHAR ? c.length() - 1 : c.length();
+        int blength = b.length() > 0 && b.charAt(b.length() - 1) == DEFAULT_TERMINAL_CHAR ? b.length() - 1 : b.length();
+        int clength = c.length() > 0 && c.charAt(c.length() - 1) == DEFAULT_TERMINAL_CHAR ? c.length() - 1 : c.length();
 
         int shared = Math.min(blength, clength);
         int result = 0;

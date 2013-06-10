@@ -17,14 +17,15 @@ public class ChildIteratorPool<E> {
     
     private Stack<ChildIterator<E>> iterators = new Stack<ChildIterator<E>>();
     
-    public ChildIterator<E> getIterator(RadixTree<E> parentNode) {
+    
+    public ChildIterator<E> getIterator(RadixTree<E> parentNode, boolean isTerminal) {
         ChildIterator<E> result;
         if ( iterators.size() == 0) {
             result = new ChildIterator<E>();
         } else {
             result = iterators.pop();
         }
-        result.setParent(parentNode);
+        result.setParent(parentNode, isTerminal);
         return result;
     }
 

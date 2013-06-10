@@ -21,7 +21,7 @@ public class CharSequenceWithTerminalNode implements CharSequence {
     @Override
     public char charAt(int index) {
         return index == length() - 1 ?
-                CharUtils.TERMINAL_CHAR :
+                CharUtils.DEFAULT_TERMINAL_CHAR :
                 s.charAt(index);
     }
 

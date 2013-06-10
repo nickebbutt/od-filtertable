@@ -13,16 +13,10 @@ public class ChildIterator<V> {
     private RadixTree<V> parent;
     private RadixTree<V> currentNode;
     private RadixTree<V> lastNode;
-
-    public ChildIterator(RadixTree<V> parent) {
-        setParent(parent);    
-    }
-    
-    public ChildIterator() {}
-    
-    public void setParent(RadixTree<V> parent) {
+        
+    public void setParent(RadixTree<V> parent, boolean isTerminal) {
         this.parent = parent;
-        currentNode = parent.isTerminalNode() ? null : (RadixTree<V>)parent.payload;
+        currentNode = isTerminal ? null : (RadixTree<V>)parent.payload;
         lastNode = null;
     }
 

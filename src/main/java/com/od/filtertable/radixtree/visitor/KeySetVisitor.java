@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
+import com.od.filtertable.radixtree.TreeConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,17 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
     private StringBuilder sb = new StringBuilder();
     
     private List<String> allKeys = new ArrayList<String>();
+    private TreeConfig<V> treeConfig;
+
+    public KeySetVisitor(TreeConfig<V> treeConfig) {
+        this.treeConfig = treeConfig;
+    }
     
     @Override
     public boolean visit(RadixTree<V> radixTree) {
         //add the label chars
         sb.append(radixTree.getLabel());
-        if (radixTree.isTerminalNode()) {
+        if (radixTree.isTerminalNode(treeConfig)) {
             removeLastCharacter();
             allKeys.add(sb.toString());
         }
@@ -33,7 +39,7 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
     public void visitComplete(RadixTree<V> radixTree) {
         //remove the label chars
         int chars = radixTree.getLabelLength();
-        if ( radixTree.isTerminalNode()) {
+        if ( radixTree.isTerminalNode(treeConfig)) {
             chars--;
         }
         

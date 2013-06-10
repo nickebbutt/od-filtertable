@@ -30,41 +30,37 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Add value to the tree under the key s
      */
-    public void add(MutableCharSequence c, V value, ValueSupplier<V> valueSupplier) {
-        addToTree(c, value, ChildIteratorPool.<V>getIteratorPool(), valueSupplier);
-    }
-
-    private void addToTree(MutableCharSequence s, V value, ChildIteratorPool<V> iteratorPool, ValueSupplier<V> valueSupplier) {
+    public void add(MutableCharSequence s, V value, TreeConfig<V> treeConfig) {
         if (s.length() == 0) {
             //since when adding initial s always ends with terminal char, this is a terminal node, add the value
-            addValue(value, valueSupplier);
+            addValue(value, treeConfig.getValueSupplier());
         } else {
             //there are still chars to add, see if they match any existing children, if not insert a new child node
-            ChildIterator<V> i = iteratorPool.getIterator(this);
+            ChildIterator<V> i = treeConfig.getIteratorPool().getIterator(this, isTerminalNode(treeConfig));
             try {
-                doAdd(s, value, i, iteratorPool, valueSupplier);
+                doAdd(s, value, i, treeConfig);
             } finally {
-                iteratorPool.returnIterator(i);
+                treeConfig.getIteratorPool().returnIterator(i);
             }
         }      
     }
 
-    private void doAdd(MutableCharSequence s, V value, ChildIterator<V> i, ChildIteratorPool<V> p, ValueSupplier<V> valueSupplier) {
+    private void doAdd(MutableCharSequence s, V value, ChildIterator<V> i, TreeConfig<V> treeConfig) {
         boolean added = false;
         while (i.isValid()) {
             RadixTree<V> currentNode = i.getCurrentNode();
             int matchingChars = CharUtils.getSharedPrefixCount(s, currentNode);
             if ( matchingChars == s.length() /* must be a terminal node */
                 || matchingChars == currentNode.getLabelLength()) {
-                addToChild(s, value, i, matchingChars, p, valueSupplier);
+                addToChild(s, value, i, matchingChars, treeConfig);
                 added = true;
                 break;
             } else if ( matchingChars > 0) {  //only part of the current node label matched
-                split(i, s, value, matchingChars, valueSupplier);
+                split(i, s, value, matchingChars, treeConfig.getValueSupplier());
                 added = true;
                 break;              
             } else if ( CharUtils.compare(s, currentNode) == -1) {
-                insert(i, s, value, valueSupplier);
+                insert(i, s, value, treeConfig.getValueSupplier());
                 added = true;
                 break;
             }
@@ -72,13 +68,13 @@ public class RadixTree<V> implements CharSequence {
         }
 
         if (!added) {
-            insert(i, s, value, valueSupplier);
+            insert(i, s, value, treeConfig.getValueSupplier());
         }
     }
 
-    private void addToChild(MutableCharSequence s, V value, ChildIterator<V> i, int matchingChars, ChildIteratorPool<V> iteratorPool, ValueSupplier valueSupplier) {
+    private void addToChild(MutableCharSequence s, V value, ChildIterator<V> i, int matchingChars, TreeConfig<V> treeConfig) {
         s.incrementStart(matchingChars);        
-        i.getCurrentNode().addToTree(s, value, iteratorPool, valueSupplier);
+        i.getCurrentNode().add(s, value, treeConfig);
         s.decrementStart(matchingChars);
     }
 
@@ -128,33 +124,27 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Get into target collection values from all nodes prefixed with char sequence
      */
-    public Collection<V> get(CharSequence c, Collection<V> targetCollection, ValueSupplier<V> valueSupplier) {
-        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, valueSupplier);
-        accept(new MutableSequence(c), collectValuesVisitor, ChildIteratorPool.<V>getIteratorPool());
+    public Collection<V> get(CharSequence c, Collection<V> targetCollection, TreeConfig<V> treeConfig) {
+        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, treeConfig);
+        accept(new MutableSequence(c), collectValuesVisitor, treeConfig);
         return targetCollection;
     }
     
     /**
      * Get into target collection values from all nodes prefixed with char sequence, to a limit of maxResults values
      */
-    public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults, ValueSupplier<V> valueSupplier) {
-        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults, valueSupplier);
-        accept(new MutableSequence(c), collectValuesVisitor, ChildIteratorPool.<V>getIteratorPool());
+    public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults, TreeConfig<V> treeConfig) {
+        CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults, treeConfig);
+        accept(new MutableSequence(c), collectValuesVisitor, treeConfig);
         return targetCollection;
     }
 
-    /**
-     * Visit all nodes which are prefixed with char sequence
-     */
-    public void accept(MutableCharSequence c, TreeVisitor v) {
-        accept(c, v, ChildIteratorPool.<V>getIteratorPool());    
-    }
-
-    private void accept(MutableCharSequence s, TreeVisitor<V> visitor, ChildIteratorPool<V> iteratorPool) {
-        ChildIterator<V> i = iteratorPool.getIterator(this);
+    private void accept(MutableCharSequence s, TreeVisitor<V> visitor, TreeConfig<V> treeConfig) {
+        ChildIteratorPool<V> iteratorPool = treeConfig.getIteratorPool();
+        ChildIterator<V> i = iteratorPool.getIterator(this, isTerminalNode(treeConfig));
         try {
             if ( s.length() == 0) {
-                accept(visitor, iteratorPool);
+                accept(visitor, treeConfig);
             } else {
                 boolean foundMatch = false;
                 //get results from all nodes which share a prefix
@@ -162,7 +152,7 @@ public class RadixTree<V> implements CharSequence {
                     int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
                     if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
                         s.incrementStart(sharedCharCount);
-                        i.getCurrentNode().accept(s, visitor, iteratorPool);
+                        i.getCurrentNode().accept(s, visitor, treeConfig);
                         s.decrementStart(sharedCharCount);
                         foundMatch = true;
                     } else if (foundMatch) {
@@ -181,15 +171,11 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Visit all nodes
      */
-    public boolean accept(TreeVisitor v) {
-        return accept(v, ChildIteratorPool.<V>getIteratorPool());
-    }
-    
-    private boolean accept(TreeVisitor v, ChildIteratorPool<V> iteratorPool) {
+    public boolean accept(TreeVisitor v, TreeConfig<V> treeConfig) {
         boolean shouldContinue = v.visit(this);
-        ChildIterator<V> i = iteratorPool.getIterator(this);
+        ChildIterator<V> i = treeConfig.getIteratorPool().getIterator(this, isTerminalNode(treeConfig));
         while(i.isValid() && shouldContinue) {
-            shouldContinue = i.getCurrentNode().accept(v, iteratorPool);
+            shouldContinue = i.getCurrentNode().accept(v, treeConfig);
             i.next();
         }
         v.visitComplete(this);
@@ -199,27 +185,27 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Remove value v from key s, if s exists in the tree 
      */
-    public Object remove(MutableCharSequence s, V value, ValueSupplier<V> valueSupplier) {
-        return removeFromTree(s, value, ChildIteratorPool.<V>getIteratorPool(), valueSupplier);
+    public Object remove(MutableCharSequence s, V value, TreeConfig<V> treeConfig) {
+        return removeFromTree(s, value, treeConfig);
     }
 
-    private Object removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool, ValueSupplier<V> valueSupplier) {
+    private Object removeFromTree(MutableCharSequence c, V value, TreeConfig<V> treeConfig) {
         Object result = null;
         if ( c.length() == 0 && payload != null) {
-            ValueSupplier.ValueSupplierResult<V> r = valueSupplier.removeValue(value, payload);
+            ValueSupplier.ValueSupplierResult<V> r = treeConfig.getValueSupplier().removeValue(value, payload);
             payload = r.payload;
             result = r.result;
             r.clear();
         } else {
-            ChildIterator<V> i = childIteratorPool.getIterator(this);
+            ChildIterator<V> i = treeConfig.getIteratorPool().getIterator(this, isTerminalNode(treeConfig));
             while(i.isValid()) {
                 RadixTree<V> current = i.getCurrentNode();
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current);
                 if ( matchingChars == current.getLabelLength()) {
                     c.incrementStart(matchingChars);
-                    result = current.removeFromTree(c, value, childIteratorPool, valueSupplier);
-                    if ( current.shouldBeCollapsed() ) {
-                        joinOrRemove(i, current);
+                    result = current.removeFromTree(c, value, treeConfig);
+                    if ( current.shouldBeCollapsed(treeConfig) ) {
+                        joinOrRemove(i, current, treeConfig);
                     }
                     break;
                 }
@@ -229,12 +215,12 @@ public class RadixTree<V> implements CharSequence {
         return result;
     }
     
-    protected boolean shouldBeCollapsed() {
-        return (isTerminalNode() && payload == null) || isOnlyOneChild();    
+    protected boolean shouldBeCollapsed(TreeConfig<V> treeConfig) {
+        return (isTerminalNode(treeConfig) && payload == null) || isOnlyOneChild(treeConfig);    
     }
 
-    private void joinOrRemove(ChildIterator<V> i, RadixTree<V> current) {
-        if ( current.isTerminalNode()) {
+    private void joinOrRemove(ChildIterator<V> i, RadixTree<V> current, TreeConfig<V> treeConfig) {
+        if ( current.isTerminalNode(treeConfig)) {
             i.removeCurrent();    
         } else {
             //the current node now has just a single child
@@ -248,21 +234,21 @@ public class RadixTree<V> implements CharSequence {
         }
     }
 
-    public Collection<V> getValues(Collection<V> targetCollection, ValueSupplier<V> valueSupplier) {
-        if ( isTerminalNode() && payload != null ) { //should only ever be adding to a terminal node 
-            valueSupplier.addValuesToCollection(targetCollection, payload);
+    public Collection<V> getValues(Collection<V> targetCollection, TreeConfig<V> treeConfig) {
+        if ( isTerminalNode(treeConfig) && payload != null ) { //should only ever be adding to a terminal node 
+            treeConfig.getValueSupplier().addValuesToCollection(targetCollection, payload);
         } 
         return targetCollection;
     }
 
-    public boolean isTerminalNode() {
+    public boolean isTerminalNode(TreeConfig<V> treeConfig) {
         return 
-          end != 0 /* root */ && 
-          immutableSequence.charAt(end - 1) == CharUtils.TERMINAL_CHAR; /* root node */
+          end != 0 /* root */ && treeConfig.isTerminalNode(this); 
+          //immutableSequence.charAt(end - 1) == CharUtils.TERMINAL_CHAR; /* root node */
     }
 
-    public boolean isOnlyOneChild() {
-        return ! isTerminalNode() && payload != null && ((RadixTree<V>)payload).nextPeer == null;
+    public boolean isOnlyOneChild(TreeConfig<V> treeConfig) {
+        return ! isTerminalNode(treeConfig) && payload != null && ((RadixTree<V>)payload).nextPeer == null;
     }
     
     public String getLabel() {
@@ -299,6 +285,10 @@ public class RadixTree<V> implements CharSequence {
 
     public int length() {
         return getLabelLength();
+    }
+    
+    public char getLastChar() {
+        return immutableSequence.charAt(end - 1);
     }
 
     @Override

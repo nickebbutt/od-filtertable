@@ -2,6 +2,8 @@ package com.od.filtertable.radixtree;
 
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
+import com.od.filtertable.radixtree.visitor.StringCompressionVisitor;
+import com.od.filtertable.radixtree.visitor.TreeVisitor;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,13 +17,13 @@ import java.util.Map;
  * 
  * A Generalized suffix tree
  */
-public class SuffixTree<V> {
+public class SuffixTreeMap<V> implements RestrictedMap<V> {
     
     private RadixTree<V> radixTree = new RadixTree<V>();
     
     //for terminators use the first unassigned unicode character
     //plane onwards
-    private char startOfTerminalCharRange = (char)0x30000;
+    private char startOfTerminalCharRange = '\u1000';
     private char lastTerminator = startOfTerminalCharRange;
 
     private SingleValueSupplier<V> singleValueSupplier = new SingleValueSupplier<V>();
@@ -30,9 +32,12 @@ public class SuffixTree<V> {
 
     private Map<CharSequence, CharSequenceWithAssignableTerminalChar> terminalNodesBySequence = new HashMap<CharSequence, CharSequenceWithAssignableTerminalChar>();
     
+    private TreeConfig<V> treeConfig = new TreeConfig<V>(new ChildIteratorPool<V>(), singleValueSupplier);
+    
     public void put(CharSequence s, V value) {
         char terminalChar = lastTerminator++;
         if ( terminalChar < startOfTerminalCharRange ) {
+            //we will have to support multi-character terminal sequences 
             throw new UnsupportedOperationException("Adding more than " + (Character.MAX_VALUE - startOfTerminalCharRange) + " items not supported");
         }
         CharSequenceWithAssignableTerminalChar n = new CharSequenceWithAssignableTerminalChar(s, terminalChar);
@@ -44,33 +49,36 @@ public class SuffixTree<V> {
     private void addAllSuffixes(MutableCharSequence s, CharSequenceWithAssignableTerminalChar n, V value) {
         for ( int c = 0; c < s.length() - 1; c++) {
             s.setStart(c);
-            radixTree.add(mutableSequence, value, singleValueSupplier);
+            radixTree.add(mutableSequence, value, treeConfig);
         }
     }
 
-    public void remove(CharSequence s) {
+    public V remove(CharSequence s) {
         CharSequenceWithAssignableTerminalChar t = terminalNodesBySequence.get(s);
         if ( t != null) {
             terminalNodesBySequence.remove(s);
             mutableSequence.setSegment(t);
             removeAllSuffixes(mutableSequence);
         }
+        return null;
     }
 
-    private void removeAllSuffixes(MutableCharSequence s) {
+    private V removeAllSuffixes(MutableCharSequence s) {
+        V value = null;
         for ( int c = 0; c < s.length() - 1; c++) {
             s.setStart(c);
-            radixTree.remove(mutableSequence, null, singleValueSupplier);
+            value = (V)radixTree.remove(mutableSequence, null, treeConfig);
         }
+        return value;
     }
 
     public V get(CharSequence s) {
-        CharSequenceWithAssignableTerminalChar c = terminalNodesBySequence.get(s);
         LinkedList<V> result = null;
+        CharSequenceWithAssignableTerminalChar c = terminalNodesBySequence.get(s);
         if ( c != null) {
             mutableSequence.setSegment(c);
             result = new LinkedList<V>();
-            radixTree.get(mutableSequence, result, singleValueSupplier);
+            radixTree.get(mutableSequence, result, treeConfig);
             assert(result.size() < 2);
         }
         return result.size() > 0 ? result.get(0) : null;
@@ -78,13 +86,27 @@ public class SuffixTree<V> {
 
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection) {
         mutableSequence.setSegment(s); //do not add terminal node
-        radixTree.get(mutableSequence, collection, singleValueSupplier);
+        radixTree.get(mutableSequence, collection, treeConfig);
         return collection;
     }
 
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection, int maxItems) {
         mutableSequence.setSegment(s); //do not add terminal node
-        radixTree.get(mutableSequence, collection, maxItems, singleValueSupplier);
+        radixTree.get(mutableSequence, collection, maxItems, treeConfig);
         return collection;
+    }
+
+    public void accept(TreeVisitor<V> v) {
+        radixTree.accept(v, treeConfig);
+    }
+
+    @Override
+    public void compress() {
+        StringCompressionVisitor v = new StringCompressionVisitor();
+        radixTree.accept(v, treeConfig);    
+    }
+
+    public TreeConfig<V> getTreeConfig() {
+        return treeConfig;
     }
 }
