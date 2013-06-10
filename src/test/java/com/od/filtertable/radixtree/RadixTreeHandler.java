@@ -21,6 +21,7 @@ import java.util.*;
 public class RadixTreeHandler extends ChorusAssert {
 
     private RadixTreeMap<String> radixTree;
+    private String removedValue;
 
     @Step("I create a radix tree")
     public void createIndex() {
@@ -34,7 +35,12 @@ public class RadixTreeHandler extends ChorusAssert {
     
     @Step("I remove the value under key (.*)")
     public void remove(String key) {
-        radixTree.remove(key);
+        removedValue = radixTree.remove(key);
+    }
+
+    @Step("the removed value was (.*)")
+    public void checkRemovedValue(String key) {
+        assertTrue((key.equals("null") && removedValue == null) || removedValue.equals(key));
     }
     
     @Step("I show the tree structure")

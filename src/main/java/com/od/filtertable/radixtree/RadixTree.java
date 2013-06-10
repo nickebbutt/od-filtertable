@@ -13,7 +13,7 @@ import java.util.Collection;
  * Time: 19:00
  */
 public class RadixTree<V> implements CharSequence {
-
+    
     //the next node in the linked list of children for this node's parent
     RadixTree<V> nextPeer;
     
@@ -120,7 +120,9 @@ public class RadixTree<V> implements CharSequence {
     }
 
     private void addValue(V value, ValueSupplier<V> valueSupplier) {
-        payload = valueSupplier.addValue(value, payload);
+        ValueSupplier.ValueSupplierResult r = valueSupplier.addValue(value, payload);
+        payload = r.payload;
+        r.clear();
     }
 
     /**
@@ -197,13 +199,17 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Remove value v from key s, if s exists in the tree 
      */
-    public void remove(MutableCharSequence s, V value, ValueSupplier<V> valueSupplier) {
-        removeFromTree(s, value, ChildIteratorPool.<V>getIteratorPool(), valueSupplier);
+    public Object remove(MutableCharSequence s, V value, ValueSupplier<V> valueSupplier) {
+        return removeFromTree(s, value, ChildIteratorPool.<V>getIteratorPool(), valueSupplier);
     }
 
-    private boolean removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool, ValueSupplier<V> valueSupplier) {
+    private Object removeFromTree(MutableCharSequence c, V value, ChildIteratorPool<V> childIteratorPool, ValueSupplier<V> valueSupplier) {
+        Object result = null;
         if ( c.length() == 0 && payload != null) {
-            payload = valueSupplier.removeValue(value, payload);
+            ValueSupplier.ValueSupplierResult<V> r = valueSupplier.removeValue(value, payload);
+            payload = r.payload;
+            result = r.result;
+            r.clear();
         } else {
             ChildIterator<V> i = childIteratorPool.getIterator(this);
             while(i.isValid()) {
@@ -211,8 +217,8 @@ public class RadixTree<V> implements CharSequence {
                 int matchingChars = CharUtils.getSharedPrefixCount(c, current);
                 if ( matchingChars == current.getLabelLength()) {
                     c.incrementStart(matchingChars);
-                    boolean joinOrRemove = current.removeFromTree(c, value, childIteratorPool, valueSupplier);
-                    if ( joinOrRemove ) {
+                    result = current.removeFromTree(c, value, childIteratorPool, valueSupplier);
+                    if ( current.shouldBeCollapsed() ) {
                         joinOrRemove(i, current);
                     }
                     break;
@@ -220,8 +226,11 @@ public class RadixTree<V> implements CharSequence {
                 i.next();
             }
         }
-        
-        return (isTerminalNode() && payload == null) || isOnlyOneChild();
+        return result;
+    }
+    
+    protected boolean shouldBeCollapsed() {
+        return (isTerminalNode() && payload == null) || isOnlyOneChild();    
     }
 
     private void joinOrRemove(ChildIterator<V> i, RadixTree<V> current) {

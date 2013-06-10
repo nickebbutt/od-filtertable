@@ -7,12 +7,17 @@ import java.util.Collection;
  */
 class SingleValueSupplier<V> implements ValueSupplier<V> {
 
-    public Object addValue(V value, Object currentValue) {
-        return value;
+    private ValueSupplierResult<V> result = new ValueSupplierResult<V>();
+    
+    public ValueSupplierResult<V> addValue(V value, Object currentValue) {
+        result.payload = value;
+        return result;
     }
 
-    public Object removeValue(V value, Object currentValue) {
-        return null;
+    public ValueSupplierResult<V> removeValue(V value, Object currentValue) {
+        result.payload = null;
+        result.result = (V)currentValue;
+        return result;
     }
 
     public void addValuesToCollection(Collection<V> collection, Object currentValue) {

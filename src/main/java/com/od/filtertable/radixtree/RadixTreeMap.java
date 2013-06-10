@@ -24,10 +24,14 @@ public class RadixTreeMap<V> {
         mutableSequence.setSegment(new CharSequenceWithTerminalNode(s));
         radixTree.add(mutableSequence, value, singleValueSupplier);
     }
-    
-    public void remove(CharSequence s) {
+
+    /**
+     * Remove value corresponding to key s
+     * @return old value, if there was a value in the map for this key
+     */
+    public V remove(CharSequence s) {
         mutableSequence.setSegment(new CharSequenceWithTerminalNode(s));
-        radixTree.remove(mutableSequence, null, singleValueSupplier);
+        return (V)radixTree.remove(mutableSequence, null, singleValueSupplier);
     }
 
     public V get(CharSequence s) {

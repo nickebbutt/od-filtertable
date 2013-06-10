@@ -5,7 +5,7 @@ package com.od.filtertable.radixtree;
 * Date: 16/05/13
 * Time: 08:30
 * 
-* Iterate through the child nodes of a suffix tree node,
+* Iterate through the child nodes of a radix tree node,
 * also supporting insert/remove/replace operations
 */
 public class ChildIterator<V> {

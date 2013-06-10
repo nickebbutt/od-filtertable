@@ -23,14 +23,27 @@ import java.util.Collection;
  * values can be added.
  */
 public interface ValueSupplier<V> {
-    
-    Object addValue(V value, Object currentValue);
+
+    ValueSupplierResult addValue(V value, Object currentValue);
 
     /**
      * @return the value to be stored, which should be null if there are no remaining values stored for this node
      */
-    Object removeValue(V value, Object currentValue);
+    ValueSupplierResult removeValue(V value, Object currentValue);
 
+    
     void addValuesToCollection(Collection<V> collection, Object currentValue);
+    
+    
+    public static class ValueSupplierResult<V> {
+        
+        Object payload;
+        V result;
+        
+        public void clear() {
+            payload = null;
+            result = null;
+        }
+    }
 
 }

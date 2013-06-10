@@ -10,18 +10,25 @@ import java.util.HashSet;
  */
 public class HashSetValueSupplier<V> implements ValueSupplier<V> {
     
+    private ValueSupplierResult<V> r = new ValueSupplierResult<V>();
+    
     @Override
-    public Object addValue(V value, Object currentValue) {
+    public ValueSupplierResult<V> addValue(V value, Object currentValue) {
         HashSet<V> result  = currentValue == null ? new HashSet<V>() : (HashSet<V>)currentValue;
         result.add(value);
-        return result;
+
+        r.payload = result;
+        return r;
     }
 
     @Override
-    public Object removeValue(V value, Object currentValue) {
+    public ValueSupplierResult<V> removeValue(V value, Object currentValue) {
         HashSet<V> s = (HashSet<V>)currentValue;
-        s.remove(value);
-        return s.size() == 0 ? null : s;
+        boolean removed = s.remove(value);
+        
+        r.payload = s.size() == 0 ? null : s;
+        r.result = removed ? value : null;
+        return r;
     }
 
     @Override
