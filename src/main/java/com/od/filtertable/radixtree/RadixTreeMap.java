@@ -42,13 +42,13 @@ public class RadixTreeMap<V> {
         return result.size() > 0 ? result.get(0) : null;
     }
     
-    public <E extends Collection<V>> E getStartingWith(CharSequence s, E collection) {
+    public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection) {
         mutableSequence.setSegment(s); //do not add terminal node
         radixTree.get(mutableSequence, collection, singleValueSupplier);
         return collection;
     }
 
-    public <E extends Collection<V>> E getStartingWith(CharSequence s, E collection, int maxItems) {
+    public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection, int maxItems) {
         mutableSequence.setSegment(s); //do not add terminal node
         radixTree.get(mutableSequence, collection, maxItems, singleValueSupplier);
         return collection;

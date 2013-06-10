@@ -84,8 +84,8 @@ public class RadixTreeHandler extends ChorusAssert {
         List<String> expected = getExpectedList(values);
 
         Collection<String> actual = maxItems == Integer.MAX_VALUE ? 
-            radixTree.getStartingWith(key, new LinkedHashSet<String>()) :
-            radixTree.getStartingWith(key, new LinkedHashSet<String>(), maxItems);
+            radixTree.addStartingWith(key, new LinkedHashSet<String>()) :
+            radixTree.addStartingWith(key, new LinkedHashSet<String>(), maxItems);
         ArrayList<String> actualOrdered = new ArrayList<String>(actual);
 
         assertEquals("expected values in search results", expected, actualOrdered);
