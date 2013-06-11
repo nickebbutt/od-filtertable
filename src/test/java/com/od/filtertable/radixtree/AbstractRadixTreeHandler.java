@@ -45,12 +45,12 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
 
     @Step("the radix tree contains keys (.*)")
     public void checkContainsKeys(String keys) {
-        tree.compress();
+//        tree.compress();
         List<String> expected = getExpectedList(keys);
 
         KeySetVisitor<String> v = new KeySetVisitor<String>(tree.getTreeConfig());
         tree.accept(v);
-        List<String> actual = v.getLabels();
+        List<String> actual = new ArrayList<String>(v.getLabels());
 
         assertEquals("Expected " + keys, expected, actual);
     }
@@ -66,15 +66,20 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
 
     @Step("a search for (.*) returns (.*)")
     public void doSearch(String key, String values) {
-        search(key, values, Integer.MAX_VALUE);
+        orderedSearch(key, values, Integer.MAX_VALUE);
+    }
+
+    @Step("a search for (.*) returns the set (.*)")
+    public void doSearchForSet(String key, String values) {
+        unorderedSearch(key, values, Integer.MAX_VALUE);
     }
 
     @Step("a search with maxItems=(\\d+) for (.*) returns (.*)")
     public void doSearch(int maxItems, String key, String values) {
-        search(key, values, maxItems);
+        orderedSearch(key, values, maxItems);
     }
 
-    private void search(String key, String values, int maxItems) {
+    private void orderedSearch(String key, String values, int maxItems) {
         List<String> expected = getExpectedList(values);
 
         Collection<String> actual = maxItems == Integer.MAX_VALUE ?
@@ -85,9 +90,28 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
         assertEquals("expected values in search results", expected, actualOrdered);
     }
 
+    private void unorderedSearch(String key, String values, int maxItems) {
+        Set<String> expected = getExpectedSet(values);
+
+        Collection<String> actual = maxItems == Integer.MAX_VALUE ?
+                tree.addStartingWith(key, new HashSet<String>()) :
+                tree.addStartingWith(key, new HashSet<String>(), maxItems);
+
+        assertEquals("expected set of values in search results", expected, actual);
+    }
+
     private List<String> getExpectedList(String values) {
         StringTokenizer st = new StringTokenizer(values, ",");
         List<String> expected = new ArrayList<String>();
+        while(st.hasMoreTokens()) {
+            expected.add(st.nextToken().trim());
+        }
+        return expected;
+    }
+
+    private Set<String> getExpectedSet(String values) {
+        StringTokenizer st = new StringTokenizer(values, ",");
+        Set<String> expected = new HashSet<String>();
         while(st.hasMoreTokens()) {
             expected.add(st.nextToken().trim());
         }

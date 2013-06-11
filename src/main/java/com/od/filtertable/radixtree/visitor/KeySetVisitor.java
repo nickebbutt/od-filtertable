@@ -3,8 +3,7 @@ package com.od.filtertable.radixtree.visitor;
 import com.od.filtertable.radixtree.RadixTree;
 import com.od.filtertable.radixtree.TreeConfig;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: nick
@@ -17,7 +16,7 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
     
     private StringBuilder sb = new StringBuilder();
     
-    private List<String> allKeys = new ArrayList<String>();
+    private LinkedHashSet<String> allKeys = new LinkedHashSet<String>();
     private TreeConfig<V> treeConfig;
 
     public KeySetVisitor(TreeConfig<V> treeConfig) {
@@ -48,7 +47,7 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
         }
     }
 
-    public List<String> getLabels() {
+    public LinkedHashSet<String> getLabels() {
         return allKeys;
     }
 

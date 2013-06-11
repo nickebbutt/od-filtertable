@@ -16,25 +16,28 @@
       Then a search for ALABEL returns VAL1
       And a search for BLABEL returns VAL2
       
-    #Scenario: Search items by prefix
-    #  When I add a value VAL1 under key ALABEL
-    #  And I add a value VAL2 under key BLABEL
-    #  Then a search for A returns VAL1
-    #  And a search for B returns VAL2
-      
-    #Scenario: Search returns results in alphabetical order
-    #  When I add a value VAL1 under key AB
-    #  And I add a value VAL2 under key AA
-    #  Then a search for A returns VAL2, VAL1
+    Scenario: Search items by suffix
+      When I add a value VAL1 under key ALABEL
+      And I add a value VAL2 under key BLABEL
+      And I add a value VAL3 under key CLABE
+      Then a search for BEL returns VAL1, VAL2
 
-    #Scenario: Search finds all substrings
-    #  When I add a value VAL1 under key ABA
-    #  And I add a value VAL2 under key AAA
-    #  And I add a value VAL3 under key AA
-    #  And I add a value VAL4 under key BA
-    #  Then the radix tree contains keys AA, AAA, ABA, BA
-    #  And the number of nodes is 6
-    #  And a search for A returns VAL3, VAL2, VAL1
+    Scenario: Search items by substring
+      When I add a value VAL1 under key ALABEL
+      And I add a value VAL2 under key BLABEL
+      And I add a value VAL3 under key NADA
+      Then a search for LAB returns VAL1, VAL2
+      
+    Scenario: Search finds all substrings
+      When I add a value VAL1 under key ABA
+      And I add a value VAL2 under key AAA
+      And I add a value VAL3 under key AA
+      And I add a value VAL4 under key BA
+      And I show the tree structure
+      Then the radix tree contains keys A, AA, AAA, ABA, BA
+      And a search for A returns the set VAL1, VAL2, VAL3, VAL4
+      And a search for AA returns the set VAL2, VAL3
+      And a search for BA returns the set VAL1, VAL4
     #  And a search for AA returns VAL3, VAL2
     #  And a search for AB returns VAL1
     #  And a search for B returns VAL4
