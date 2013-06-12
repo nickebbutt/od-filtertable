@@ -15,6 +15,6 @@ public class ChorusTestSuite {
     public static TestSuite suite() {
 
         //return ChorusJUnitRunner.suite("-f src/test/java/com/od/filtertable/radixtree -h com.od -e -t @FAILING");
-        return ChorusJUnitRunner.suite("-f src/test/java/com/od/filtertable/radixtree -h com.od -e");        
+        return ChorusJUnitRunner.suite("-f src/test/java/com/od/filtertable/radixtree -h com.od -e ");        
     }
 }

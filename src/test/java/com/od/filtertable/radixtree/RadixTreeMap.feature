@@ -47,13 +47,6 @@
       Then the radix tree contains keys AA, AB, AC
       And the number of nodes is 4
       And a search for A returns VAL3, VAL2, VAL1
-      
-    Scenario: Add an item with a substring key
-      When I add a value VAL1 under key ABC
-      And I add a value VAL2 under key AB
-      And a search for A returns VAL2, VAL1
-      And I remove the value under key AB
-      Then a search for A returns VAL1
 
     Scenario: I can remove a value
       When I add a value VAL1 under key ABC
@@ -62,6 +55,13 @@
       Then the removed value was VAL1
       Then a search for ABC returns VAL2
       And the number of nodes is 1
+
+    Scenario: Add and remove an item with a substring key
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key AB
+      And a search for A returns VAL2, VAL1
+      And I remove the value under key AB
+      Then a search for A returns VAL1  
 
     Scenario: Removing a value which does not exist has no effect
       When I add a value VAL1 under key ABC

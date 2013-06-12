@@ -47,25 +47,26 @@ public class SuffixTreeMap<V> implements RestrictedMap<V> {
     }
 
     private void addAllSuffixes(MutableCharSequence s, CharSequenceWithAssignableTerminalChar n, V value) {
-        for ( int c = 0; c < s.length() - 1; c++) {
+        for ( int c = 0; c < n.length() - 1; c++) {
             s.setStart(c);
             radixTree.add(mutableSequence, value, treeConfig);
         }
     }
 
     public V remove(CharSequence s) {
+        V result = null;
         CharSequenceWithAssignableTerminalChar t = terminalNodesBySequence.get(s);
         if ( t != null) {
             terminalNodesBySequence.remove(s);
             mutableSequence.setSegment(t);
-            removeAllSuffixes(mutableSequence);
+            result = removeAllSuffixes(mutableSequence, t);
         }
-        return null;
+        return result;
     }
 
-    private V removeAllSuffixes(MutableCharSequence s) {
+    private V removeAllSuffixes(MutableCharSequence s, CharSequenceWithAssignableTerminalChar t) {
         V value = null;
-        for ( int c = 0; c < s.length() - 1; c++) {
+        for ( int c = 0; c < t.length() - 1; c++) {
             s.setStart(c);
             value = (V)radixTree.remove(mutableSequence, null, treeConfig);
         }

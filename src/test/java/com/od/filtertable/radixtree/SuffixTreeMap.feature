@@ -35,37 +35,26 @@
       And I add a value VAL4 under key BA
       And I show the tree structure
       Then the radix tree contains keys A, AA, AAA, ABA, BA
-      And a search for A returns the set VAL1, VAL2, VAL3, VAL4
-      And a search for AA returns the set VAL2, VAL3
-      And a search for BA returns the set VAL1, VAL4
-    #  And a search for AA returns VAL3, VAL2
-    #  And a search for AB returns VAL1
-    #  And a search for B returns VAL4
-    #  And a search for BA returns VAL4
-      
-    #Scenario: Adding items out of alphabetical order
-    #  When I add a value VAL1 under key AC
-    #  And I add a value VAL2 under key AB
-    #  And I add a value VAL3 under key AA
-    #  Then the radix tree contains keys AA, AB, AC
-    #  And the number of nodes is 4
-    #  And a search for A returns VAL3, VAL2, VAL1
-      
-    #Scenario: Add an item with a substring key
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key AB
-    #  And a search for A returns VAL2, VAL1
-    #  And I remove the value under key AB
-    #  Then a search for A returns VAL1
+      And a search for A gives the set VAL1, VAL2, VAL3, VAL4
+      And a search for AA gives the set VAL2, VAL3
+      And a search for BA gives the set VAL1, VAL4
 
-    #Scenario: I can remove a value
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key ABCD
-    #  And I remove the value under key ABC
-    #  Then the removed value was VAL1
-    #  Then a search for ABC returns VAL2
-    #  And the number of nodes is 1
+    Scenario: I can remove a value
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABCD
+      And the number of nodes is 10
+      And I remove the value under key ABC
+      Then the removed value was VAL1
+      Then a search for BC returns VAL2
+      And the number of nodes is 4
 
+    Scenario: Add and remove item with a substring key
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key AB
+      And a search for A gives the set VAL2, VAL1
+      And I remove the value under key AB
+      Then a search for A returns VAL1  
+  
     #Scenario: Removing a value which does not exist has no effect
     #  When I add a value VAL1 under key ABC
     #  And I add a value VAL2 under key ABCD

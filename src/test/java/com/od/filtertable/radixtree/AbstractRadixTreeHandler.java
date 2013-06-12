@@ -69,7 +69,7 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
         orderedSearch(key, values, Integer.MAX_VALUE);
     }
 
-    @Step("a search for (.*) returns the set (.*)")
+    @Step("a search for (.*) gives the set (.*)")
     public void doSearchForSet(String key, String values) {
         unorderedSearch(key, values, Integer.MAX_VALUE);
     }
