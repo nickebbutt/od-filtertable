@@ -79,25 +79,35 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
         orderedSearch(key, values, maxItems);
     }
 
+    @Step("a search with maxItems=(\\d+) for (.*) gives (\\d) items")
+    public void doSearchForSetMaxValues(int maxItems, String key, int itemCount) {
+        HashSet<String> collection = new HashSet<String>();
+        tree.addStartingWith(key, collection, maxItems);
+        assertEquals("Expecting " + itemCount + " items", itemCount, collection.size());
+    }
+
     private void orderedSearch(String key, String values, int maxItems) {
         List<String> expected = getExpectedList(values);
 
-        Collection<String> actual = maxItems == Integer.MAX_VALUE ?
-                tree.addStartingWith(key, new LinkedHashSet<String>()) :
-                tree.addStartingWith(key, new LinkedHashSet<String>(), maxItems);
-        ArrayList<String> actualOrdered = new ArrayList<String>(actual);
+        ArrayList<String> collection = new ArrayList<String>();
 
-        assertEquals("expected values in search results", expected, actualOrdered);
+        doSearchAndCompare(key, maxItems, expected, collection);
     }
 
     private void unorderedSearch(String key, String values, int maxItems) {
         Set<String> expected = getExpectedSet(values);
 
-        Collection<String> actual = maxItems == Integer.MAX_VALUE ?
-                tree.addStartingWith(key, new HashSet<String>()) :
-                tree.addStartingWith(key, new HashSet<String>(), maxItems);
+        HashSet<String> collection = new HashSet<String>();
 
-        assertEquals("expected set of values in search results", expected, actual);
+        doSearchAndCompare(key, maxItems, expected, collection);
+    }
+
+    private void doSearchAndCompare(String key, int maxItems, Collection<String> expected, Collection<String> collection) {
+        Collection<String> actual = maxItems == Integer.MAX_VALUE ?
+                tree.addStartingWith(key, collection) :
+                tree.addStartingWith(key, collection, maxItems);
+
+        assertEquals("expected values in search results", expected, actual);
     }
 
     private List<String> getExpectedList(String values) {

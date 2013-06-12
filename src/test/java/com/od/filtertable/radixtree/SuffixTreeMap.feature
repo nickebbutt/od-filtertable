@@ -33,7 +33,6 @@
       And I add a value VAL2 under key AAA
       And I add a value VAL3 under key AA
       And I add a value VAL4 under key BA
-      And I show the tree structure
       Then the radix tree contains keys A, AA, AAA, ABA, BA
       And a search for A gives the set VAL1, VAL2, VAL3, VAL4
       And a search for AA gives the set VAL2, VAL3
@@ -55,47 +54,46 @@
       And I remove the value under key AB
       Then a search for A returns VAL1  
   
-    #Scenario: Removing a value which does not exist has no effect
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key ABCD
-    #  And I remove the value under key A
-    #  Then the removed value was null
-    #  Then a search for ABC returns VAL1, VAL2
-    #  And the number of nodes is 3
+    Scenario: Removing a value which does not exist has no effect
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABCD
+      And I remove the value under key A
+      Then the removed value was null
+      Then a search for B gives the set VAL1, VAL2
   
-    #Scenario: When I remove last value empty terminal node is removed
-    #  When I add a value VAL1 under key ABC
-    #  And I remove the value under key ABC
-    #  And the number of nodes is 0
+    Scenario: When I remove last value empty terminal node is removed
+      When I add a value VAL1 under key ABC
+      And I remove the value under key ABC
+      Then the number of nodes is 0
 
-    #Scenario: Removing all values compresses node structure
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key ABD
-    #  Then the number of nodes is 3
-    #  And I remove the value under key ABC
-    #  And I remove the value under key ABD
-    #  Then the number of nodes is 0
+    Scenario: Removing all values compresses node structure
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABD
+      Then the number of nodes is 8
+      And I remove the value under key ABC
+      And I remove the value under key ABD
+      Then the number of nodes is 0
   
-    #Scenario: Removing all values compresses node structure complex
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key ABD
-    #  And I add a value VAL3 under key AB
-    #  And the number of nodes is 4
-    #  And I remove the value under key ABC
-    #  And the number of nodes is 3
-    #  And a search for A returns VAL3, VAL2 
-    #  And I remove the value under key ABD
-    #  And the number of nodes is 1
-    #  And a search for A returns VAL3
-    #  And I remove the value under key AB
-    #  Then the number of nodes is 0
+    Scenario: Removing all values compresses node structure complex
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABD
+      And I add a value VAL3 under key AB
+      And the number of nodes is 10
+      And I remove the value under key ABC
+      And the number of nodes is 7
+      And a search for A gives the set VAL3, VAL2 
+      And I remove the value under key ABD
+      And the number of nodes is 2
+      And a search for A returns VAL3
+      And I remove the value under key AB
+      Then the number of nodes is 0
   
-    #Scenario: Getting a limited number of results
-    #  When I add a value VAL1 under key ABC
-    #  And I add a value VAL2 under key ABD
-    #  And I add a value VAL3 under key AB
-    #  Then a search for A returns VAL3, VAL1, VAL2
-    #  And a search with maxItems=2 for A returns VAL3, VAL1
+    Scenario: Getting a limited number of results
+      When I add a value VAL1 under key ABC
+      And I add a value VAL2 under key ABD
+      And I add a value VAL3 under key AB
+      Then a search for A gives the set VAL3, VAL1, VAL2
+      And a search with maxItems=2 for A gives 2 items
 
   #And I show the tree structure
       
