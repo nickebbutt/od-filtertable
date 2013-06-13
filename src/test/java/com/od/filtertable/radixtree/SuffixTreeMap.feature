@@ -20,13 +20,13 @@
       When I add a value VAL1 under key ALABEL
       And I add a value VAL2 under key BLABEL
       And I add a value VAL3 under key CLABE
-      Then a search for BEL returns VAL1, VAL2
+      Then a search for BEL gives the set VAL1, VAL2
 
     Scenario: Search items by substring
       When I add a value VAL1 under key ALABEL
       And I add a value VAL2 under key BLABEL
       And I add a value VAL3 under key NADA
-      Then a search for LAB returns VAL1, VAL2
+      Then a search for LAB gives the set VAL1, VAL2
       
     Scenario: Search finds all substrings
       When I add a value VAL1 under key ABA

@@ -1,9 +1,5 @@
 package com.od.filtertable.radixtree;
 
-//import com.od.filtertable.index.MutableCharArraySequence;
-import com.od.filtertable.index.MutableCharSequence;
-import com.od.filtertable.index.MutableSequence;
-
 /**
  * User: nick
  * Date: 13/05/13
@@ -25,19 +21,6 @@ public class CharUtils {
         return shared;
     }
 
-    public static void checkTerminalCharsInBody(CharSequence s, TreeConfig t) {
-        for ( int c = 0; c < s.length() - 1 ; c++) {
-            if ( t.isTerminalChar(s.charAt(c))) {
-                throw new UnsupportedOperationException("Cannot add a char sequence in which the terminal character " 
-                    + DEFAULT_TERMINAL_CHAR + " is not the last character");
-            }
-        }
-    }
-
-    private static char getLastChar(CharSequence s) {
-        return s.charAt(s.length() - 1);
-    }
-
     public static char[] createCharArray(CharSequence s) {
         char[] ch = new char[s.length()];
         for ( int c = 0; c < s.length(); c++) {
@@ -49,26 +32,55 @@ public class CharUtils {
     /**
      * Compare two sequences, excluding any terminal characters
      */
-    public static int compare(CharSequence b, CharSequence c, TreeConfig t) {
-        //exclude terminal chars
-        int blength = b.length() > 0 && t.isTerminalChar(b.charAt(b.length() - 1)) ? b.length() - 1 : b.length();
-        int clength = c.length() > 0 && t.isTerminalChar(c.charAt(c.length() - 1)) ? c.length() - 1 : c.length();
+//    public static int compare(CharSequence b, CharSequence c, TreeConfig t) {
+//        //exclude terminal chars
+//        int blength = b.length() > 0 && t.isTerminalChar(b.charAt(b.length() - 1)) ? b.length() - 1 : b.length();
+//        int clength = c.length() > 0 && t.isTerminalChar(c.charAt(c.length() - 1)) ? c.length() - 1 : c.length();
+//
+//        int shared = Math.min(blength, clength);
+//        int result = 0;
+//        for ( int i = 0; i < shared; i++) {
+//            char bchar = b.charAt(i);
+//            if ( bchar != c.charAt(i)) {
+//                result = bchar < c.charAt(i) ? -1 : 1;
+//                break;
+//            }
+//        }
+//
+//        //if all shared chars are equal the shorter sorts first
+//        if ( result == 0 ) {
+//            result = blength < clength ? -1 :
+//                    blength == clength ? 0 : 1;
+//        }
+//        return result;
+//    }
 
-        int shared = Math.min(blength, clength);
+    //the complexity here is that we want terminal chars to sort before other ascii chars
+    //this is so that we retrieve results in the right order - 
+    //so that values stored at AB$ are returned before values stored at ABA$ for example
+    //since terminal char values are > the chosen ascii/unicode range we have to apply  *= -1 and sort as int
+    public static int compare(CharSequence b, CharSequence c, TreeConfig treeConfig) {
+
         int result = 0;
+        int shared = Math.min(b.length(), c.length());
+
         for ( int i = 0; i < shared; i++) {
             char bchar = b.charAt(i);
-            if ( bchar != c.charAt(i)) {
-                result = bchar < c.charAt(i) ? -1 : 1;
+            char cchar = c.charAt(i);
+            int bint = treeConfig.isTerminalChar(bchar) ? -bchar : bchar;
+            int cint = treeConfig.isTerminalChar(cchar) ? -cchar : cchar;
+            result = bint == cint ? 0 : bint < cint ? -1 : 1;
+            if ( result != 0) {
                 break;
             }
         }
 
+        //since we'd split child nodes around the shared prefix this comparison is not necessary?
         //if all shared chars are equal the shorter sorts first
-        if ( result == 0 ) {
-            result = blength < clength ? -1 :
-                    blength == clength ? 0 : 1;
-        }
+        //if ( result == 0 ) {
+        //  result = b.length() == c.length() ? 0 :  b.length() < c.length() ? -1 : 1;
+        //}
+
         return result;
     }
 
