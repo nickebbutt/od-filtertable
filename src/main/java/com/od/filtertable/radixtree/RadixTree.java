@@ -5,7 +5,9 @@ import com.od.filtertable.index.MutableSequence;
 import com.od.filtertable.radixtree.visitor.CollectValuesVisitor;
 import com.od.filtertable.radixtree.visitor.TreeVisitor;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: nick
@@ -59,7 +61,7 @@ public class RadixTree<V> implements CharSequence {
                 split(i, s, value, matchingChars, treeConfig);
                 added = true;
                 break;              
-            } else if ( CharUtils.compare(s, currentNode, treeConfig) == -1) {
+            } else if ( CharUtils.compareFirstChar(s, currentNode, treeConfig) == -1) {
                 insert(i, s, value, treeConfig.getValueSupplier());
                 added = true;
                 break;
@@ -94,7 +96,7 @@ public class RadixTree<V> implements CharSequence {
         newChild.setLabel(s.getImmutableBaseSequence(), s.getBaseSequenceEnd() - labelLengthForNewChild, s.getBaseSequenceEnd());
         newChild.addValue(value, treeConfig.getValueSupplier());
 
-        boolean newChildFirst = CharUtils.compare(newChild, replacementChild, treeConfig) == -1;
+        boolean newChildFirst = CharUtils.compareFirstChar(newChild, replacementChild, treeConfig) == -1;
         RadixTree<V> firstChild = newChildFirst ? newChild : replacementChild;
         RadixTree<V> secondChild = newChildFirst ? replacementChild : newChild;
         
@@ -146,16 +148,14 @@ public class RadixTree<V> implements CharSequence {
             if ( s.length() == 0) {
                 accept(visitor, treeConfig);
             } else {
-                boolean foundMatch = false;
                 //get results from all nodes which share a prefix
                 while(i.isValid()) {
                     int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
-                    if ( sharedCharCount > 0 || s.length() == 0 /* all chars already matched, include */ ) {
+                    if ( sharedCharCount > 0 ) {
                         s.incrementStart(sharedCharCount);
                         i.getCurrentNode().accept(s, visitor, treeConfig);
                         s.decrementStart(sharedCharCount);
-                        foundMatch = true;
-                    } else if (foundMatch) {
+                    } else if (CharUtils.compareFirstChar(s, i.getCurrentNode(), treeConfig) == -1) {
                         break;
                         //since alphabetical, if we already found at least one match, and the next match fails
                         //we can assume all subsequent will fail

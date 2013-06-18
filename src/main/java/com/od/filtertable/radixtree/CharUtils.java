@@ -84,6 +84,18 @@ public class CharUtils {
         return result;
     }
 
+    //the complexity here is that we want terminal chars to sort before other ascii chars
+    //this is so that we retrieve results in the right order - 
+    //so that values stored at AB$ are returned before values stored at ABA$ for example
+    //since terminal char values are > the chosen ascii/unicode range we have to apply  *= -1 and sort as int
+    public static int compareFirstChar(CharSequence b, CharSequence c, TreeConfig treeConfig) {
+        char bchar = b.charAt(0);
+        char cchar = c.charAt(0);
+        int bint = treeConfig.isTerminalChar(bchar) ? -bchar : bchar;
+        int cint = treeConfig.isTerminalChar(cchar) ? -cchar : cchar;
+        return bint == cint ? 0 : bint < cint ? -1 : 1;
+    }
+
     public static String getString(CharSequence immutableSequence, short start, short end) {
         StringBuilder sb = new StringBuilder();
         for ( int c = start; c < end; c ++) {
