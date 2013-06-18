@@ -51,17 +51,20 @@ public class RadixTree<V> implements CharSequence {
         boolean added = false;
         while (i.isValid()) {
             RadixTree<V> currentNode = i.getCurrentNode();
-            int matchingChars = CharUtils.getSharedPrefixCount(s, currentNode);
-            if ( matchingChars == s.length() /* must be a terminal node */
-                || matchingChars == currentNode.getLabelLength()) {
-                addToChild(s, value, i, matchingChars, treeConfig);
-                added = true;
-                break;
-            } else if ( matchingChars > 0) {  //only part of the current node label matched
-                split(i, s, value, matchingChars, treeConfig);
-                added = true;
-                break;              
-            } else if ( CharUtils.compareFirstChar(s, currentNode, treeConfig) == -1) {
+            int comparison = CharUtils.compareFirstChar(s, currentNode, treeConfig);
+            if ( comparison == 0 ) {
+                int matchingChars = CharUtils.getSharedPrefixCount(s, currentNode);
+                if ( matchingChars == s.length() /* must be a terminal node since s must end in a terminal char*/
+                    || matchingChars == currentNode.getLabelLength()) {
+                    addToChild(s, value, i, matchingChars, treeConfig);
+                    added = true;
+                    break;
+                } else if ( matchingChars > 0) {  //only part of the current node label matched
+                    split(i, s, value, matchingChars, treeConfig);
+                    added = true;
+                    break;
+                }
+            }  else if ( comparison == -1) {
                 insert(i, s, value, treeConfig.getValueSupplier());
                 added = true;
                 break;
@@ -148,16 +151,18 @@ public class RadixTree<V> implements CharSequence {
             if ( s.length() == 0) {
                 accept(visitor, treeConfig);
             } else {
-                //get results from all nodes which share a prefix
                 while(i.isValid()) {
-                    int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
-                    if ( sharedCharCount > 0 ) {
-                        s.incrementStart(sharedCharCount);
-                        i.getCurrentNode().accept(s, visitor, treeConfig);
-                        s.decrementStart(sharedCharCount);
-                    } else if (CharUtils.compareFirstChar(s, i.getCurrentNode(), treeConfig) == -1) {
+                    int comparison = CharUtils.compareFirstChar(s, i.getCurrentNode(), treeConfig);
+                    if ( comparison == 0) {
+                        int sharedCharCount = CharUtils.getSharedPrefixCount(s, i.getCurrentNode());
+                        if ( sharedCharCount == i.getCurrentNode().getLabelLength() || sharedCharCount == s.length() ) {
+                            s.incrementStart(sharedCharCount);
+                            i.getCurrentNode().accept(s, visitor, treeConfig);
+                            s.decrementStart(sharedCharCount);
+                        }
                         break;
-                        //since alphabetical, if we already found at least one match, and the next match fails
+                    } else if (comparison == -1) {
+                        break;
                         //we can assume all subsequent will fail
                     }
                     i.next();
