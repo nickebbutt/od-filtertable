@@ -91,7 +91,7 @@ public class CharUtils {
     //this is so that we retrieve results in the right order - 
     //so that values stored at AB$ are returned before values stored at ABA$ for example
     //since terminal char values are > the chosen ascii/unicode range we have to apply  *= -1 and sort as int
-    public static int compareFirstChar(CharSequenceWithIntTerminator b, CharSequenceWithIntTerminator c, TreeConfig treeConfig) {
+    public static int compareFirstChar(CharSequenceWithIntTerminator b, CharSequenceWithIntTerminator c) {
         int bchar = b.intAt(0);
         int cchar = c.intAt(0);
         int bint = bchar > Character.MAX_VALUE ? -bchar : bchar;

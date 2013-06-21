@@ -30,7 +30,7 @@ public class CollectValuesVisitor<V> implements TreeVisitor<V> {
     }
 
     public boolean visit(RadixTree<V> radixTree) {
-        if ( radixTree.isTerminalNode(treeConfig)) {
+        if ( radixTree.isTerminalNode()) {
             radixTree.getValues(targetCollection, treeConfig);
         }
         return targetCollection.size() < maxValueCount;

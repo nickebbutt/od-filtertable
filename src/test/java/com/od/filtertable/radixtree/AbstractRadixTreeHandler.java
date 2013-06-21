@@ -48,7 +48,7 @@ public class AbstractRadixTreeHandler extends ChorusAssert {
 //        tree.compress();
         List<String> expected = getExpectedList(keys);
 
-        KeySetVisitor<String> v = new KeySetVisitor<String>(tree.getTreeConfig());
+        KeySetVisitor<String> v = new KeySetVisitor<String>();
         tree.accept(v);
         List<String> actual = new ArrayList<String>(v.getLabels());
 

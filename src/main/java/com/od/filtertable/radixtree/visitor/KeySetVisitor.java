@@ -17,17 +17,12 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
     private StringBuilder sb = new StringBuilder();
     
     private LinkedHashSet<String> allKeys = new LinkedHashSet<String>();
-    private TreeConfig<V> treeConfig;
-
-    public KeySetVisitor(TreeConfig<V> treeConfig) {
-        this.treeConfig = treeConfig;
-    }
     
     @Override
     public boolean visit(RadixTree<V> radixTree) {
         //add the label chars
         sb.append(radixTree.getLabel());
-        if (radixTree.isTerminalNode(treeConfig)) {
+        if (radixTree.isTerminalNode()) {
             removeLastCharacter();
             allKeys.add(sb.toString());
         }
@@ -38,7 +33,7 @@ public class KeySetVisitor<V> implements TreeVisitor<V> {
     public void visitComplete(RadixTree<V> radixTree) {
         //remove the label chars
         int chars = radixTree.getLabelLength();
-        if ( radixTree.isTerminalNode(treeConfig)) {
+        if ( radixTree.isTerminalNode()) {
             chars--;
         }
         
