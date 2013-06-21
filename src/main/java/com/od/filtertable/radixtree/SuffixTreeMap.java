@@ -23,11 +23,11 @@ public class SuffixTreeMap<V> implements RestrictedMap<V> {
     
     //for terminators use the first unassigned unicode character
     //plane onwards
-    private char startOfTerminalCharRange = '\u1000';
-    private char lastTerminator = startOfTerminalCharRange;
+    private int lastTerminator = Character.MAX_VALUE + 1;
 
     private SingleValueSupplier<V> singleValueSupplier = new SingleValueSupplier<V>();
 
+    private CharSequenceWithIntTerminatorAdapter intTerminatorAdapter = new CharSequenceWithIntTerminatorAdapter();
     private MutableSequence mutableSequence = new MutableSequence();
 
     private Map<CharSequence, CharSequenceWithAssignableTerminalChar> terminalNodesBySequence = new HashMap<CharSequence, CharSequenceWithAssignableTerminalChar>();
@@ -35,11 +35,7 @@ public class SuffixTreeMap<V> implements RestrictedMap<V> {
     private TreeConfig<V> treeConfig = new TreeConfig<V>(new ChildIteratorPool<V>(), singleValueSupplier);
     
     public void put(CharSequence s, V value) {
-        char terminalChar = lastTerminator++;
-        if ( terminalChar < startOfTerminalCharRange ) {
-            //we will have to support multi-character terminal sequences 
-            throw new UnsupportedOperationException("Adding more than " + (Character.MAX_VALUE - startOfTerminalCharRange) + " items not supported");
-        }
+        int terminalChar = lastTerminator++;
         CharSequenceWithAssignableTerminalChar n = new CharSequenceWithAssignableTerminalChar(s, terminalChar);
         terminalNodesBySequence.put(s, n);
         mutableSequence.setSegment(n);
@@ -86,13 +82,15 @@ public class SuffixTreeMap<V> implements RestrictedMap<V> {
     }
 
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection) {
-        mutableSequence.setSegment(s); //do not add terminal node
+        intTerminatorAdapter.setCharSequence(s);
+        mutableSequence.setSegment(intTerminatorAdapter); //do not add terminal node
         radixTree.get(mutableSequence, collection, treeConfig);
         return collection;
     }
 
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection, int maxItems) {
-        mutableSequence.setSegment(s); //do not add terminal node
+        intTerminatorAdapter.setCharSequence(s);
+        mutableSequence.setSegment(intTerminatorAdapter); //do not add terminal node
         radixTree.get(mutableSequence, collection, maxItems, treeConfig);
         return collection;
     }
@@ -110,4 +108,5 @@ public class SuffixTreeMap<V> implements RestrictedMap<V> {
     public TreeConfig<V> getTreeConfig() {
         return treeConfig;
     }
+
 }

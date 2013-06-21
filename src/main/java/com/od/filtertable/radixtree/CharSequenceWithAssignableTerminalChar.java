@@ -1,18 +1,20 @@
 package com.od.filtertable.radixtree;
 
+import com.od.filtertable.index.CharSequenceWithIntTerminator;
+
 /**
  * User: nick
  * Date: 23/05/13
  * Time: 09:41
  */
-public class CharSequenceWithAssignableTerminalChar implements CharSequence {
+public class CharSequenceWithAssignableTerminalChar implements CharSequenceWithIntTerminator {
 
     private CharSequence s;
-    private char terminalChar;
+    private int terminalInt;
 
-    public CharSequenceWithAssignableTerminalChar(CharSequence s, char terminalChar) {
+    public CharSequenceWithAssignableTerminalChar(CharSequence s, int terminalInt) {
         this.s = s;
-        this.terminalChar = terminalChar;
+        this.terminalInt = terminalInt;
     }
 
     @Override
@@ -23,8 +25,14 @@ public class CharSequenceWithAssignableTerminalChar implements CharSequence {
     @Override
     public char charAt(int index) {
         return index == length() - 1 ?
-                terminalChar :
+                (char) terminalInt :
                 s.charAt(index);
+    }
+    
+    public int intAt(int index) {
+        return index == length() - 1 ?
+                terminalInt :
+                s.charAt(index); 
     }
 
     @Override

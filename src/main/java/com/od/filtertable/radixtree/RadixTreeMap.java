@@ -18,6 +18,7 @@ public class RadixTreeMap<V> implements RestrictedMap<V> {
     
     private SingleValueSupplier<V> singleValueSupplier = new SingleValueSupplier<V>();
     
+    private CharSequenceWithIntTerminatorAdapter intTerminatorAdapter = new CharSequenceWithIntTerminatorAdapter();
     private MutableSequence mutableSequence = new MutableSequence();
 
     private TreeConfig<V> treeConfig = new TreeConfig<V>(new ChildIteratorPool<V>(), singleValueSupplier);
@@ -49,14 +50,16 @@ public class RadixTreeMap<V> implements RestrictedMap<V> {
     
     @Override
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection) {
-        mutableSequence.setSegment(s); //do not add terminal node
+        intTerminatorAdapter.setCharSequence(s);
+        mutableSequence.setSegment(intTerminatorAdapter); //do not add terminal node
         radixTree.get(mutableSequence, collection, treeConfig);
         return collection;
     }
 
     @Override
     public <E extends Collection<V>> E addStartingWith(CharSequence s, E collection, int maxItems) {
-        mutableSequence.setSegment(s); //do not add terminal node
+        intTerminatorAdapter.setCharSequence(s);
+        mutableSequence.setSegment(intTerminatorAdapter); //do not add terminal node
         radixTree.get(mutableSequence, collection, maxItems, treeConfig);
         return collection;
     }

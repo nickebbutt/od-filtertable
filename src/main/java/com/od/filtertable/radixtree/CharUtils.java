@@ -1,5 +1,8 @@
 package com.od.filtertable.radixtree;
 
+import com.od.filtertable.index.CharSequenceWithIntTerminator;
+import com.od.filtertable.index.MutableCharSequence;
+
 /**
  * User: nick
  * Date: 13/05/13
@@ -7,13 +10,11 @@ package com.od.filtertable.radixtree;
  */
 public class CharUtils {
     
-    public static final char DEFAULT_TERMINAL_CHAR = '\u1000';
-
-    public static int getSharedPrefixCount(CharSequence s, CharSequence s2) {
+    public static int getSharedPrefixCount(CharSequenceWithIntTerminator s, CharSequenceWithIntTerminator s2) {
         int shared = 0;
         int maxLength = Math.min(s.length(), s2.length());
         for ( int c = 0; c < maxLength; c++) {
-            if ( s.charAt(c) != s2.charAt(c) ) {
+            if ( s.intAt(c) != s2.intAt(c) ) {
                 break;
             }
             shared++;
@@ -59,6 +60,7 @@ public class CharUtils {
     //this is so that we retrieve results in the right order - 
     //so that values stored at AB$ are returned before values stored at ABA$ for example
     //since terminal char values are > the chosen ascii/unicode range we have to apply  *= -1 and sort as int
+    /*
     public static int compare(CharSequence b, CharSequence c, TreeConfig treeConfig) {
 
         int result = 0;
@@ -83,16 +85,17 @@ public class CharUtils {
 
         return result;
     }
+    */
 
     //the complexity here is that we want terminal chars to sort before other ascii chars
     //this is so that we retrieve results in the right order - 
     //so that values stored at AB$ are returned before values stored at ABA$ for example
     //since terminal char values are > the chosen ascii/unicode range we have to apply  *= -1 and sort as int
-    public static int compareFirstChar(CharSequence b, CharSequence c, TreeConfig treeConfig) {
-        char bchar = b.charAt(0);
-        char cchar = c.charAt(0);
-        int bint = treeConfig.isTerminalChar(bchar) ? -bchar : bchar;
-        int cint = treeConfig.isTerminalChar(cchar) ? -cchar : cchar;
+    public static int compareFirstChar(CharSequenceWithIntTerminator b, CharSequenceWithIntTerminator c, TreeConfig treeConfig) {
+        int bchar = b.intAt(0);
+        int cchar = c.intAt(0);
+        int bint = bchar > Character.MAX_VALUE ? -bchar : bchar;
+        int cint = cchar > Character.MAX_VALUE ? -cchar : cchar;
         return bint == cint ? 0 : bint < cint ? -1 : 1;
     }
 

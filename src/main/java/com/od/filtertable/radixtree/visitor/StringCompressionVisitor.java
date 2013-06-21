@@ -2,6 +2,7 @@ package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
+import com.od.filtertable.radixtree.CharSequenceWithIntTerminatorAdapter;
 import com.od.filtertable.radixtree.RadixTree;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class StringCompressionVisitor<V> implements TreeVisitor<V> {
     private HashMap<CharSequence, MutableCharSequence> instancePerLabel = new HashMap<CharSequence, MutableCharSequence>();
     
     StringBuilder sb = new StringBuilder();    
+    CharSequenceWithIntTerminatorAdapter intTerminatorAdapter = new CharSequenceWithIntTerminatorAdapter(sb);
     
     @Override
     public boolean visit(RadixTree<V> radixTree) {
@@ -35,11 +37,11 @@ public class StringCompressionVisitor<V> implements TreeVisitor<V> {
 
             int start = sb.length();
             int end = sb.length() + label.length();
-            MutableCharSequence s = new MutableSequence(sb, start, end);
+            MutableCharSequence s = new MutableSequence(intTerminatorAdapter, start, end);
             sb.append(label);
             instancePerLabel.put(label, s);
             
-            radixTree.setLabel(sb, start, end);
+            radixTree.setLabel(intTerminatorAdapter, start, end);
         } else {
             radixTree.setLabel(
                 existingNodeWithSameLabel.getImmutableBaseSequence(), 

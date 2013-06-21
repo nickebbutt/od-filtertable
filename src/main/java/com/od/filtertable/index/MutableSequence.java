@@ -30,25 +30,25 @@ import com.od.filtertable.radixtree.CharUtils;
  */
 public class MutableSequence implements MutableCharSequence {
 
-    public static final String EMPTY_SEGMENT = "";
-    private CharSequence segment;
-    private int start = 0;
-    private int end = 0;
+    public static final CharSequenceWithIntTerminator EMPTY_SEGMENT = new MutableSequence();
+    protected CharSequenceWithIntTerminator segment;
+    protected int start = 0;
+    protected int end = 0;
 
     public MutableSequence() {}
 
-    public MutableSequence(CharSequence c) {
+    public MutableSequence(CharSequenceWithIntTerminator c) {
         this.segment = c;
         this.end = segment.length();
     }
 
-    public MutableSequence(CharSequence s, int start, int end) {
+    public MutableSequence(CharSequenceWithIntTerminator s, int start, int end) {
         this.segment = s;
         this.start = start;
         this.end = end;
     }
 
-    public void setSegment(CharSequence segment) {
+    public void setSegment(CharSequenceWithIntTerminator segment) {
         this.segment = segment == null ? EMPTY_SEGMENT : segment;
         this.start = 0;
         this.end = segment.length();
@@ -67,7 +67,7 @@ public class MutableSequence implements MutableCharSequence {
     }
 
     @Override
-    public CharSequence getImmutableBaseSequence() {
+    public CharSequenceWithIntTerminator getImmutableBaseSequence() {
         return segment instanceof MutableSequence ?
             ((MutableSequence)segment).getImmutableBaseSequence() :
             segment;
@@ -76,6 +76,11 @@ public class MutableSequence implements MutableCharSequence {
     @Override
     public char charAt(int index) {
         return segment.charAt(start + index);
+    }
+
+    @Override
+    public int intAt(int index) {
+        return segment.intAt(start + index);
     }
 
     @Override
@@ -108,16 +113,6 @@ public class MutableSequence implements MutableCharSequence {
     @Override
     public int getBaseSequenceEnd() {
         return getBaseSequenceStart() + length();
-    }
-
-    @Override
-    public char[] toArray(int start, int end) {
-        int length = end - start;
-        char[] result = new char[length];
-        for (int c = 0; c < length; c++) {
-            result[c] = charAt(c + start);
-        }
-        return result;
     }
     
     @Override

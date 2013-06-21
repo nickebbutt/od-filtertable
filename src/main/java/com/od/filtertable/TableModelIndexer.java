@@ -23,6 +23,7 @@
 package com.od.filtertable;
 
 import com.od.filtertable.index.MutableSequence;
+import com.od.filtertable.radixtree.CharSequenceWithIntTerminatorAdapter;
 import com.od.filtertable.trie.CharTrie;
 
 import javax.swing.table.TableModel;
@@ -45,6 +46,7 @@ public class TableModelIndexer {
     private boolean caseSensitive;
     private CharTrie<MutableTableCell, TableCellSet> index = new TableCellSetTrieNode(false);
     private MutableSequence mutableCharRange = new MutableSequence();
+    private CharSequenceWithIntTerminatorAdapter intTerminatorAdapter = new CharSequenceWithIntTerminatorAdapter();
     protected MutableTableCell[][] tableCells;
     protected int size;
     private boolean includeSubstrings = true;
@@ -250,7 +252,8 @@ public class TableModelIndexer {
     private void readFormattedCellValueIntoCharRange(MutableTableCell cell) {
         FilterFormatter formatter = filterColumnConfig.getFormatter(cell.getCol());
         CharSequence chars = formatter.format(cell.getValue());
-        mutableCharRange.setSegment(chars);
+        intTerminatorAdapter.setCharSequence(chars);
+        mutableCharRange.setSegment(intTerminatorAdapter);
     }
 
     private void refreshTableCellValue(int row, int col) {

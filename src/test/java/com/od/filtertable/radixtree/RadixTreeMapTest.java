@@ -16,10 +16,10 @@ import java.util.TreeMap;
  * Date: 05/06/13
  * Time: 09:27
  */
-public class RadixTreeMapTest extends TestCase {
+public class RadixTreeMapTest {
 
-    RadixTreeMap<Object> m = new RadixTreeMap<Object>();
-//    TreeMap<String, Object> m = new TreeMap<String,Object>();
+//    RadixTreeMap<Object> m = new RadixTreeMap<Object>();
+    TreeMap<String, Object> m = new TreeMap<String,Object>();
     
     public static void main(String[] args) throws Exception {
         new RadixTreeMapTest();    
@@ -27,9 +27,9 @@ public class RadixTreeMapTest extends TestCase {
     
     public RadixTreeMapTest() throws Exception {
         populateMap();
-        m.compress();
-        Thread.sleep(100000);
-        System.out.println(System.identityHashCode(m));    
+        //m.compress();
+        //Thread.sleep(100000);
+        System.out.println(System.identityHashCode(m)); 
     }
 
     private void populateMap() throws IOException {
@@ -38,9 +38,11 @@ public class RadixTreeMapTest extends TestCase {
 
         Object o = new Object();
         
+        long start = System.currentTimeMillis();        
         for ( String s : vals) {
             m.put(s, o);
         }
+        System.out.println("Time " + (System.currentTimeMillis() - start));
     }
 
     private String[] getStrings() {

@@ -1,5 +1,7 @@
 package com.od.filtertable.index;
 
+import com.od.filtertable.radixtree.CharSequenceWithIntTerminatorAdapter;
+
 import java.util.Collection;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -103,7 +105,7 @@ public abstract class AbstractSimpleIndex<V> implements TrieIndex<V> {
      * @param val - value to add to the index
      */
     private void doAdd(CharSequence s, V val) {
-        mutableCharSequence.setSegment(s);
+        mutableCharSequence.setSegment(new CharSequenceWithIntTerminatorAdapter(s));
         int lastChar = indexSubstrings ? s.length() : 1;
         for ( int startChar = 0; startChar < lastChar; startChar ++) {
             int endChar = s.length();
@@ -116,7 +118,7 @@ public abstract class AbstractSimpleIndex<V> implements TrieIndex<V> {
     protected abstract void addToIndex(CharSequence s, V val);
 
     private void doRemove(CharSequence s, V val) {
-        mutableCharSequence.setSegment(s);
+        mutableCharSequence.setSegment(new CharSequenceWithIntTerminatorAdapter(s));
         int lastChar = indexSubstrings ? s.length() : 1;
         for ( int startChar = 0; startChar < lastChar; startChar ++) {
             int endChar = s.length();

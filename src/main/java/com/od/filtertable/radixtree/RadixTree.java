@@ -1,5 +1,6 @@
 package com.od.filtertable.radixtree;
 
+import com.od.filtertable.index.CharSequenceWithIntTerminator;
 import com.od.filtertable.index.MutableCharSequence;
 import com.od.filtertable.index.MutableSequence;
 import com.od.filtertable.radixtree.visitor.CollectValuesVisitor;
@@ -14,7 +15,7 @@ import java.util.List;
  * Date: 07/05/13
  * Time: 19:00
  */
-public class RadixTree<V> implements CharSequence {
+public class RadixTree<V> implements CharSequenceWithIntTerminator {
     
     //the next node in the linked list of children for this node's parent
     RadixTree<V> nextPeer;
@@ -23,7 +24,7 @@ public class RadixTree<V> implements CharSequence {
     //this will either be the first child node of a linked list of children, or, for terminal nodes, a collection of values
     Object payload; 
 
-    private CharSequence immutableSequence;
+    private CharSequenceWithIntTerminator immutableSequence;
     private short start;
     private short end;
 
@@ -107,7 +108,7 @@ public class RadixTree<V> implements CharSequence {
         firstChild.nextPeer = secondChild;
     }
 
-    public void setLabel(CharSequence baseSequence, int start, int end) {
+    public void setLabel(CharSequenceWithIntTerminator baseSequence, int start, int end) {
         this.immutableSequence = baseSequence;
         this.start = (short)start;
         this.end = (short)end;
@@ -129,7 +130,7 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Get into target collection values from all nodes prefixed with char sequence
      */
-    public Collection<V> get(CharSequence c, Collection<V> targetCollection, TreeConfig<V> treeConfig) {
+    public Collection<V> get(CharSequenceWithIntTerminator c, Collection<V> targetCollection, TreeConfig<V> treeConfig) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, treeConfig);
         accept(new MutableSequence(c), collectValuesVisitor, treeConfig);
         return targetCollection;
@@ -138,7 +139,7 @@ public class RadixTree<V> implements CharSequence {
     /**
      * Get into target collection values from all nodes prefixed with char sequence, to a limit of maxResults values
      */
-    public <R extends Collection<V>> R get(CharSequence c, R targetCollection, int maxResults, TreeConfig<V> treeConfig) {
+    public <R extends Collection<V>> R get(CharSequenceWithIntTerminator c, R targetCollection, int maxResults, TreeConfig<V> treeConfig) {
         CollectValuesVisitor<V> collectValuesVisitor = new CollectValuesVisitor<V>(targetCollection, maxResults, treeConfig);
         accept(new MutableSequence(c), collectValuesVisitor, treeConfig);
         return targetCollection;
@@ -248,8 +249,7 @@ public class RadixTree<V> implements CharSequence {
 
     public boolean isTerminalNode(TreeConfig<V> treeConfig) {
         return 
-          end != 0 /* root */ && treeConfig.isTerminalNode(this); 
-          //immutableSequence.charAt(end - 1) == CharUtils.TERMINAL_CHAR; /* root node */
+          end != 0 /* root */ && getLastChar() > Character.MAX_VALUE; 
     }
 
     public boolean isOnlyOneChild(TreeConfig<V> treeConfig) {
@@ -276,7 +276,7 @@ public class RadixTree<V> implements CharSequence {
         return end - start;
     }
     
-    public CharSequence getRootSequence() {
+    public CharSequenceWithIntTerminator getRootSequence() {
         return immutableSequence;
     }
     
@@ -292,8 +292,8 @@ public class RadixTree<V> implements CharSequence {
         return getLabelLength();
     }
     
-    public char getLastChar() {
-        return immutableSequence.charAt(end - 1);
+    public int getLastChar() {
+        return immutableSequence.intAt(end - 1);
     }
 
     @Override
@@ -305,5 +305,10 @@ public class RadixTree<V> implements CharSequence {
     public CharSequence subSequence(int start, int end) {
         int newLength = end - start;
         return new MutableSequence(immutableSequence, this.start + start, this.start + start + newLength);
+    }
+
+    @Override
+    public int intAt(int index) {
+        return immutableSequence.intAt(start + index);
     }
 }

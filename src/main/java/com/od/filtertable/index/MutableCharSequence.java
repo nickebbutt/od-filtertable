@@ -5,24 +5,21 @@ package com.od.filtertable.index;
  * Date: 10/05/13
  * Time: 09:18
  */
-public interface MutableCharSequence extends CharSequence {
+public interface MutableCharSequence extends CharSequenceWithIntTerminator {
     
     int length();
-
-    
 
     char charAt(int index);
 
     void setStart(int start);
-    
 
     void incrementStart(int v);
 
     void decrementStart(int v);
 
     void setEnd(int end);
-    
-    CharSequence getImmutableBaseSequence();   
+
+    CharSequenceWithIntTerminator getImmutableBaseSequence();   
     
     int getBaseSequenceLength();        
     
@@ -32,6 +29,4 @@ public interface MutableCharSequence extends CharSequence {
 
     CharSequence subSequence(int start, int end);
     
-    char[] toArray(int start, int end);
-
 }

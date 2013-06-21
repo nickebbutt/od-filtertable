@@ -1,5 +1,7 @@
 package com.od.filtertable.index;
 
+import com.od.filtertable.radixtree.CharSequenceWithIntTerminatorAdapter;
+
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -127,7 +129,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
      * @param startingDepth  - usually 0, to store val against all prefixes, but where we have already stored to depth n, may be n + 1 to save work 
      */
     private void doAdd(CharSequence s, IndexedValue<V> val, int maxDepth, int startingDepth) {
-        mutableCharSequence.setSegment(s);
+        mutableCharSequence.setSegment(new CharSequenceWithIntTerminatorAdapter(s));
         int lastChar = indexSubstrings ? s.length() : 1;
         for ( int startChar = 0; startChar < lastChar; startChar ++) {
             int endChar = Math.min(startChar + maxDepth, s.length());
@@ -140,7 +142,7 @@ public class DynamicDepthIndex<V> implements TrieIndex<V> {
 
     private void doRemove(CharSequence s, IndexedValue<V> val) {
         int depth = val.getIndexedDepth();
-        mutableCharSequence.setSegment(s);
+        mutableCharSequence.setSegment(new CharSequenceWithIntTerminatorAdapter(s));
         int lastChar = indexSubstrings ? s.length() : 1;
         for ( int startChar = 0; startChar < lastChar; startChar ++) {
             int endChar = Math.min(startChar + depth, s.length());
