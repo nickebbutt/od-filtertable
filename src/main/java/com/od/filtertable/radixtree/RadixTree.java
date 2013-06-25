@@ -191,7 +191,7 @@ public class RadixTree<V> implements CharSequenceWithIntTerminator {
 
     private Object removeFromTree(MutableCharSequence c, V value, TreeConfig<V> treeConfig) {
         Object result = null;
-        if ( c.length() == 0 && payload != null) {
+        if ( c.length() == 0 && payload != null /*must be a terminal node since c always ends with terminal char */) {
             ValueSupplier.ValueSupplierResult<V> r = treeConfig.getValueSupplier().removeValue(value, payload);
             payload = r.payload;
             result = r.result;
