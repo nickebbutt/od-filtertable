@@ -6,6 +6,11 @@ import com.od.filtertable.index.CharSequenceWithIntTerminator;
  * User: nick
  * Date: 23/05/13
  * Time: 09:41
+ * 
+ * A CharSequenceWithIntTerminator in which an int is specified as the terminator value.
+ * 
+ * This should be used when adding sequences to a generalized suffix tree structure, since in this case each
+ * sequence added (and its suffixes) must have a distinct terminator
  */
 public class CharSequenceWithAssignableTerminalChar implements CharSequenceWithIntTerminator {
 
@@ -25,7 +30,7 @@ public class CharSequenceWithAssignableTerminalChar implements CharSequenceWithI
     @Override
     public char charAt(int index) {
         return index == length() - 1 ?
-                (char) terminalInt :
+                TERMINATOR_CHAR_REPRESENTATION :
                 s.charAt(index);
     }
     

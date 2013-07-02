@@ -6,6 +6,8 @@ import com.od.filtertable.index.CharSequenceWithIntTerminator;
 * User: nick
 * Date: 20/06/13
 * Time: 09:11
+* 
+* Adapt a CharSequence as a CharSequenceWithIntTerminator
 */
 public class CharSequenceWithIntTerminatorAdapter implements CharSequenceWithIntTerminator {
     
