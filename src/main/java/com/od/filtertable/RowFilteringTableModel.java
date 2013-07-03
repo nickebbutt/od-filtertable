@@ -57,6 +57,8 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     private TreeSet[] matchingColumnsByWrappedModelRowIndex;
     private boolean filter = true;
     private int matchCount;
+    private LinkedList<UpdateAction> updatesStack = new LinkedList<UpdateAction>();
+    private LinkedList<TableModelEvent> modelEvents = new LinkedList<TableModelEvent>();
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -385,35 +387,38 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
      */
     private void generateEventsForUpdate(int firstRow, int lastRow, int column) {
 
-        boolean containsInsert = false, containsDelete = false;
-
-        //generate a stack of the actions required for each row in the updated range, with first event at top
-        Stack<UpdateAction> updatesStack = new Stack<UpdateAction>();
-        for ( int row = lastRow; row >= firstRow; row --) {
-            if ( rowStatusBitSet.get(row) && oldRowStatusBitSet.get(row)) {
-                updatesStack.add(UpdateAction.UPDATE);
-            } else if ( rowStatusBitSet.get(row) && ! oldRowStatusBitSet.get(row)) {
-                containsInsert = true;
-                updatesStack.add(UpdateAction.INSERT);
-            } else if ( ! rowStatusBitSet.get(row) && oldRowStatusBitSet.get(row)) {
-                containsDelete = true;
-                updatesStack.add(UpdateAction.DELETE);
+        try {
+            boolean containsInsert = false, containsDelete = false;
+    
+            //generate a stack of the actions required for each row in the updated range, with first event at top
+            for ( int row = firstRow; row <= lastRow; row ++) {
+                if ( rowStatusBitSet.get(row) && oldRowStatusBitSet.get(row)) {
+                    updatesStack.add(UpdateAction.UPDATE);
+                } else if ( rowStatusBitSet.get(row) && ! oldRowStatusBitSet.get(row)) {
+                    containsInsert = true;
+                    updatesStack.add(UpdateAction.INSERT);
+                } else if ( ! rowStatusBitSet.get(row) && oldRowStatusBitSet.get(row)) {
+                    containsDelete = true;
+                    updatesStack.add(UpdateAction.DELETE);
+                }
+                //if the affected row was not visible in the old model and also is not visible in the
+                //new model, there is no update action required.
             }
-            //if the affected row was not visible in the old model and also is not visible in the
-            //new model, there is no update action required.
-        }
-
-        //get the events required according to the contents of the stack of actions
-        List<TableModelEvent> modelEvents = getRequiredEvents(
-                firstRow,
-                column,
-                updatesStack,
-                containsInsert,
-                containsDelete
-        );
-
-        for ( TableModelEvent event : modelEvents ) {
-            fireTableChanged(event);
+    
+            //get the events required according to the contents of the stack of actions
+            calculateModelEvents(
+                    firstRow,
+                    column,
+                    containsInsert,
+                    containsDelete
+            );
+    
+            for ( TableModelEvent event : modelEvents ) {
+                fireTableChanged(event);
+            }
+        } finally {
+            updatesStack.clear();
+            modelEvents.clear();
         }
     }
 
@@ -443,28 +448,26 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
      * INSERT OR DELETE affecting 1 or more rows
      * UPDATE affecting 1 or more rows
      */
-    private List<TableModelEvent> getRequiredEvents(int firstRow, int column, Stack<UpdateAction> updatesStack, boolean containsInsert, boolean containsDelete) {
+    private void calculateModelEvents(int firstRow, int column, boolean containsInsert, boolean containsDelete) {
         int startRowForEvent = getIndexInOldModel(firstRow);
-        List<TableModelEvent> modelEvents = new ArrayList<TableModelEvent>();
         if ( containsDelete && containsInsert) {
             modelEvents.add(createDataChangedEvent());
         } else if ( containsInsert ) {
-            startRowForEvent += addUpdateEvent( modelEvents, updatesStack, startRowForEvent, column);
-            startRowForEvent += addInsertEventAtStart( modelEvents, updatesStack, startRowForEvent);
-            startRowForEvent += addUpdateEvent( modelEvents, updatesStack, startRowForEvent, column);
-            checkContiguousRange(updatesStack, modelEvents);
+            startRowForEvent += addUpdateEvent(modelEvents, startRowForEvent, column);
+            startRowForEvent += addInsertEventAtStart(modelEvents, startRowForEvent);
+            startRowForEvent += addUpdateEvent(modelEvents, startRowForEvent, column);
+            checkContiguousRange(modelEvents);
         } else if ( containsDelete ) {
-            startRowForEvent += addUpdateEvent( modelEvents, updatesStack, startRowForEvent, column);
-            addDeleteEventAtStart( modelEvents, updatesStack, startRowForEvent);
-            startRowForEvent += addUpdateEvent( modelEvents, updatesStack, startRowForEvent, column);
-            checkContiguousRange(updatesStack, modelEvents);
+            startRowForEvent += addUpdateEvent(modelEvents, startRowForEvent, column);
+            addDeleteEventAtStart(modelEvents, startRowForEvent);
+            startRowForEvent += addUpdateEvent(modelEvents, startRowForEvent, column);
+            checkContiguousRange(modelEvents);
         } else {
-            addUpdateEvent( modelEvents, updatesStack, startRowForEvent, column);
+            addUpdateEvent(modelEvents, startRowForEvent, column);
         }
-        return modelEvents;
     }
 
-    private void checkContiguousRange(Stack<UpdateAction> updatesStack, List<TableModelEvent> modelEvents) {
+    private void checkContiguousRange(List<TableModelEvent> modelEvents) {
         if ( ! updatesStack.isEmpty()) { //the inserts/deletes are non-contiguous, we can't represent this a single event
             modelEvents.clear();
             modelEvents.add(createDataChangedEvent());
@@ -472,8 +475,8 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     //add a delete event at the start of the event list, if there is one or more insert action(s) at the top of the stack
-    private int addDeleteEventAtStart(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent) {
-        int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.DELETE);
+    private int addDeleteEventAtStart(List<TableModelEvent> modelEvents, int startRowForEvent) {
+        int rowsAffected = getCountFromTopOfStack(UpdateAction.DELETE);
         if ( rowsAffected > 0) {
             modelEvents.add(0, createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
         }
@@ -481,8 +484,8 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     //add an insert event at the start of the event list, if there is one or more insert action(s) at the top of the stack
-    private int addInsertEventAtStart(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent) {
-        int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.INSERT);
+    private int addInsertEventAtStart(List<TableModelEvent> modelEvents, int startRowForEvent) {
+        int rowsAffected = getCountFromTopOfStack(UpdateAction.INSERT);
         if ( rowsAffected > 0) {
             modelEvents.add(0, createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
         }
@@ -490,19 +493,19 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     //add an update event to the end of the event list, if there is one or more insert action(s) at the top of the stack
-    private int addUpdateEvent(List<TableModelEvent> modelEvents, Stack<UpdateAction> updatesStack, int startRowForEvent, int column) {
-        int rowsAffected = getCountFromTopOfStack(updatesStack, UpdateAction.UPDATE);
+    private int addUpdateEvent(List<TableModelEvent> modelEvents, int startRowForEvent, int column) {
+        int rowsAffected = getCountFromTopOfStack(UpdateAction.UPDATE);
         if ( rowsAffected > 0) {
             modelEvents.add(createTableModelEvent(RowFilteringTableModel.this, startRowForEvent, startRowForEvent + (rowsAffected - 1), column, TableModelEvent.UPDATE));
         }
         return rowsAffected;
     }
 
-    private int getCountFromTopOfStack(Stack<UpdateAction> updatesStack, UpdateAction type) {
+    private int getCountFromTopOfStack(UpdateAction type) {
         int rowsAffected = 0;
-        while( updatesStack.size() > 0 && updatesStack.peek() == type) {
+        while( updatesStack.size() > 0 && updatesStack.get(0) == type) {
             rowsAffected++;
-            updatesStack.pop();
+            updatesStack.remove(0);
         }
         return rowsAffected;
     }
