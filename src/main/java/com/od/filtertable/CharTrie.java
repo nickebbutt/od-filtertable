@@ -59,7 +59,20 @@ public interface CharTrie<V, C extends Collection<V>> {
      */
     void addValueForAllPrefixes(CharSequence key, V value);
 
-     /**
+    /**
+     * Add a value to the trie node for the path matching key, and to the nodes 
+     * matching every prefix of key which is at least minDepth chars long
+     * 
+     * This can be used as an optimisation where we know we have already added
+     * the value to the trie for all prefixes which are < minDepth in length
+     * 
+     * @param key
+     * @param value
+     * @param minDepth
+     */
+    void addValueForAllPrefixes(CharSequence key, V value, int minDepth);
+
+    /**
      * Remove the value from the trie node for the path matching key, and to the nodes for every prefix of key
      */
     void removeValueForAllPrefixes(CharSequence key, V value);
@@ -73,4 +86,5 @@ public interface CharTrie<V, C extends Collection<V>> {
      * remove from the trie any child nodes at depth greater than maximumDepth
      */
     void trimToDepth(int maximumDepth);
+
 }

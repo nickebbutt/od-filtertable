@@ -51,15 +51,19 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
     }
 
     public void addValue(CharSequence key, V value) {
-       add(key, value, false);
+       add(key, value, key.length());
     }
 
     public void removeValue(CharSequence key, V value) {
        remove(key, value, false);
     }
-
+    
     public void addValueForAllPrefixes(CharSequence key, V value) {
-       add(key, value, true);
+        add(key, value, 0);
+    }
+    
+    public void addValueForAllPrefixes(CharSequence key, V value, int minDepth) {
+       add(key, value, minDepth);
     }
 
     public void removeValueForAllPrefixes(CharSequence key, V value) {
@@ -81,15 +85,15 @@ public abstract class AbstractTrieNode<V, C extends Collection<V>> implements Ch
     abstract protected C createValuesCollection();
 
 
-    private void add(CharSequence key, V value, boolean addForPrefixes) {
-        if ( depth == key.length()) {
+    private void add(CharSequence key, V value, int minDepth) {
+        if ( depth == key.length() ) {
             values.add(value);
         } else {
-            if ( addForPrefixes ) {
+            if ( depth >= minDepth ) {
                 values.add(value);
             }
             AbstractTrieNode<V, C> child = getOrCreateChild(key);
-            child.add(key, value, addForPrefixes);
+            child.add(key, value, minDepth);
         }
     }
 

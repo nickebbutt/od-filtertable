@@ -121,7 +121,7 @@ public class TableModelIndexer {
     public void reIndexCell(int row, int col) {
         removeFromIndex(tableCells[row][col]);
         refreshTableCellValue(row, col);
-        addToIndex(tableCells[row][col], initialIndexDepth);
+        addToIndex(tableCells[row][col], 1, initialIndexDepth);
     }
 
     public void setFormatter(FilterFormatter filterFormat, Integer... columnIndexes) {
@@ -182,7 +182,7 @@ public class TableModelIndexer {
             for ( int col = 0; col < tableModel.getColumnCount(); col ++) {
                 tableCells[row][col] = new MutableTableCell(rowIndex, col);
                 refreshTableCellValue(row, col);
-                addToIndex(tableCells[row][col], initialIndexDepth);
+                addToIndex(tableCells[row][col], 1, initialIndexDepth);
             }
         }
     }
@@ -213,7 +213,7 @@ public class TableModelIndexer {
         }
     }
 
-    private void addToIndex(MutableTableCell cell, int maxDepth) {
+    private void addToIndex(MutableTableCell cell, int minDepth, int maxDepth) {
         cell.setIndexedDepth(maxDepth);
         if ( ! cell.isNullValue()) {
             readFormattedCellValueIntoCharRange(cell);
@@ -222,7 +222,7 @@ public class TableModelIndexer {
                 for ( int start = 0; start < maxStartLocation; start ++ ) {
                     mutableCharRange.setStart(start);
                     mutableCharRange.setEnd(Math.min(start + maxDepth, mutableCharRange.totalSequenceLength()));
-                    index.addValueForAllPrefixes(mutableCharRange, cell);
+                    index.addValueForAllPrefixes(mutableCharRange, cell, minDepth);
                 }
             }
         }
@@ -282,7 +282,8 @@ public class TableModelIndexer {
             }
 
             while(cellsToReindex.size() > 0) {
-                addToIndex(cellsToReindex.remove(0), newIndexDepth);
+                MutableTableCell cell = cellsToReindex.remove(0);
+                addToIndex(cell, cell.getIndexedDepth(), newIndexDepth);
             }
         }
     }
