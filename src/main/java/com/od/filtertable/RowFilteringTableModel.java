@@ -59,6 +59,10 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     private int matchCount;
     private LinkedList<UpdateAction> updatesStack = new LinkedList<UpdateAction>();
     private LinkedList<TableModelEvent> modelEvents = new LinkedList<TableModelEvent>();
+    
+    private final EventParser eventParser = new EventParser();
+    private final EventCount outgoingEventCount = new EventCount();
+    private final EventCount incomingEventCount = new EventCount();
 
     public RowFilteringTableModel(TableModel wrappedModel) {
         this(wrappedModel, false, 1);
@@ -269,73 +273,78 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
     }
 
     protected TableModelListener createTableModelListener() {
-        return new FilteredTableModelEventParser();
+        return new TableModelEventParser(eventParser);
     }
 
-    protected class FilteredTableModelEventParser extends TableModelEventParser {
-        public FilteredTableModelEventParser() {
-            super( new TableModelEventParser.TableModelEventParserListener() {
-                    public void tableStructureChanged(TableModelEvent e) {
-                        tableModelIndexer.tableStructureChanged();
-                        recalculateRowStatusBitSets();
-                        fireTableStructureChanged();
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-                    public void tableDataChanged(TableModelEvent e) {
-                        tableModelIndexer.rebuildIndex();
-                        recalculateAndFireDataChanged();
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-                    public void tableRowsUpdated(int firstRow, int lastRow, TableModelEvent e) {
-                        for ( int row=firstRow; row <=lastRow; row++ ) {
-                            for ( int col=0; col < wrappedModel.getColumnCount(); col++ ) {
-                                tableModelIndexer.reIndexCell(row,col);
-                            }
-                        }
-                        recalculateRowStatusBitSetsOnDataUpdate();
-                        generateEventsForUpdate(firstRow, lastRow, TableModelEvent.ALL_COLUMNS);
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-
-                    public void tableCellsUpdated(int firstRow, int lastRow, int column, TableModelEvent e) {
-                        for ( int row=firstRow; row <=lastRow; row++ ) {
-                            tableModelIndexer.reIndexCell(row,column);
-                        }
-                        recalculateRowStatusBitSetsOnDataUpdate();
-                        generateEventsForUpdate(firstRow, lastRow, column);
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-                    public void tableRowsDeleted(int firstRow, int lastRow, TableModelEvent e) {
-                        tableModelIndexer.removeRows(firstRow, lastRow);
-                        recalculateRowStatusBitSets();
-
-                        int affectedRows = getAffectedRows(oldRowStatusBitSet, firstRow, lastRow);
-                        if ( affectedRows > 0) {
-                            int oldFirstIndex = getIndexInOldModel(firstRow);
-                            fireTableRowsDeleted(oldFirstIndex, (oldFirstIndex + affectedRows - 1));
-                        }
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-                    public void tableRowsInserted(int firstRow, int lastRow, TableModelEvent e) {
-                        tableModelIndexer.insertRows(firstRow, lastRow);
-                        recalculateRowStatusBitSets();
-
-                        int affectedRows = getAffectedRows(rowStatusBitSet, firstRow, lastRow);
-                        if ( affectedRows > 0) {
-                            int oldFirstIndex = getIndexInOldModel(firstRow);
-                            fireTableRowsInserted(oldFirstIndex, (oldFirstIndex + affectedRows - 1));
-                        }
-                        clearOldRowBitsetAndRowMap();
-                    }
-
-                }
-            );
+    private class EventParser implements TableModelEventParser.TableModelEventParserListener {
+        
+        public void tableStructureChanged(TableModelEvent e) {
+            incomingEventCount.structureChangeEvents++;
+            tableModelIndexer.tableStructureChanged();
+            recalculateRowStatusBitSets();
+            fireTableStructureChanged();
+            outgoingEventCount.structureChangeEvents++;
+            clearOldRowBitsetAndRowMap();
         }
+
+        public void tableDataChanged(TableModelEvent e) {
+            incomingEventCount.dataChangeEvents++;
+            tableModelIndexer.rebuildIndex();
+            recalculateAndFireDataChanged();
+            outgoingEventCount.dataChangeEvents++;
+            clearOldRowBitsetAndRowMap();
+        }
+
+        public void tableRowsUpdated(int firstRow, int lastRow, TableModelEvent e) {
+            incomingEventCount.updateEvents++;
+            for ( int row=firstRow; row <=lastRow; row++ ) {
+                for ( int col=0; col < wrappedModel.getColumnCount(); col++ ) {
+                    tableModelIndexer.reIndexCell(row,col);
+                }
+            }
+            recalculateRowStatusBitSetsOnDataUpdate();
+            generateEventsForUpdate(firstRow, lastRow, TableModelEvent.ALL_COLUMNS);
+            clearOldRowBitsetAndRowMap();
+        }
+
+        public void tableCellsUpdated(int firstRow, int lastRow, int column, TableModelEvent e) {
+            incomingEventCount.updateEvents++;
+            for ( int row=firstRow; row <=lastRow; row++ ) {
+                tableModelIndexer.reIndexCell(row,column);
+            }
+            recalculateRowStatusBitSetsOnDataUpdate();
+            generateEventsForUpdate(firstRow, lastRow, column);
+            clearOldRowBitsetAndRowMap();
+        }
+
+        public void tableRowsDeleted(int firstRow, int lastRow, TableModelEvent e) {
+            incomingEventCount.rowDeleteEvents++;
+            tableModelIndexer.removeRows(firstRow, lastRow);
+            recalculateRowStatusBitSets();
+
+            int affectedRows = getAffectedRows(oldRowStatusBitSet, firstRow, lastRow);
+            if ( affectedRows > 0) {
+                int oldFirstIndex = getIndexInOldModel(firstRow);
+                fireTableRowsDeleted(oldFirstIndex, (oldFirstIndex + affectedRows - 1));
+                outgoingEventCount.rowDeleteEvents++;
+            }
+            clearOldRowBitsetAndRowMap();
+        }
+
+        public void tableRowsInserted(int firstRow, int lastRow, TableModelEvent e) {
+            incomingEventCount.rowInsertEvents++;
+            tableModelIndexer.insertRows(firstRow, lastRow);
+            recalculateRowStatusBitSets();
+
+            int affectedRows = getAffectedRows(rowStatusBitSet, firstRow, lastRow);
+            if ( affectedRows > 0) {
+                int oldFirstIndex = getIndexInOldModel(firstRow);
+                fireTableRowsInserted(oldFirstIndex, (oldFirstIndex + affectedRows - 1));
+                outgoingEventCount.rowInsertEvents++;
+            }
+            clearOldRowBitsetAndRowMap();
+        }
+
     }
 
     //these are used to help generate table model events during recalc
@@ -414,11 +423,30 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
             );
     
             for ( TableModelEvent event : modelEvents ) {
+                incrementStats(event);
                 fireTableChanged(event);
             }
         } finally {
             updatesStack.clear();
             modelEvents.clear();
+        }
+    }
+
+    private void incrementStats(TableModelEvent event) {
+        switch(event.getType()) {
+            case TableModelEvent.UPDATE :
+                if ( event.getLastRow() == Integer.MAX_VALUE) {
+                    outgoingEventCount.dataChangeEvents++;
+                } else {
+                    outgoingEventCount.updateEvents++;                            
+                }
+                break;
+            case TableModelEvent.DELETE :
+                outgoingEventCount.rowDeleteEvents++;
+                break;
+            case TableModelEvent.INSERT :
+                outgoingEventCount.rowInsertEvents++;
+                break;
         }
     }
 
@@ -528,5 +556,13 @@ public class RowFilteringTableModel extends CustomEventTableModel implements Ind
 
     private enum UpdateAction {
         UPDATE, INSERT, DELETE
+    }
+
+    public EventCount getOutgoingEventCount() {
+        return outgoingEventCount;
+    }
+
+    public EventCount getIncomingEventCount() {
+        return incomingEventCount;
     }
 }
