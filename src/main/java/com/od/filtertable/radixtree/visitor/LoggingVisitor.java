@@ -2,7 +2,7 @@ package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
 import com.od.filtertable.radixtree.TreeConfig;
-import com.od.filtertable.radixtree.ValueSupplier;
+import com.od.filtertable.radixtree.TreeVisitor;
 
 import java.io.PrintWriter;
 import java.util.LinkedList;

@@ -1,8 +1,8 @@
-package com.od.filtertable.radixtree.visitor;
+package com.od.filtertable.radixtree;
 
 import com.od.filtertable.radixtree.RadixTree;
 import com.od.filtertable.radixtree.TreeConfig;
-import com.od.filtertable.radixtree.ValueSupplier;
+import com.od.filtertable.radixtree.TreeVisitor;
 
 import java.util.Collection;
 import java.util.Iterator;

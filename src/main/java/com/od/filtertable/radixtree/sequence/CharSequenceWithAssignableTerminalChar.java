@@ -1,6 +1,4 @@
-package com.od.filtertable.radixtree;
-
-import com.od.filtertable.index.CharSequenceWithIntTerminator;
+package com.od.filtertable.radixtree.sequence;
 
 /**
  * User: nick

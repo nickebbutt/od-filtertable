@@ -1,10 +1,6 @@
 package com.od.filtertable.radixtree;
 
-import com.od.filtertable.index.CharSequenceWithIntTerminator;
-import com.od.filtertable.index.MutableCharSequence;
-import com.od.filtertable.index.MutableSequence;
-import com.od.filtertable.radixtree.visitor.CollectValuesVisitor;
-import com.od.filtertable.radixtree.visitor.TreeVisitor;
+import com.od.filtertable.radixtree.sequence.CharSequenceWithIntTerminator;
 
 import java.util.Collection;
 

@@ -1,15 +1,13 @@
 package com.od.filtertable.radixtree;
 
 import com.od.filtertable.TestStringGenerator;
-import junit.framework.TestCase;
+import com.od.filtertable.radixtree.map.RadixTreeMap;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 /**
  * User: nick
@@ -18,8 +16,8 @@ import java.util.TreeMap;
  */
 public class RadixTreeMapTest {
 
-//    RadixTreeMap<Object> m = new RadixTreeMap<Object>();
-    TreeMap<String, Object> m = new TreeMap<String,Object>();
+    RadixTreeMap<Object> m = new RadixTreeMap<Object>();
+//    TreeMap<String, Object> m = new TreeMap<String,Object>();
     
     public static void main(String[] args) throws Exception {
         new RadixTreeMapTest();    

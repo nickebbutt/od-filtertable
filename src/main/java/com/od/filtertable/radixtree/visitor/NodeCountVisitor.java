@@ -1,6 +1,7 @@
 package com.od.filtertable.radixtree.visitor;
 
 import com.od.filtertable.radixtree.RadixTree;
+import com.od.filtertable.radixtree.TreeVisitor;
 
 /**
  * User: nick

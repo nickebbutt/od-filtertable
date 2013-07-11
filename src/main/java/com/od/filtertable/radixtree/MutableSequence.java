@@ -20,9 +20,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.od.filtertable.index;
+package com.od.filtertable.radixtree;
 
-import com.od.filtertable.radixtree.CharUtils;
+import com.od.filtertable.radixtree.sequence.CharSequenceWithIntTerminator;
 
 /**
  * Avoids generating unnecessary String instances using String.substring(x,x)

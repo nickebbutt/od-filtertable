@@ -1,5 +1,6 @@
 package com.od.filtertable.radixtree;
 
+import com.od.filtertable.radixtree.map.RestrictedMap;
 import com.od.filtertable.radixtree.visitor.KeySetVisitor;
 import com.od.filtertable.radixtree.visitor.LoggingVisitor;
 import com.od.filtertable.radixtree.visitor.NodeCountVisitor;

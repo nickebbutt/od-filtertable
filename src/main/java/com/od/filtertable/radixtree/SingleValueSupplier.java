@@ -5,7 +5,7 @@ import java.util.Collection;
 /**
  * Support a single value per node
  */
-class SingleValueSupplier<V> implements ValueSupplier<V> {
+public class SingleValueSupplier<V> implements ValueSupplier<V> {
 
     private ValueSupplierResult<V> result = new ValueSupplierResult<V>();
     

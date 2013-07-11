@@ -1,4 +1,4 @@
-package com.od.filtertable.index;
+package com.od.filtertable.radixtree.sequence;
 
 /**
  * User: nick

@@ -1,8 +1,9 @@
 package com.od.filtertable.radixtree.visitor;
 
-import com.od.filtertable.index.MutableCharSequence;
-import com.od.filtertable.index.MutableSequence;
-import com.od.filtertable.radixtree.CharSequenceWithIntTerminatorAdapter;
+import com.od.filtertable.radixtree.MutableCharSequence;
+import com.od.filtertable.radixtree.MutableSequence;
+import com.od.filtertable.radixtree.TreeVisitor;
+import com.od.filtertable.radixtree.sequence.CharSequenceWithIntTerminatorAdapter;
 import com.od.filtertable.radixtree.RadixTree;
 
 import java.util.HashMap;

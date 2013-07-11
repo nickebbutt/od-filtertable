@@ -1,4 +1,4 @@
-package com.od.filtertable.radixtree.visitor;
+package com.od.filtertable.radixtree;
 
 import com.od.filtertable.radixtree.RadixTree;
 
