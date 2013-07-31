@@ -1,7 +1,5 @@
 package com.od.filtertable.radixtree;
 
-import com.od.filtertable.radixtree.RadixTree;
-
 /**
  * User: nick
  * Date: 22/05/13
